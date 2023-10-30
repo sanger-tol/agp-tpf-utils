@@ -23,8 +23,9 @@ in your shell's `.*rc` file (*e.g.* `~/.bashrc` for `bash` or `~/.zshrc` for
 
 ### Reinstalling Development Environment
 
-Some changes, such as adding a new command line tool to [`pyproject.toml`]
-(pyproject.toml), require the development environment to be reinstalled:
+Some changes, such as adding a new command line tool to
+[`pyproject.toml`](pyproject.toml), require the development environment to be
+reinstalled:
 
 ```sh
 pip uninstall tola-assembly-utils
