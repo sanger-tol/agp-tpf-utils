@@ -20,3 +20,13 @@ cd $HOME/git/assembly-utils && source ./venv/bin/activate
 
 in your shell's `.*rc` file (*e.g.* `~/.bashrc` for `bash` or `~/.zshrc` for
 `zsh`) can be convenient.
+
+### Reinstalling Development Environment
+
+Some changes, such as adding a new command line tool to [`pyproject.toml`]
+(pyproject.toml), require the development environment to be reinstalled:
+
+```sh
+pip uninstall tola-assembly-utils
+pip install --editable .
+```
