@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tola-assembly-utils"
+version = "1.0.0"
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "black",
+    "click",
+    "ruff",
+    'importlib-metadata; python_version>="3.8"',
+]
+
+[project.scripts]
+
+[tool.setuptools.packages.find]
+where = ["src"]
