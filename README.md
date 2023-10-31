@@ -31,3 +31,7 @@ reinstalled:
 pip uninstall tola-assembly-utils
 pip install --editable .
 ```
+
+## Running Tests
+
+Tests, located in the [`tests/`](tests) directory, are run with the `pytest` command from the project root.

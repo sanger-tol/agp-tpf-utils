@@ -74,3 +74,13 @@ def test_abuts():
     assert f2.abuts(f1)
     assert not f1.abuts(f3)
     assert not f1.abuts(f4)
+
+
+def test_stringify():
+    f1 = Fragment("chr1", 1, 20_000, 1)
+    f2 = Fragment("chr1", 1, 20_000, -1)
+    f3 = Fragment("chr1", 1, 20_000, 0)
+
+    assert str(f1) == "chr1:1-20000(+)"
+    assert str(f2) == "chr1:1-20000(-)"
+    assert str(f3) == "chr1:1-20000(.)"
