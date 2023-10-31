@@ -10,6 +10,7 @@ requires-python = ">=3.8"
 dependencies = [
     "black",
     "click",
+    "pytest",
     "ruff",
     'importlib-metadata; python_version>="3.8"',
 ]

@@ -15,7 +15,7 @@ pip install --editable .
 An alias such as this:
 
 ```sh
-cd $HOME/git/assembly-utils && source ./venv/bin/activate
+alias tau="cd $HOME/git/assembly-utils && source ./venv/bin/activate"
 ```
 
 in your shell's `.*rc` file (*e.g.* `~/.bashrc` for `bash` or `~/.zshrc` for
