@@ -18,8 +18,8 @@ def test_create():
 def test_iterators():
     f1 = Fragment("scaffold_12", 1, 20_000, 1)
     f2 = Fragment("scaffold_12", 23_200, 140_112, -1)
-    f3 = Fragment("scaffold_12", 140_113, 244_491, -1)
-    f4 = Fragment("scaffold_3", 1, 244_232, -1)
+    f3 = Fragment("scaffold_12", 140_113, 244_491, 1)
+    f4 = Fragment("scaffold_3", 1, 244_232, 1)
 
     g1 = Gap(100, "Type-2")
     g2 = Gap(200, "Type-2")

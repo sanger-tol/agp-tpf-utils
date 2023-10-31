@@ -14,10 +14,14 @@ class Scaffold:
 
     def __repr__(self):
         txt = io.StringIO()
-        txt.write(f"{self.__class__.__name__}(name='{self.name}' rows=[\n")
+        txt.write(
+            f"{self.__class__.__name__}(\n"
+            + f"    name='{self.name}',\n"
+            + f"    rows=[\n"
+        )
         for row in self.rows:
-            txt.write(f"  {row!r},\n")
-        txt.write("])\n")
+            txt.write(f"        {row!r},\n")
+        txt.write("    ],\n)")
         return txt.getvalue()
 
     def __str__(self):

@@ -17,17 +17,21 @@ class Assembly:
 
     def __repr__(self):
         txt = io.StringIO()
-        txt.write(f"{self.__class__.__name__}(name='{self.name}', scaffolds=[\n")
+        txt.write(
+            f"{self.__class__.__name__}(\n"
+            + f"    name='{self.name}',\n"
+            + f"    scaffolds=[\n"
+        )
         for scffld in self.scaffolds:
-            txt.write(textwrap.indent(f"{scffld!r}", "  "))
-        txt.write("])\n")
+            txt.write(textwrap.indent(f"{scffld!r},\n", "        "))
+        txt.write("    ],\n)")
         return txt.getvalue()
 
     def __str__(self):
         txt = io.StringIO()
         txt.write(f"{self.__class__.__name__}: {self.name}\n")
         for scffld in self.scaffolds:
-            txt.write(textwrap.indent(f"{scffld}", "  "))
+            txt.write(textwrap.indent(str(scffld), "  "))
         return txt.getvalue()
 
     @staticmethod
