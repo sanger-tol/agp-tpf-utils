@@ -1,5 +1,5 @@
 
-# Assembly Utilities for Tree of Life
+# Utilities for Tree of Life AGP and TPF Assembly Files
 
 ## Development Setup
 
