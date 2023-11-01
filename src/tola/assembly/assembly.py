@@ -2,37 +2,49 @@ import io
 import re
 import textwrap
 
-from tola.assembly.fragment import Fragment
-from tola.assembly.gap import Gap
-from tola.assembly.scaffold import Scaffold
-
-
 class Assembly:
-    def __init__(self, name, scaffolds=None):
+    def __init__(self, name, header=None, scaffolds=None):
         self.name = str(name)
-        if scaffolds:
-            self.scaffolds = scaffolds
-        else:
-            self.scaffolds = []
+        self.scaffolds = scaffolds if scaffolds else []
+        self.header = header if header else []
 
     def __repr__(self):
         txt = io.StringIO()
         txt.write(
             f"{self.__class__.__name__}(\n"
             + f"    name='{self.name}',\n"
-            + f"    scaffolds=[\n"
         )
-        for scffld in self.scaffolds:
-            txt.write(textwrap.indent(f"{scffld!r},\n", "        "))
-        txt.write("    ],\n)")
+
+        if self.header:
+            txt.write(f"    header=[\n")
+            for line in self.header:
+                txt.write(f"        '{line}',\n")
+            txt.write("    ],\n")
+
+        if self.scaffolds:
+            txt.write(f"    scaffolds=[\n")
+            for scffld in self.scaffolds:
+                txt.write(textwrap.indent(f"{scffld!r},\n", "        "))
+            txt.write("    ],\n)")
+        else:
+            txt.write(")")
+
         return txt.getvalue()
 
     def __str__(self):
         txt = io.StringIO()
         txt.write(f"{self.__class__.__name__}: {self.name}\n")
+        for line in self.header:
+            txt.write(f"  # {line}\n")
         for scffld in self.scaffolds:
             txt.write(textwrap.indent(str(scffld), "  "))
         return txt.getvalue()
+
+    def add_header_line(self, txt):
+        self.header.append(txt)
+
+    def add_scaffold(self, scffld):
+        self.scaffolds.append(scffld)
 
     @staticmethod
     def name_natural_key(obj):
