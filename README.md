@@ -23,7 +23,7 @@ in your shell's `.*rc` file (*e.g.* `~/.bashrc` for `bash` or `~/.zshrc` for
 
 ### Reinstalling Development Environment
 
-Some changes, such as adding a new command line tool to
+Some changes, such as adding a new command script tool to
 [`pyproject.toml`](pyproject.toml), require the development environment to be
 reinstalled:
 
@@ -34,4 +34,5 @@ pip install --editable .
 
 ## Running Tests
 
-Tests, located in the [`tests/`](tests) directory, are run with the `pytest` command from the project root.
+Tests, located in the [`tests/`](tests) directory, are run with the `pytest`
+command from the project root.
