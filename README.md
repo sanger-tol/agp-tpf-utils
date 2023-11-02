@@ -30,7 +30,7 @@ contains 9 tab delimited columns. Of these columns:
     - **column 5** the "component_type" contains `U` in our assemblies, for a
         gap of unknown length. (The other gap type `N` is for gaps of known
         length.)
-    - **column 6** The default length in the specification for *U* gaps is 100
+    - **column 6** The default length in the specification for `U` gaps is 100
         base pairs, but we use 200 bp gaps, as produced by
         [yahs](https://github.com/sanger-tol/yahs)
     - **column 7** has `scaffold`, signifying a gap between two contigs in a

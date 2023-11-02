@@ -75,7 +75,7 @@ def format_tpf(asm, file):
                     "\t".join(
                         (
                             "?",
-                            f"{row.name}:{row.start}-row.end",
+                            f"{row.name}:{row.start}-{row.end}",
                             scffld_name,
                             STRAND_STR[row.strand],
                         )
