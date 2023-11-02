@@ -2,9 +2,10 @@ import io
 import pytest
 import re
 
-from textwrap import dedent
+from .utils import strip_leading_spaces
 
 from tola.assembly.parser import parse_agp, parse_tpf
+
 
 def	test_parse_agp():
     # Careful using auto-formatters on this code which may strip tab
@@ -51,6 +52,7 @@ def	test_parse_agp():
         """
     )
 
+
 def	test_parse_tpf():
     with pytest.raises(
         ValueError, match=r"Gap line before first sequence fragment"
@@ -85,7 +87,7 @@ def	test_parse_tpf():
         ?	scaffold_2:629300-719848	scaffold_2	MINUS
         GAP	TYPE-2	200
         ?	scaffold_2:720049-3207246	scaffold_2	PLUS
-        GAP	TYPE-2	200
+        GAP	SHORT-ARM	200
         ?	scaffold_2:3207447-3240707	scaffold_2	PLUS
         """
     )
@@ -96,31 +98,25 @@ def	test_parse_tpf():
         Assembly: aaBbbCccc1
           scaffold_1
                       1       93024  scaffold_1:1-93024(+)
-                  93025       93224  Gap:200 TYPE-2
+                  93025       93224  Gap:200 scaffold
                   93225      232397  scaffold_1:93225-232397(+)
-                 232398      232597  Gap:200 TYPE-2
+                 232398      232597  Gap:200 scaffold
                  232598      261916  scaffold_1:232598-261916(+)
-                 261917      262116  Gap:200 TYPE-2
+                 261917      262116  Gap:200 scaffold
                  262117      906261  scaffold_1:262117-906261(+)
           scaffold_2
                       1      166725  scaffold_2:1-166725(+)
-                 166726      166925  Gap:200 TYPE-2
+                 166726      166925  Gap:200 scaffold
                  166926      629099  scaffold_2:166926-629099(-)
-                 629100      629299  Gap:200 TYPE-2
+                 629100      629299  Gap:200 scaffold
                  629300      719848  scaffold_2:629300-719848(-)
-                 719849      720048  Gap:200 TYPE-2
+                 719849      720048  Gap:200 scaffold
                  720049     3207246  scaffold_2:720049-3207246(+)
-                3207247     3207446  Gap:200 TYPE-2
+                3207247     3207446  Gap:200 short_arm
                 3207447     3240707  scaffold_2:3207447-3240707(+)
         """
     )
 
-def strip_leading_spaces(txt):
-    """
-    Removes leading blank lines and de-indents text, so that the test data in
-    this file can be indented to the code.
-    """
-    return dedent(txt).lstrip()
 
 if	__name__ == '__main__':
     test_parse_agp()

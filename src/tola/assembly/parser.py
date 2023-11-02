@@ -1,4 +1,7 @@
 import re
+import string
+
+from functools import cache
 
 from tola.assembly.assembly import Assembly
 from tola.assembly.fragment import Fragment
@@ -61,6 +64,11 @@ def parse_tpf(file, name):
     scaffold = None
     scaffold_name = ""
     strand_dict = {"PLUS": 1, "MINUS": -1}
+    gap_type_dict = {
+        "TYPE-2": "scaffold",
+        "TYPE-3": "contig",
+    }
+    tr = lowercase_and_dash_to_underscore()
     for line in file:
         if re.match(r"\s*$", line):
             # Skip blank lines
@@ -80,7 +88,10 @@ def parse_tpf(file, name):
                 scaffold.add_row(
                     Gap(
                         length=fields[2],
-                        gap_type=fields[1],
+                        gap_type=gap_type_dict.get(
+                            fields[1],
+                            fields[1].translate(tr),
+                        ),
                     )
                 )
             else:
@@ -104,10 +115,15 @@ def parse_tpf(file, name):
                 msg = f"Unexpected name format '{fields[1]}'"
                 raise ValueError(msg)
         else:
-            msg = (
-                f"Wrong field count {len(fields)};"
-                f" 4 expected in line: '{line}'"
-            )
+            msg = f"Wrong field count {len(fields)}; 4 expected in line: '{line}'"
             raise ValueError(msg)
 
     return asm
+
+
+@cache
+def lowercase_and_dash_to_underscore():
+    return str.maketrans(
+        string.ascii_uppercase + '-',
+        string.ascii_lowercase + '_',
+    )
