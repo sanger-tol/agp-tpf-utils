@@ -47,8 +47,8 @@ Our TPF files are highly diverged from the
 - We do not necessarily include any `##` header lines, which were mandatory in
   the original specification.
 - **DNA Sequence**
-    - **column 1** the "accession" is always `?`` since the components of
-        our assemblies are not accessioned.
+    - **column 1** the "accession" is always `?` since the components of our
+        assemblies are not accessioned.
     - **column 2** the "clone name" does not contain a clone name, but
         contains the name of scaffold fragment or whole scaffold, with the
         format: `<name>:<start>-<end>` *i.e.* assembly coordinates.
