@@ -8,7 +8,7 @@ full range of AGP and TPF syntax.
 
 ## File Formats
 
-Both TPF and AGP file formats described here, contain the same information. AGP
+Both TPF and AGP file formats described here contain the same information. AGP
 is the more appropriate format to use, since it was designed for sequence
 assembly coordinates, whereas TPF was for listing (cosmid, fosmid, YAC or
 BAC) clones and their accessions in the order that they were tiled to build a
@@ -18,7 +18,7 @@ chromosome.
 
 Each line in the
 [AGP v2.1 specification](https://www.ncbi.nlm.nih.gov/assembly/agp/AGP_Specification/)
-contains 9 tab delimited fields. Of these fields:
+contains 9 tab delimited columns. Of these columns:
 
 - **DNA Sequence**
     - **column 5** the "component_type" contains *W* in our assemblies,
@@ -31,7 +31,7 @@ contains 9 tab delimited fields. Of these fields:
         gap of unknown length. (The other gap type *N* is for gaps of known
         length.)
     - **column 6** The default length in the specification for *U* gaps is 100
-        base pairs, but we use 200 bp gaps, as prodcued by
+        base pairs, but we use 200 bp gaps, as produced by
         [yahs](https://github.com/sanger-tol/yahs)
     - **column 7** has *scaffold*, signifying a gap between two contigs in a
         scaffold.
@@ -51,9 +51,9 @@ Our TPF files are highly diverged from the
         our assemblies are not accessioned.
     - **column 2** the "clone name" does not contain a clone name, but
         contains the name of scaffold fragment or whole scaffold, with the
-        format: `<name>:<start>-<end>` *i.e.* assembly coordinates
+        format: `<name>:<start>-<end>` *i.e.* assembly coordinates.
     - **column 3** the "local contig identifier" now contains the name of the
-        scaffold each sequence fragments belongs to.
+        scaffold each sequence fragment belongs to.
     - **column 4** which in the original specification was used for
         indicating *CONTAINED* or *CONTAINED_TURNOUT* clones now holds
         assembly strand information, either *PLUS* or *MINUS*.
