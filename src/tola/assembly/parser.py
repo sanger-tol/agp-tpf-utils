@@ -10,7 +10,7 @@ def parse_agp(file, name):
     asm = Assembly(name)
     scaffold = None
     scaffold_name = ""
-    strand_dict = {"+": 1, "-": -1}
+    strand_dict = {"?": 0, "+": 1, "-": -1}
     for line in file:
         if re.match(r"\s*$", line):
             # Skip blank lines
@@ -34,7 +34,7 @@ def parse_agp(file, name):
             scaffold = Scaffold(scaffold_name)
             asm.add_scaffold(scaffold)
 
-        if fields[4] in ("D", "U"):
+        if fields[4] in ("U", "N"):
             scaffold.add_row(
                 Gap(
                     length=fields[5],
