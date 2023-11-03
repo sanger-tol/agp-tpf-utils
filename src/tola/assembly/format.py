@@ -33,6 +33,7 @@ def format_agp(asm, file):
                 cols.extend(
                     (
                         "W",
+                        row.name,
                         str(row.start),
                         str(row.end),
                         STRAND_STR[row.strand],

@@ -35,6 +35,7 @@ class Assembly:
         for line in self.header:
             txt.write(f"  # {line}\n")
         for scffld in self.scaffolds:
+            txt.write("\n")
             txt.write(textwrap.indent(str(scffld), "  "))
         return txt.getvalue()
 
