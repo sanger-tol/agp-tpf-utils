@@ -53,3 +53,22 @@ class Assembly:
 
     def sort_scaffolds_by_name(self):
         self.scaffolds.sort(key=self.name_natural_key)
+
+    def find_overlapping_fragments(self):
+        over_pairs = []
+
+        def detect_overlap(v1, v2):
+            if v1[0].overlaps(v2[0]):
+                over_pairs.append((v1, v2))
+
+        self.all_vs_all_fragments(detect_overlap)
+        return over_pairs if over_pairs else None
+
+    def all_vs_all_fragments(self, compare_func):
+        frags = []
+        for scffld in self.scaffolds:
+            frags.extend((x, scffld) for x in scffld.fragments())
+        lgth = len(frags)
+        for i in range(0, lgth):
+            for j in range(i + 1, lgth):
+                compare_func(frags[i], frags[j])

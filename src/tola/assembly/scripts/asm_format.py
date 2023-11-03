@@ -58,7 +58,12 @@ from tola.assembly.format import format_agp, format_tpf
     "assembly_name",
     help="""Name of the assembly. Defaults to the file name or 'stdin'"""
 )
-def cli(input_files, input_format, output_file, output_format, assembly_name):
+@click.option(
+    "--check-overlap/--no-check-overlap",
+    default=False,
+    help="Report any fragments within each assembly which overlap"
+)
+def cli(input_files, input_format, output_file, output_format, assembly_name, check_overlap):
     if output_file:
         if not output_format:
             output_format = format_from_file_extn(output_file)
@@ -81,15 +86,15 @@ def cli(input_files, input_format, output_file, output_format, assembly_name):
             asm_name = assembly_name if assembly_name else pth.stem
 
             with pth.open("r") as in_fh:
-                process_fh(in_fh, in_fmt, asm_name, out_fh, output_format)
+                process_fh(in_fh, in_fmt, asm_name, out_fh, output_format, check_overlap)
     else:
         # Process STDIN
         in_fmt = input_format if input_format else "AGP"
         asm_name = assembly_name if assembly_name else "stdin"
-        process_fh(sys.stdin, in_fmt, asm_name, out_fh, output_format)
+        process_fh(sys.stdin, in_fmt, asm_name, out_fh, output_format, check_overlap)
 
 
-def process_fh(in_fh, in_fmt, asm_name, out_fh, out_fmt):
+def process_fh(in_fh, in_fmt, asm_name, out_fh, out_fmt, check_overlap):
     if in_fmt == "AGP":
         asm = parse_agp(in_fh, asm_name)
     elif in_fmt == "TPF":
@@ -97,6 +102,10 @@ def process_fh(in_fh, in_fmt, asm_name, out_fh, out_fmt):
     else:
         msg = f"Unknown input format: '{in_fmt}'"
         raise ValueError(msg)
+
+    if check_overlap:
+        if pairs := asm.find_overlapping_fragments():
+            report_overlaps(pairs)
 
     if out_fmt == "AGP":
         format_agp(asm, out_fh)
@@ -111,11 +120,18 @@ def process_fh(in_fh, in_fmt, asm_name, out_fh, out_fmt):
         raise ValueError(msg)
 
 
+def report_overlaps(pairs):
+    for pr in pairs:
+        f1, s1 = pr[0]
+        f2, s2 = pr[1]
+        click.echo(f"\nOverlap:\n{s1.name} {f1}\n{s2.name} {f2}", err=True)
+
+
 def format_from_file_extn(pth, default=None):
     """
-    Guess the file format from the extension, or default to "AGP"
+    Guess the file format from the extension, or return the supplied default
     """
-    if m := re.search(r"\.(agp|tpf)\w*$", pth.name, flags=re.IGNORECASE):
+    if m := re.match(r"\.(agp|tpf)\w*$", pth.suffix, flags=re.IGNORECASE):
         return m.group(1).upper()
     else:
         return default
