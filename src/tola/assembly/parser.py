@@ -1,6 +1,5 @@
 import re
 import string
-
 from functools import cache
 
 from tola.assembly.assembly import Assembly
@@ -42,7 +41,7 @@ def parse_agp(file, name):
                 Gap(
                     length=fields[5],
                     gap_type=fields[6],
-                )
+                ),
             )
         else:
             scaffold.add_row(
@@ -53,7 +52,7 @@ def parse_agp(file, name):
                     strand=strand_dict[fields[8]],
                     # Add the tenth field as meta if present
                     meta=(fields[9] if len(fields) > 9 else None),
-                )
+                ),
             )
 
     return asm
@@ -92,7 +91,7 @@ def parse_tpf(file, name):
                             fields[1],
                             fields[1].translate(tr),
                         ),
-                    )
+                    ),
                 )
             else:
                 msg = f"Gap line before first sequence fragment: '{line}'"
@@ -109,7 +108,7 @@ def parse_tpf(file, name):
                         start=m.group(2),
                         end=m.group(3),
                         strand=strand_dict[fields[3]],
-                    )
+                    ),
                 )
             else:
                 msg = f"Unexpected name format '{fields[1]}'"

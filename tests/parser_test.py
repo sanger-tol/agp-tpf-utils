@@ -1,15 +1,12 @@
 import io
+
 import pytest
-import re
+from tola.assembly.parser import parse_agp, parse_tpf
 
 from .utils import strip_leading_spaces
 
-from tola.assembly.parser import parse_agp, parse_tpf
 
-
-def	test_parse_agp():
-    # Careful using auto-formatters on this code which may strip tab
-    # characters from this test AGP!
+def test_parse_agp():
     agp = strip_leading_spaces(
         """
         ##agp-version 2.1
@@ -27,7 +24,7 @@ def	test_parse_agp():
         Scaffold_2	3206747	3267412	3	W	scaffold_67	1	60666	+	Painted
         Scaffold_2	3267413	3267512	4	U	100	scaffold	yes	proximity_ligation
         Scaffold_2	3267513	28348686	5	W	scaffold_2	3206647	28287820	?	Painted
-        """
+        """,
     )
 
     fh = io.StringIO(agp)
@@ -49,14 +46,12 @@ def	test_parse_agp():
                 3206747     3267412  scaffold_67:1-60666(+) Painted
                 3267413     3267512  Gap:100 scaffold
                 3267513    28348686  scaffold_2:3206647-28287820(.) Painted
-        """
+        """,
     )
 
 
-def	test_parse_tpf():
-    with pytest.raises(
-        ValueError, match=r"Gap line before first sequence fragment"
-    ):
+def test_parse_tpf():
+    with pytest.raises(ValueError, match=r"Gap line before first sequence fragment"):
         parse_tpf(io.StringIO("GAP	TYPE-2	200"), "gap_first")
 
     with pytest.raises(ValueError, match=r"Unexpected name format"):
@@ -89,7 +84,7 @@ def	test_parse_tpf():
         ?	scaffold_2:720049-3207246	scaffold_2	PLUS
         GAP	SHORT-ARM	200
         ?	scaffold_2:3207447-3240707	scaffold_2	PLUS
-        """
+        """,
     )
     fh = io.StringIO(tpf)
     a1 = parse_tpf(fh, "aaBbbCccc1")
@@ -114,10 +109,10 @@ def	test_parse_tpf():
                  720049     3207246  scaffold_2:720049-3207246(+)
                 3207247     3207446  Gap:200 short_arm
                 3207447     3240707  scaffold_2:3207447-3240707(+)
-        """
+        """,
     )
 
 
-if	__name__ == '__main__':
+if __name__ == "__main__":
     test_parse_agp()
     test_parse_tpf()

@@ -1,5 +1,4 @@
 import string
-
 from functools import cache
 
 from tola.assembly.gap import Gap
@@ -28,7 +27,7 @@ def format_agp(asm, file):
                         str(row.gap_type),
                         "yes",
                         "proximity_ligation",
-                    )
+                    ),
                 )
             else:
                 cols.extend(
@@ -37,7 +36,7 @@ def format_agp(asm, file):
                         str(row.start),
                         str(row.end),
                         STRAND_STR[row.strand],
-                    )
+                    ),
                 )
                 if m := row.meta:
                     cols.append(m)
@@ -67,8 +66,8 @@ def format_tpf(asm, file):
                                 row.gap_type.translate(tr),
                             ),
                             str(row.length),
-                        )
-                    )
+                        ),
+                    ),
                 )
             else:
                 file.write(
@@ -78,8 +77,8 @@ def format_tpf(asm, file):
                             f"{row.name}:{row.start}-{row.end}",
                             scffld_name,
                             STRAND_STR[row.strand],
-                        )
-                    )
+                        ),
+                    ),
                 )
             file.write("\n")
 

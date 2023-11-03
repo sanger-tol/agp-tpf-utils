@@ -1,6 +1,5 @@
-import sys
 
-from tola.assembly.scaffold import Scaffold, Fragment, Gap
+from tola.assembly.scaffold import Fragment, Gap, Scaffold
 
 
 def test_create():

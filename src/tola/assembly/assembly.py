@@ -14,13 +14,13 @@ class Assembly:
         txt.write(f"{self.__class__.__name__}(\n    name='{self.name}',\n")
 
         if self.header:
-            txt.write(f"    header=[\n")
+            txt.write("    header=[\n")
             for line in self.header:
                 txt.write(f"        '{line}',\n")
             txt.write("    ],\n")
 
         if self.scaffolds:
-            txt.write(f"    scaffolds=[\n")
+            txt.write("    scaffolds=[\n")
             for scffld in self.scaffolds:
                 txt.write(textwrap.indent(f"{scffld!r},\n", "        "))
             txt.write("    ],\n)")

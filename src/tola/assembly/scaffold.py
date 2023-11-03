@@ -17,7 +17,7 @@ class Scaffold:
         txt.write(
             f"{self.__class__.__name__}(\n"
             + f"    name='{self.name}',\n"
-            + f"    rows=[\n"
+            + "    rows=[\n",
         )
         for row in self.rows:
             txt.write(f"        {row!r},\n")

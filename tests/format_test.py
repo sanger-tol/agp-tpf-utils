@@ -1,14 +1,12 @@
 import io
 
+from tola.assembly.assembly import Assembly
+from tola.assembly.format import format_agp, format_tpf
+from tola.assembly.fragment import Fragment
+from tola.assembly.gap import Gap
+from tola.assembly.scaffold import Scaffold
+
 from .utils import strip_leading_spaces
-from tola.assembly import (
-    Assembly,
-    Fragment,
-    Gap,
-    Scaffold,
-    format_agp,
-    format_tpf,
-)
 
 
 def test_format_agp():
@@ -28,7 +26,7 @@ def test_format_agp():
         chrX	1	11033114755	1	W	1	11033114755	+
         chrX	11033114756	11034414755	2	U	1300000	short_arm	yes	proximity_ligation
         chrX	11034414756	11034414765	3	W	11049229141	11049229150	+
-        """
+        """,
     )
 
 
@@ -49,7 +47,7 @@ def test_format_tpf():
         ?	scaffold_7:1-11033114755	chrX	PLUS
         GAP	SHORT-ARM	1300000
         ?	scaffold_7:11049229141-11049229150	chrX	PLUS
-        """
+        """,
     )
 
 
@@ -78,7 +76,7 @@ def example_assembly():
                     Fragment(name="scaffold_7", start=1, end=11033114755, strand=1),
                     Gap(length=1_300_000, gap_type="short_arm"),
                     Fragment(
-                        name="scaffold_7", start=11049229141, end=11049229150, strand=1
+                        name="scaffold_7", start=11049229141, end=11049229150, strand=1,
                     ),
                 ],
             ),

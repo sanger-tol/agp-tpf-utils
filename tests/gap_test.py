@@ -1,5 +1,4 @@
 import pytest
-
 from tola.assembly.gap import Gap
 
 
