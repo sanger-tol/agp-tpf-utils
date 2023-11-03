@@ -1,4 +1,3 @@
-
 from .assembly import Assembly
 from .format import format_agp, format_tpf
 from .fragment import Fragment

@@ -2,6 +2,7 @@ import io
 import re
 import textwrap
 
+
 class Assembly:
     def __init__(self, name, header=None, scaffolds=None):
         self.name = str(name)
@@ -10,10 +11,7 @@ class Assembly:
 
     def __repr__(self):
         txt = io.StringIO()
-        txt.write(
-            f"{self.__class__.__name__}(\n"
-            + f"    name='{self.name}',\n"
-        )
+        txt.write(f"{self.__class__.__name__}(\n    name='{self.name}',\n")
 
         if self.header:
             txt.write(f"    header=[\n")

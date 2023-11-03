@@ -23,7 +23,7 @@ def parse_agp(file, name):
             # We don't care about ## lines, do we?
             continue
 
-        if line.startswith('#'):
+        if line.startswith("#"):
             # This pattern match skips blank header lines
             if h := re.match(r"[#\s]+(.+)", line):
                 asm.add_header_line(h.group(1))
@@ -74,7 +74,7 @@ def parse_tpf(file, name):
             # Skip blank lines
             continue
 
-        if line.startswith('#'):
+        if line.startswith("#"):
             # This pattern match skips blank header lines
             if h := re.match(r"[#\s]+(.+)", line):
                 asm.add_header_line(h.group(1))
@@ -124,6 +124,6 @@ def parse_tpf(file, name):
 @cache
 def lowercase_and_dash_to_underscore():
     return str.maketrans(
-        string.ascii_uppercase + '-',
-        string.ascii_lowercase + '_',
+        string.ascii_uppercase + "-",
+        string.ascii_lowercase + "_",
     )

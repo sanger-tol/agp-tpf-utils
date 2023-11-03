@@ -61,7 +61,7 @@ def format_tpf(asm, file):
                 file.write(
                     "\t".join(
                         (
-                            'GAP',
+                            "GAP",
                             gap_type_dict.get(
                                 row.gap_type,
                                 row.gap_type.translate(tr),
@@ -87,6 +87,6 @@ def format_tpf(asm, file):
 @cache
 def uppercase_and_underscore_to_dash():
     return str.maketrans(
-        string.ascii_lowercase + '_',
-        string.ascii_uppercase + '-',
+        string.ascii_lowercase + "_",
+        string.ascii_uppercase + "-",
     )
