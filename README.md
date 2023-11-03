@@ -91,8 +91,9 @@ Some changes, such as adding a new command script tool to
 reinstalled:
 
 ```sh
-pip uninstall tola-assembly-utils
+pip uninstall tola-agp-tpf-utils
 pip install --editable .
+hash -r
 ```
 
 ## Running Tests

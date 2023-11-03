@@ -8,7 +8,6 @@ version = "1.0.0"
 readme = "README.md"
 requires-python = ">=3.8"
 dependencies = [
-    "black",
     "click",
     "pytest",
     "ruff",
@@ -16,6 +15,7 @@ dependencies = [
 ]
 
 [project.scripts]
+asm-format = "tola.assembly.scripts.asm_format:cli"
 
 [tool.setuptools.packages.find]
 where = ["src"]
