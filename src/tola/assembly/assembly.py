@@ -2,6 +2,7 @@ import io
 import re
 import textwrap
 
+from functools import cached_property
 
 class Assembly:
     def __init__(self, name, header=None, scaffolds=None):
@@ -44,6 +45,13 @@ class Assembly:
 
     def add_scaffold(self, scffld):
         self.scaffolds.append(scffld)
+
+    @cached_property
+    def bp_per_texel(self):
+        for txt in self.header:
+            if m := re.match(r"HiC MAP RESOLUTION: ([\d\.]+) bp/texel", txt):
+                return float(m.group(1))
+        return None
 
     @staticmethod
     def name_natural_key(obj):
