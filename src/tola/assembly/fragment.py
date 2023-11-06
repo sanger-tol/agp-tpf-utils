@@ -1,12 +1,12 @@
 class Fragment:
-    __slots__ = "_name", "_start", "_end", "_strand", "_meta"
+    __slots__ = "_name", "_start", "_end", "_strand", "_tags"
 
-    def __init__(self, name, start, end, strand, meta=None):
+    def __init__(self, name, start, end, strand, tags=()):
         self._name = str(name)
         self._start = int(start)
         self._end = int(end)
         self._strand = int(strand)
-        self._meta = meta
+        self._tags = tags
 
         if self.strand not in (0, 1, -1):
             msg = f"strand '{self.strand}' should be one of: 0, 1, -1"
@@ -33,8 +33,9 @@ class Fragment:
         return self._strand
 
     @property
-    def meta(self):
-        return self._meta
+    def tags(self):
+        """tuple of tags data, empty if there is none"""
+        return self._tags
 
     @property
     def length(self):
@@ -63,14 +64,14 @@ class Fragment:
 
     def __str__(self):
         return f"{self.name}:{self.start}-{self.end}({self.strand_str})" + (
-            f" {self.meta}" if self.meta else ""
+            (" " + " ".join(self.tags)) if self.tags else ""
         )
 
     def __repr__(self):
         return (
             f"{self.__class__.__name__}(name='{self.name}',"
             f" start={self.start}, end={self.end}, strand={self.strand}"
-            + (f", meta='{self.meta}')" if self.meta else ")")
+            + (f", tags={self.tags})" if self.tags else ")")
         )
 
     def overlaps(self, othr):

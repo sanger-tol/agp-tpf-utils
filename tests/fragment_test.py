@@ -79,7 +79,11 @@ def test_stringify():
     f1 = Fragment("chr1", 1, 20_000, 1)
     f2 = Fragment("chr1", 1, 20_000, -1)
     f3 = Fragment("chr1", 1, 20_000, 0)
+    f4 = Fragment("chr1", 1, 20_000, 1, ("Painted",))
+    f5 = Fragment("chr1", 1, 20_000, 1, ("Painted", "X"))
 
     assert str(f1) == "chr1:1-20000(+)"
     assert str(f2) == "chr1:1-20000(-)"
     assert str(f3) == "chr1:1-20000(.)"
+    assert str(f4) == "chr1:1-20000(+) Painted"
+    assert str(f5) == "chr1:1-20000(+) Painted X"

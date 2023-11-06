@@ -28,8 +28,9 @@ def parse_agp(file, name):
                 asm.add_header_line(h.group(1))
             continue
 
-        # Remove possible line endings and split on tabs
-        fields = line.rstrip("\r\n").split("\t")
+        # AGP from pretext has stray tab on end of line, but rstrip() will
+        # remove it.
+        fields = line.rstrip().split("\t")
 
         if fields[0] != scaffold_name:
             scaffold_name = fields[0]
@@ -50,8 +51,8 @@ def parse_agp(file, name):
                     start=fields[6],
                     end=fields[7],
                     strand=strand_dict[fields[8]],
-                    # Add the tenth field as meta if present
-                    meta=(fields[9] if len(fields) > 9 else None),
+                    # Tenth fields onwards added as tags metadata
+                    tags=tuple(fields[9:]),
                 ),
             )
 

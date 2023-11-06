@@ -39,7 +39,7 @@ def format_agp(asm, file):
                         STRAND_STR[row.strand],
                     ),
                 )
-                if m := row.meta:
+                if m := row.tags:
                     cols.append(m)
             file.write("\t".join(cols))
             file.write("\n")

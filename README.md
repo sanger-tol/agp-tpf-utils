@@ -23,9 +23,9 @@ contains 9 tab delimited columns. Of these columns:
 - **DNA Sequence**
     - **column 5** the "component_type" contains *W* in our assemblies,
         meaning a contig from Whole Genome Shotgun (WGS) sequencing.
-    - **column 10** is an extra "metadata" column not included in the AGP v2.1
-        specification. `Painted` in this column means that it has HiC data
-        matches.
+    - **columns 10 and greater** are extra tag metadata columns not included
+        in the AGP v2.1 specification. (See below for their possible
+        contents.)
 - **Gaps**
     - **column 5** the "component_type" contains `U` in our assemblies, for a
         gap of unknown length. (The other gap type `N` is for gaps of known
@@ -37,6 +37,26 @@ contains 9 tab delimited columns. Of these columns:
         scaffold.
     - **column 8** has `yes`, signifying that there is evidence of linkage
         between the sequence data on either side of the gap.
+
+#### Tags
+
+Single words appended in tab-delimted columns beyond column 9, they can contain:
+
+- `Contaminant`
+- `Haplotig` for haplotype-specific contigs.
+- Haplotypes:
+  - `Hap1`, `Hap2`…
+- `Painted` where fragment has HiC contacts.
+- `Unloc` are fragments attached to chromosomes but unlocalised within them.
+- Sex Chromosomes:
+  - `U`
+  - `V`
+  - `W`, or `W1`, `W2`…
+  - `X`, or `X1`, `X2`…
+  - `Y`, or `Y1`, `Y2`…
+  - `Z`, or `Z1`, `Z2`…
+- [B Chromosomes](https://en.wikipedia.org/wiki/B_chromosome):
+  - `B1`, `B2`, `B3`…
 
 ### TPF
 

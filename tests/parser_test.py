@@ -21,7 +21,7 @@ def test_parse_agp():
         Scaffold_1	21918060	24379376	5	W	scaffold_1	21770529	24231845	-	Painted
         Scaffold_2	1	3206646	1	W	scaffold_2	1	3206646	+	Painted
         Scaffold_2	3206647	3206746	2	U	100	scaffold	yes	proximity_ligation
-        Scaffold_2	3206747	3267412	3	W	scaffold_67	1	60666	+	Painted
+        Scaffold_2	3206747	3267412	3	W	scaffold_67	1	60666	+	Painted	X
         Scaffold_2	3267413	3267512	4	U	100	scaffold	yes	proximity_ligation
         Scaffold_2	3267513	28348686	5	W	scaffold_2	3206647	28287820	?	Painted
         """,
@@ -45,7 +45,7 @@ def test_parse_agp():
           Scaffold_2
                       1     3206646  scaffold_2:1-3206646(+) Painted
                 3206647     3206746  Gap:100 scaffold
-                3206747     3267412  scaffold_67:1-60666(+) Painted
+                3206747     3267412  scaffold_67:1-60666(+) Painted X
                 3267413     3267512  Gap:100 scaffold
                 3267513    28348686  scaffold_2:3206647-28287820(.) Painted
         """,

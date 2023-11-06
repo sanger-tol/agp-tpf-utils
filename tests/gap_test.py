@@ -10,15 +10,12 @@ def test_create():
 
 def test_bad_attributes():
     with pytest.raises(ValueError):
-        g1 = Gap("x", "Type-2")
-
-    with pytest.raises(ValueError):
-        g1 = Gap("x", "Type-2")
+        g1 = Gap("x", "scaffold")
 
 
 def test_stringify():
-    g1 = Gap(100, "Type-2")
-    g2 = Gap(200, "Type-2", "proximity_ligation")
+    g1 = Gap(100, "scaffold")
+    g2 = Gap(200, "scaffold")
 
-    assert str(g1) == "Gap:100 Type-2"
-    assert str(g2) == "Gap:200 Type-2 proximity_ligation"
+    assert str(g1) == "Gap:100 scaffold"
+    assert str(g2) == "Gap:200 scaffold"
