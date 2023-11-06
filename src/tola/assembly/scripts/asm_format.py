@@ -54,16 +54,19 @@ from tola.assembly.format import format_agp, format_tpf
       parsed assembly object's data structure.""",
 )
 @click.option(
-    "--name", "-n",
+    "--name",
+    "-n",
     "assembly_name",
-    help="""Name of the assembly. Defaults to the file name or 'stdin'"""
+    help="""Name of the assembly. Defaults to the file name or 'stdin'""",
 )
 @click.option(
-    "--check-overlap/--no-check-overlap",
+    "--qc-overlaps/--no-qc-overlaps",
     default=False,
-    help="Report any fragments within each assembly which overlap"
+    help="Report to STDERR any fragments within each assembly which overlap",
 )
-def cli(input_files, input_format, output_file, output_format, assembly_name, check_overlap):
+def cli(
+    input_files, input_format, output_file, output_format, assembly_name, qc_overlaps
+):
     if output_file:
         if not output_format:
             output_format = format_from_file_extn(output_file)
@@ -86,15 +89,33 @@ def cli(input_files, input_format, output_file, output_format, assembly_name, ch
             asm_name = assembly_name if assembly_name else pth.stem
 
             with pth.open("r") as in_fh:
-                process_fh(in_fh, in_fmt, asm_name, out_fh, output_format, check_overlap)
+                try:
+                    process_fh(
+                        in_fh,
+                        in_fmt,
+                        asm_name,
+                        out_fh,
+                        output_format,
+                        qc_overlaps,
+                    )
+                except Exception as e:
+                    msg = f"Error processing file '{pth}'"
+                    raise ValueError(msg) from e
     else:
         # Process STDIN
         in_fmt = input_format if input_format else "AGP"
         asm_name = assembly_name if assembly_name else "stdin"
-        process_fh(sys.stdin, in_fmt, asm_name, out_fh, output_format, check_overlap)
+        process_fh(
+            sys.stdin,
+            in_fmt,
+            asm_name,
+            out_fh,
+            output_format,
+            qc_overlaps,
+        )
 
 
-def process_fh(in_fh, in_fmt, asm_name, out_fh, out_fmt, check_overlap):
+def process_fh(in_fh, in_fmt, asm_name, out_fh, out_fmt, qc_overlaps):
     if in_fmt == "AGP":
         asm = parse_agp(in_fh, asm_name)
     elif in_fmt == "TPF":
@@ -103,9 +124,9 @@ def process_fh(in_fh, in_fmt, asm_name, out_fh, out_fmt, check_overlap):
         msg = f"Unknown input format: '{in_fmt}'"
         raise ValueError(msg)
 
-    if check_overlap:
+    if qc_overlaps:
         if pairs := asm.find_overlapping_fragments():
-            report_overlaps(pairs)
+            report_overlaps(asm_name, pairs)
 
     if out_fmt == "AGP":
         format_agp(asm, out_fh)
@@ -120,7 +141,8 @@ def process_fh(in_fh, in_fmt, asm_name, out_fh, out_fmt, check_overlap):
         raise ValueError(msg)
 
 
-def report_overlaps(pairs):
+def report_overlaps(asm_name, pairs):
+    click.echo(f"\nOverlaps detected in assembly '{asm_name}'", err=True)
     for pr in pairs:
         f1, s1 = pr[0]
         f2, s2 = pr[1]
