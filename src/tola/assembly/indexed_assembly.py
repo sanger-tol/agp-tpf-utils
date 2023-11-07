@@ -42,12 +42,6 @@ class IndexedAssembly(Assembly):
             msg = f"No such Scaffold '{name}' in Assembly '{self.name}'"
             raise ValueError(msg)
 
-    @staticmethod
-    def start_end_at_index(idx, i):
-        start = 1 if i == 0 else 1 + idx[i - 1]
-        end = idx[i]
-        return start, end
-
     def fetch_overlaps(self, fragment):
         scffld = self.scaffold_by_name(fragment.name)
         if not scffld.rows:

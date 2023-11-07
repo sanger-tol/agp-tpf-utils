@@ -118,7 +118,7 @@ def test_fetch_overlapping():
                 overlaps.append(row)
             offset += row.length
         if not overlaps:
-            assert None == asm.fetch_overlaps(bait)
+            assert asm.fetch_overlaps(bait) is None
         else:
             found = asm.fetch_overlaps(bait)
             print(Scaffold("found", found))

@@ -16,6 +16,7 @@ dependencies = [
 
 [project.scripts]
 asm-format = "tola.assembly.scripts.asm_format:cli"
+pretext-to-tpf = "tola.assembly.scripts.pretext_to_tpf:cli"
 
 [tool.setuptools.packages.find]
 where = ["src"]

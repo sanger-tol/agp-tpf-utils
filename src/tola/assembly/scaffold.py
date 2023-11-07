@@ -36,6 +36,13 @@ class Scaffold:
     def add_row(self, row):
         self.rows.append(row)
 
+    @property
+    def last_row_is_fragment(self):
+        if self.rows:
+            return isinstance(self.rows[-1], Fragment)
+        else:
+            return False
+
     def fragments(self):
         for row in self.rows:
             if isinstance(row, Fragment):

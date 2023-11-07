@@ -47,3 +47,7 @@ def test_iterators():
         (1, g1),
         (3, g2),
     ]
+
+    assert s1.last_row_is_fragment == True
+    s1.add_row(g1)
+    assert s1.last_row_is_fragment == False
