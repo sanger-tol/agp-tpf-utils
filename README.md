@@ -25,7 +25,7 @@ contains 9 tab delimited columns. Of these columns:
         meaning a contig from Whole Genome Shotgun (WGS) sequencing.
     - **columns 10 and greater** are extra tag metadata columns not included
         in the AGP v2.1 specification. (See below for their possible
-        contents.)
+        values.)
 - **Gaps**
     - **column 5** the "component_type" contains `U` in our assemblies, for a
         gap of unknown length. (The other gap type `N` is for gaps of known
@@ -40,7 +40,8 @@ contains 9 tab delimited columns. Of these columns:
 
 #### Tags
 
-Single words appended in tab-delimted columns beyond column 9, they can contain:
+Single words appended in tab-delimted columns beyond column 9, they can
+contain:
 
 - `Contaminant`
 - `Haplotig` for haplotype-specific contigs.

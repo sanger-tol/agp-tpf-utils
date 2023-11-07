@@ -19,8 +19,8 @@ def test_natural_sort():
             Scaffold(name="chr10"),
         ],
     )
-    a1.sort_scaffolds_by_name()
-    assert list(s.name for s in a1.scaffolds) == [
+    scfflds_sorted = a1.scaffolds_sorted_by_name()
+    assert list(s.name for s in scfflds_sorted) == [
         "chr1",
         "chr2",
         "chr10",

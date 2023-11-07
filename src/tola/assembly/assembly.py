@@ -59,8 +59,8 @@ class Assembly:
             int(x) if i % 2 else x for i, x in enumerate(re.split(r"(\d+)", obj.name))
         )
 
-    def sort_scaffolds_by_name(self):
-        self.scaffolds.sort(key=self.name_natural_key)
+    def scaffolds_sorted_by_name(self):
+        return sorted(self.scaffolds, key=self.name_natural_key)
 
     def find_overlapping_fragments(self):
         over_pairs = []
