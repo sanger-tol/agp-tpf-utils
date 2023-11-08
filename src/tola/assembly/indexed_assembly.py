@@ -1,4 +1,6 @@
 from tola.assembly.assembly import Assembly
+from tola.assembly.gap import Gap
+from tola.assembly.overlap_result import OverlapResult
 
 
 class IndexedAssembly(Assembly):
@@ -42,19 +44,25 @@ class IndexedAssembly(Assembly):
             msg = f"No such Scaffold '{name}' in Assembly '{self.name}'"
             raise ValueError(msg)
 
-    def fetch_overlaps(self, fragment):
-        scffld = self.scaffold_by_name(fragment.name)
+    def find_overlaps(self, bait):
+        """
+        Given a Fragment bait, returns an OverlapResult (a subclass of
+        Scaffold) with rows from the Scaffold within the IndexedAssembly
+        which overlap. Any leading or trailing Gaps in the overlapping rows
+        are removed.
+        """
+        scffld = self.scaffold_by_name(bait.name)
         if not scffld.rows:
             msg = f"Scaffold '{scffld.name}' is empty"
             raise ValueError(msg)
 
-        idx = self._scaffold_index.get(fragment.name)
+        idx = self._scaffold_index.get(bait.name)
         if not idx:
             msg = f"Scaffold '{scffld.name}' is not indexed."
             raise ValueError(msg)
 
-        bait_start = fragment.start
-        bait_end = fragment.end
+        bait_start = bait.start
+        bait_end = bait.end
 
         # Binary search: a = left; m = midpoint; z = right
         a = 0
@@ -91,4 +99,21 @@ class IndexedAssembly(Assembly):
                 break
             j_ovr = j
 
-        return scffld.rows[i_ovr : j_ovr + 1]
+        # Walk start and end pointers back to ignore Gaps on the ends
+        while isinstance(scffld.rows[i_ovr], Gap):
+            i_ovr += 1
+        while isinstance(scffld.rows[j_ovr], Gap):
+            j_ovr -= 1
+        if not i_ovr <= j_ovr:
+            return None
+
+        overlaps = scffld.rows[i_ovr : j_ovr + 1]
+        overlap_start = 1 if i_ovr == 0 else 1 + idx[i_ovr - 1]
+        overlap_end = idx[j_ovr]
+
+        return OverlapResult(
+            bait=bait,
+            start=overlap_start,
+            end=overlap_end,
+            rows=overlaps,
+        )

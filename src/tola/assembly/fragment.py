@@ -81,6 +81,17 @@ class Fragment:
             return True
         return False
 
+    def overlap_length(self, othr):
+        if self.name != othr.name:
+            return None
+
+        start = max(self.start, othr.start)
+        end = min(self.end, othr.end)
+        if end < start:
+            return None
+        else:
+            return end - start + 1
+
     def abuts(self, othr):
         if self.name != othr.name:
             return False

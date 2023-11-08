@@ -64,6 +64,13 @@ class Scaffold:
                 yield i, row
 
     def reverse(self):
-        self.rows = self.rows[::-1]
-        for i, frag in self.fragment_itr():
-            self.rows[i] = frag.reverse()
+        new = self.__class__(self.name)
+        new.rows = self.rows[::-1]
+        for i, frag in new.idx_fragments():
+            new.rows[i] = frag.reverse()
+        return new
+
+    def append_scaffold(self, othr, gap=None):
+        if gap and self.rows:
+            self.add_row(gap)
+        self.rows.extend(othr.rows)

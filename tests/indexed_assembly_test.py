@@ -45,15 +45,15 @@ def test_create():
 
     i3 = IndexedAssembly("empty scaffold", scaffolds=[Scaffold("no data")])
     with pytest.raises(ValueError, match=r"Scaffold 'no data' is empty"):
-        x = i3.fetch_overlaps(Fragment("no data", 1, 100, 1))
+        x = i3.find_overlaps(Fragment("no data", 1, 100, 1))
 
     # Do not set field directly in IndexedAssembly object
     i3._scaffold_dict["scaffold_1"] = s1
     with pytest.raises(ValueError, match=r"Scaffold 'scaffold_1' is not indexed"):
-        x = i3.fetch_overlaps(Fragment("scaffold_1", 1, 100, 1))
+        x = i3.find_overlaps(Fragment("scaffold_1", 1, 100, 1))
 
 
-def test_fetch_overlapping():
+def test_find_overlapping():
     """
     IndexedAssembly: rand_asmbly
 
@@ -98,13 +98,14 @@ def test_fetch_overlapping():
     """
     asm = example_assembly()
     bait_list = (
-        # First base of Scaffold:
-        Fragment("scaffold_1", 1, 1, 1),
-        # Last base of Scaffold:
-        Fragment("scaffold_1", 33334, 33334, 1),
-        # One base beyond last base of Scaffold:
-        Fragment("scaffold_1", 33335, 33335, 1),
+        Fragment("scaffold_1", 1, 1, 1),  # First base of Scaffold
+        Fragment("scaffold_1", 33334, 33334, 1),  # Last base of Scaffold
+        Fragment(
+            "scaffold_1", 33335, 33335, 1
+        ),  # One base beyond last base of Scaffold
+        Fragment("scaffold_2", 27595, 54418, 1),  # Gaps on either end of overlap
         Fragment("scaffold_2", 10328, 65404, 1),
+        Fragment("scaffold_3", 25078, 25277, 1),  # Only one gap
         Fragment("scaffold_3", 34376, 34376, 1),
     )
 
@@ -117,13 +118,21 @@ def test_fetch_overlapping():
             if asm_row.overlaps(bait):
                 overlaps.append(row)
             offset += row.length
+
+        # Remove leading and trailing Gaps
+        while overlaps and isinstance(overlaps[0], Gap):
+            overlaps.pop(0)
+        while overlaps and isinstance(overlaps[-1], Gap):
+            overlaps.pop(-1)
+
         if not overlaps:
-            assert asm.fetch_overlaps(bait) is None
+            assert asm.find_overlaps(bait) is None
         else:
-            found = asm.fetch_overlaps(bait)
-            print(Scaffold("found", found))
+            found = asm.find_overlaps(bait)
+            assert found is not None
+            print(found)
             print(Scaffold("correct answer", overlaps))
-            assert overlaps == asm.fetch_overlaps(bait)
+            assert overlaps == found.rows
 
     asm2 = IndexedAssembly(
         "single entry scaffold",
@@ -135,7 +144,7 @@ def test_fetch_overlapping():
         ],
     )
     print(asm2)
-    assert asm2.fetch_overlaps(bait_list[0]) == [bait_list[0]]
+    assert asm2.find_overlaps(bait_list[0]).rows == [bait_list[0]]
 
 
 def example_assembly():
@@ -223,5 +232,6 @@ def make_random_assembly(seed=None, scaffolds=3):
 
 
 if __name__ == "__main__":
-    asm1 = make_random_assembly(seed="Random assembly")
-    print(asm1)
+    # asm1 = make_random_assembly(seed="Random assembly")
+    # print(asm1)
+    test_find_overlapping()

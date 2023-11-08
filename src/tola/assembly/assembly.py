@@ -2,8 +2,6 @@ import io
 import re
 import textwrap
 
-from functools import cached_property
-
 class Assembly:
     def __init__(self, name, header=None, scaffolds=None):
         self.name = str(name)
@@ -46,7 +44,7 @@ class Assembly:
     def add_scaffold(self, scffld):
         self.scaffolds.append(scffld)
 
-    @cached_property
+    @property
     def bp_per_texel(self):
         for txt in self.header:
             if m := re.match(r"HiC MAP RESOLUTION: ([\d\.]+) bp/texel", txt):
