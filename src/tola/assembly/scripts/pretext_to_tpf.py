@@ -1,8 +1,10 @@
 import click
+import logging
 import pathlib
 import sys
 
 from tola.assembly.assembly import Assembly
+from tola.assembly.build_assembly import BuildAssembly
 from tola.assembly.gap import Gap
 from tola.assembly.indexed_assembly import IndexedAssembly
 from tola.assembly.format import format_agp, format_tpf
@@ -56,7 +58,23 @@ from tola.assembly.scripts.asm_format import format_from_file_extn
     show_default=True,
     help="Overwrite an existing output file",
 )
-def cli(assembly_file, pretext_file, output_file, clobber):
+@click.option(
+    "--log-level",
+    "-l",
+    type=click.Choice(
+        ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+        case_sensitive=False,
+    ),
+    default="WARNING",
+    show_default=True,
+    help="Diagnostic messages to show",
+)
+def cli(assembly_file, pretext_file, output_file, clobber, log_level):
+    logging.basicConfig(
+        level=getattr(logging, log_level),
+        format="%(message)s",  # Leaves message unchanged
+    )
+
     input_asm = IndexedAssembly.new_from_assembly(
         parse_assembly_file(assembly_file, "TPF")
     )
@@ -75,7 +93,11 @@ def cli(assembly_file, pretext_file, output_file, clobber):
         out_name = "stdout"
         out_fh = sys.stdout
 
-    out_asm = remap_with_input_assembly(out_name, prtxt_asm, input_asm)
+    build_asm = BuildAssembly(out_name, default_gap=Gap(200, "scaffold"))
+    build_asm.remap_to_input_assembly(prtxt_asm, input_asm)
+    build_asm.log_problem_scaffolds()
+
+    out_asm = build_asm.assembly_with_scaffolds_fused()
     if pairs := out_asm.find_overlapping_fragments():
         report_overlaps(pairs)
 
@@ -87,37 +109,11 @@ def cli(assembly_file, pretext_file, output_file, clobber):
         out_fh.write(str(out_asm))
 
 
-def remap_with_input_assembly(out_name, prtxt_asm, input_asm):
-    default_gap = Gap(200, "scaffold")
-    scffld_n = 0
-    out_asm = Assembly(out_name)
-    bp_per_texel = prtxt_asm.bp_per_texel
-    for prtxt_scffld in prtxt_asm.scaffolds:
-        scffld_n += 1
-        out_scffld = Scaffold(f"R{scffld_n}")
-        out_asm.add_scaffold(out_scffld)
-        for prtxt_frag in prtxt_scffld.fragments():
-            if found := input_asm.find_overlaps(prtxt_frag):
-                found.trim_large_overhangs(bp_per_texel)
-                click.echo(
-                    f"overhangs: {found.start_overhang:9d} {found.end_overhang:9d}"
-                    + f"  {prtxt_frag}",
-                    err=True,
-                )
-                # click.echo(found, err=True)
-
-                out_scffld.append_scaffold(found.to_scaffold(), default_gap)
-            else:
-                click.echo(f"No overaps found for: {prtxt_frag}", err=True)
-
-    return out_asm
-
-
 def report_overlaps(pairs):
     for pr in pairs:
         f1, s1 = pr[0]
         f2, s2 = pr[1]
-        click.echo(f"\nDuplicated component:\n{s1.name} {f1}\n{s2.name} {f2}", err=True)
+        logging.warn(f"\nDuplicated component:\n{s1.name} {f1}\n{s2.name} {f2}")
 
 
 def parse_assembly_file(path, default_format=None):

@@ -71,6 +71,7 @@ class Scaffold:
         return new
 
     def append_scaffold(self, othr, gap=None):
+        # Add a gap if it is not the first row
         if gap and self.rows:
             self.add_row(gap)
         self.rows.extend(othr.rows)

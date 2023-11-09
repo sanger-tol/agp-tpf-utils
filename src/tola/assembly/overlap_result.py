@@ -17,11 +17,12 @@ class OverlapResult(Scaffold):
         txt = io.StringIO()
         txt.write(
             f"bait: {self.bait}\nlength: {self.length}\n"
+            f"difference: {self.length - self.bait.length}\n"
             f"overhang: {self.start_overhang}\n"
         )
         p = self.start - 1
         for row in self.rows:
-            txt.write(f"  {p + 1 :11d} {p + row.length :11d}  {row}\n")
+            txt.write(f" {p + 1 :11d} {p + row.length :11d} {row.length:9d}  {row}\n")
             p += row.length
         txt.write(f"overhang: {self.end_overhang}\n")
         return txt.getvalue()
@@ -45,27 +46,63 @@ class OverlapResult(Scaffold):
         else:
             return scffld
 
-    def remove_leading_and_trailing_gaps(self):
+    def has_problem_overhang(self, bp_per_texel):
+        if (
+            abs(self.start_overhang) > bp_per_texel
+            or abs(self.end_overhang) > bp_per_texel
+        ):
+            return True
+        else:
+            return False
+
+    def discard_start(self):
+        discard = self.rows.pop(0)
+        self.start += discard.length
         while self.rows and isinstance(self.rows[0], Gap):
-            discard = self.rows.pop(0)
-            self.start += discard.length
+            gap = self.rows.pop(0)
+            self.start += gap.length
+
+    def discard_end(self):
+        discard = self.rows.pop(-1)
+        self.end -= discard.length
         while self.rows and isinstance(self.rows[-1], Gap):
-            discard = self.rows.pop(-1)
-            self.end -= discard.length
+            gap = self.rows.pop(-1)
+            self.end -= gap.length
+
+    def error_increase_if_start_removed(self):
+        length_if_rem = self.length
+        length_if_rem -= self.rows[0].length
+        for r in self.rows[1:]:
+            if isinstance(r, Gap):
+                length_if_rem -= r.length
+            else:
+                break
+        return self._error_delta(length_if_rem)
+
+    def error_increase_if_end_removed(self):
+        length_if_rem = self.length
+        length_if_rem -= self.rows[-1].length
+        for r in self.rows[-2::-1]:  # Step backwards from second to last element
+            if isinstance(r, Gap):
+                length_if_rem -= r.length
+            else:
+                break
+        return self._error_delta(length_if_rem)
+
+    def _error_delta(self, length_if_rem):
+        before = abs(self.length - self.bait.length)
+        after = abs(length_if_rem - self.bait.length)
+        return after - before  # More negative is better
 
     def trim_large_overhangs(self, err_length):
         if (
             self.start_overhang > err_length
             and self.bait.overlap_length(self.rows[0]) < err_length
         ):
-            discard = self.rows.pop(0)
-            self.start += discard.length
+            self.discard_start()
 
         if (
             self.end_overhang > err_length
             and self.bait.overlap_length(self.rows[-1]) < err_length
         ):
-            discard = self.rows.pop(-1)
-            self.end -= discard.length
-
-        self.remove_leading_and_trailing_gaps()
+            self.discard_end()
