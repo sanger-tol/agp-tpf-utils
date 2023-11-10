@@ -42,7 +42,7 @@ class Fragment:
         return self._end - self._start + 1
 
     @property
-    def frag_tuple(self):
+    def key_tuple(self):
         return self._name, self._start, self._end
 
     STRAND_STR = ".", "+", "-"
