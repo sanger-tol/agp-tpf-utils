@@ -1,10 +1,19 @@
 import logging
 
 from tola.assembly.assembly import Assembly
+from tola.assembly.gap import Gap
+from tola.assembly.overlap_result import OverlapResult
 from tola.assembly.scaffold import Scaffold
 
 
 class BuildAssembly(Assembly):
+    """
+    Class for building an Assembly from a Pretext Assembly and the
+    IndexedAssembly source. Stores a list of mutable OverlapResults rather
+    than Scaffolds, which are fused into Scaffolds by name and returned in a
+    new Assembly object from the assembly_with_scaffolds_fused() method.
+    """
+
     def __init__(
         self, name, header=None, scaffolds=None, default_gap=None, bp_per_texel=None
     ):
@@ -27,10 +36,11 @@ class BuildAssembly(Assembly):
             self.bp_per_texel = prtxt_asm.bp_per_texel
         self.find_assembly_overlaps(prtxt_asm, input_asm)
         self.discard_overhanging_fragments(self.bp_per_texel)
+        self.add_missing_scaffolds_from_input(input_asm)
 
     def find_assembly_overlaps(self, prtxt_asm, input_asm):
         scffld_n = 0
-        bp_per_texel = prtxt_asm.bp_per_texel
+        bp_per_texel = self.bp_per_texel
         for prtxt_scffld in prtxt_asm.scaffolds:
             scffld_n += 1
             scffld_name = f"R{scffld_n}"
@@ -69,7 +79,7 @@ class BuildAssembly(Assembly):
                 else:
                     err = scffld.length_error_in_texels(bp_per_texel)
                     logging.info(
-                        f"overhangs: {scffld.start_overhang:9d} {scffld.end_overhang:9d}"
+                        f"{scffld.start_overhang:9d} {scffld.end_overhang:9d}"
                         + f"  {err:6.2f} pixels  {scffld.bait}",
                     )
 
@@ -78,6 +88,29 @@ class BuildAssembly(Assembly):
         for ff in scffld.fragments():
             ff_tuple = ff.key_tuple
             store[ff_tuple] = 1 + store.get(ff_tuple, 0)
+
+    def add_missing_scaffolds_from_input(self, input_asm):
+        found_frags = self.found_fragments
+        for scffld in input_asm.scaffolds:
+            new_scffld = None
+            last_added_i = None
+            for i, frag in scffld.idx_fragments():
+                if not found_frags.get(frag.key_tuple):
+                    if not new_scffld:
+                        new_scffld = Scaffold(scffld.name)
+                    if last_added_i is not None and not last_added_i == i - 1:
+                        # Last added row was not the previous row in the
+                        # scaffold
+                        prev_row = scffld.rows[i - 1]
+                        if isinstance(prev_row, Gap):
+                            new_scffld.add_row(prev_row)
+                        else:
+                            new_scffld.add_row(self.default_gap)
+                    new_scffld.add_row(frag)
+                    last_added_i = i
+
+            if new_scffld:
+                self.add_scaffold(new_scffld)
 
     def assembly_with_scaffolds_fused(self):
         new_asm = Assembly(self.name)
@@ -89,19 +122,28 @@ class BuildAssembly(Assembly):
         gap = self.default_gap
         new_scffld = None
         current_name = ""
-        for ovr_res in self.scaffolds:
-            if ovr_res.name != current_name:
+        for scffld in self.scaffolds:
+            if scffld.name != current_name:
                 if new_scffld:
                     yield new_scffld
-                current_name = ovr_res.name
-                new_scffld = Scaffold(ovr_res.name)
-            new_scffld.append_scaffold(ovr_res.to_scaffold(), gap)
+                current_name = scffld.name
+                new_scffld = Scaffold(scffld.name)
+            if isinstance(scffld, OverlapResult):
+                new_scffld.append_scaffold(scffld.to_scaffold(), gap)
+            else:
+                new_scffld.append_scaffold(scffld)
 
         if new_scffld:
             yield new_scffld
 
 
 class OverhangPremise:
+    """
+    Stores a "what-if" for removal of a terminal (start or end) Fragment. Used
+    to decide which OverlapResult to remove a Fragment from, where the
+    Fragment is present in more than one OverlapResult.
+    """
+
     __slots__ = "scaffold", "position", "error_increase"
 
     def __init__(self, scaffold, position):
@@ -135,6 +177,14 @@ class OverhangPremise:
 
 
 class OverhangResolver:
+    """
+    Takes in a list of "problem" OverlapResults, i.e. with start or end
+    overhangs longer than the expected bp_per_pixel inaccuracy. Performs one
+    round of comparing OverlapResult pairs, choosing which of the two to
+    remove the shared, terminal Frament from. Returns a count of the number
+    of fixes applied, and a list of the remaining "problem" OverlapResults.
+    """
+
     def __init__(self, bp_per_texel, scaffolds=None):
         self.bp_per_texel = bp_per_texel
         self.premises_by_fragment_key = {}
