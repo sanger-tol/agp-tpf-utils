@@ -5,15 +5,28 @@ from tola.assembly.scaffold import Scaffold
 
 
 class BuildAssembly(Assembly):
-    def __init__(self, name, header=None, scaffolds=None, default_gap=None):
+    def __init__(
+        self, name, header=None, scaffolds=None, default_gap=None, bp_per_texel=None
+    ):
         super().__init__(name, header, scaffolds)
         self.default_gap = default_gap
+        self.bp_per_texel = bp_per_texel
         self.problem_scaffolds = []
         self.found_fragments = {}
 
+    @property
+    def bp_per_texel(self):
+        return self._bp_per_texel
+
+    @bp_per_texel.setter
+    def bp_per_texel(self, bp_per_texel):
+        self._bp_per_texel = bp_per_texel
+
     def remap_to_input_assembly(self, prtxt_asm, input_asm):
+        if not self.bp_per_texel:
+            self.bp_per_texel = prtxt_asm.bp_per_texel
         self.find_assembly_overlaps(prtxt_asm, input_asm)
-        self.discard_overhanging_fragments(prtxt_asm.bp_per_texel)
+        self.discard_overhanging_fragments(self.bp_per_texel)
 
     def find_assembly_overlaps(self, prtxt_asm, input_asm):
         scffld_n = 0
@@ -47,15 +60,17 @@ class BuildAssembly(Assembly):
         self.problem_scaffolds = problems
 
     def log_problem_scaffolds(self):
+        bp_per_texel = self.bp_per_texel
         if probs := self.problem_scaffolds:
             for scffld in probs:
                 # Log problem regions
                 if logging.root.level < logging.INFO:
                     logging.debug(scffld)
                 else:
+                    err = scffld.length_error_in_texels(bp_per_texel)
                     logging.info(
                         f"overhangs: {scffld.start_overhang:9d} {scffld.end_overhang:9d}"
-                        + f"  {scffld.bait}",
+                        + f"  {err:6.2f} pixels  {scffld.bait}",
                     )
 
     def store_fragments_found(self, scffld):
@@ -146,7 +161,7 @@ class OverhangResolver:
         still_a_problem = {}
         for prem_list in self.premises_by_fragment_key.values():
             # Can only discard overhanging fragments present in more than one
-            # Scaffold:
+            # Scaffold, or we would be removing sequence from the assembly.
             if len(prem_list) > 1:
                 best_to_worst = sorted(prem_list, key=lambda x: x.error_increase)
                 bst = best_to_worst[0]
@@ -157,8 +172,8 @@ class OverhangResolver:
             for premise in prem_list:
                 scffld = premise.scaffold
                 if scffld.has_problem_overhang(self.bp_per_texel):
-                    # Store Scaffolds keyed on bait so that we don't store
-                    # Scaffolds with two bad overhangs twice.
+                    # Store Scaffolds keyed on bait so that Scaffolds with two
+                    # bad overhangs are not stored twice.
                     still_a_problem[scffld.bait.key_tuple] = scffld
 
         return fixes_made, list(still_a_problem.values())

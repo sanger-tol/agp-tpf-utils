@@ -94,6 +94,9 @@ class OverlapResult(Scaffold):
         after = abs(length_if_rem - self.bait.length)
         return after - before  # More negative is better
 
+    def length_error_in_texels(self, bp_per_texel):
+        return abs(self.length - self.bait.length) / bp_per_texel
+
     def trim_large_overhangs(self, err_length):
         if (
             self.start_overhang > err_length
