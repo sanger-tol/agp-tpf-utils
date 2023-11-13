@@ -7,10 +7,11 @@ def test_create():
         rows=[
             Fragment("scaffold_12", 1, 20_000, 1),
             Gap(200, "Type-2"),
-            Fragment("scaffold_12", 23_200, 140_112, -1),
+            Fragment("scaffold_12", 23_201, 140_112, -1),
         ],
     )
     assert isinstance(s1, Scaffold)
+    assert s1.length == 137_112
 
 
 def test_iterators():
