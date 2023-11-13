@@ -1,4 +1,3 @@
-
 from tola.assembly.scaffold import Fragment, Gap, Scaffold
 
 
@@ -51,3 +50,14 @@ def test_iterators():
     assert s1.last_row_is_fragment == True
     s1.add_row(g1)
     assert s1.last_row_is_fragment == False
+
+
+def test_reverse():
+    f1 = Fragment("scaffold_12", 1, 20_000, 1)
+    f2 = Fragment("scaffold_12", 23_200, 140_112, -1)
+    f3 = Fragment("scaffold_12", 140_113, 244_491, 1)
+    g1 = Gap(100, "Type-2")
+    s1 = Scaffold(name="rev. test", rows=[f1, g1, f2, f3])
+    s1r = s1.reverse()
+    assert [x.strand for x in s1r.fragments()] == [-1, 1, -1]
+    assert s1r.rows[2] is g1
