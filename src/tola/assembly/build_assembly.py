@@ -201,10 +201,7 @@ class OverhangResolver:
     def add_overhang_premise(self, scffld, position):
         premise = OverhangPremise(scffld, position)
         fk = premise.fragment.key_tuple
-        frag_premises = self.premises_by_fragment_key.get(fk)
-        if not frag_premises:
-            self.premises_by_fragment_key[fk] = frag_premises = []
-        frag_premises.append(premise)
+        self.premises_by_fragment_key.setdefault(fk, []).append(premise)
 
     def make_fixes(self):
         fixes_made = 0
