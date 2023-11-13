@@ -17,19 +17,10 @@ class BuildAssembly(Assembly):
     def __init__(
         self, name, header=None, scaffolds=None, default_gap=None, bp_per_texel=None
     ):
-        super().__init__(name, header, scaffolds)
+        super().__init__(name, header, scaffolds, bp_per_texel)
         self.default_gap = default_gap
-        self.bp_per_texel = bp_per_texel
         self.problem_scaffolds = []
         self.found_fragments = {}
-
-    @property
-    def bp_per_texel(self):
-        return self._bp_per_texel
-
-    @bp_per_texel.setter
-    def bp_per_texel(self, bp_per_texel):
-        self._bp_per_texel = bp_per_texel
 
     def remap_to_input_assembly(self, prtxt_asm, input_asm):
         if not self.bp_per_texel:

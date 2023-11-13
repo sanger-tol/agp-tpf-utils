@@ -86,6 +86,8 @@ def test_str_and_repr():
         )""",
     )
     assert a1.bp_per_texel == 8666.611572
+    a1.bp_per_texel = 2000
+    assert a1.bp_per_texel == 2000
 
     # Add Scaffolds and test str() and repr() again
     a1.add_scaffold(s1)

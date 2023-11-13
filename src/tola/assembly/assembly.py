@@ -2,11 +2,14 @@ import io
 import re
 import textwrap
 
+
 class Assembly:
-    def __init__(self, name, header=None, scaffolds=None):
+    def __init__(self, name, header=None, scaffolds=None, bp_per_texel=None):
         self.name = str(name)
         self.scaffolds = scaffolds if scaffolds else []
         self.header = header if header else []
+        if bp_per_texel:
+            self.bp_per_texel = bp_per_texel
 
     def __repr__(self):
         txt = io.StringIO()
@@ -46,10 +49,19 @@ class Assembly:
 
     @property
     def bp_per_texel(self):
-        for txt in self.header:
-            if m := re.match(r"HiC MAP RESOLUTION: ([\d\.]+) bp/texel", txt):
-                return float(m.group(1))
-        return None
+        if hasattr(self, "_bp_per_texel"):
+            return self._bp_per_texel
+        else:
+            bpt = None
+            for txt in self.header:
+                if m := re.match(r"HiC MAP RESOLUTION: ([\d\.]+) bp/texel", txt):
+                    bpt = float(m.group(1))
+            self._bp_per_texel = bpt
+            return bpt
+
+    @bp_per_texel.setter
+    def bp_per_texel(self, bp_per_texel):
+        self._bp_per_texel = bp_per_texel
 
     @staticmethod
     def name_natural_key(obj):

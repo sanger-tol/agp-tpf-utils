@@ -130,6 +130,7 @@ def test_find_overlapping():
         else:
             found = asm.find_overlaps(bait)
             assert found is not None
+            assert found.bait is bait
             print(found)
             print(Scaffold("correct answer", overlaps))
             assert overlaps == found.rows
