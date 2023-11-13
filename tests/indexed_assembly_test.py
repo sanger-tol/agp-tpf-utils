@@ -55,48 +55,48 @@ def test_create():
 
 def test_find_overlapping():
     """
-    IndexedAssembly: rand_asmbly
+    IndexedAssembly: Random assembly
 
       scaffold_1
-                  1        9613  fragment_0:1-9613(-)
-               9614       15573  fragment_1:1-5960(+)
+                  1        9613  s1_fragment_0:1-9613(-)
+               9614       15573  s1_fragment_1:1-5960(+)
               15574       15773  Gap:200 scaffold
-              15774       19116  fragment_2:1-3343(-)
-              19117       20030  fragment_3:1-914(-)
-              20031       28894  fragment_4:1-8864(+)
-              28895       30532  fragment_5:1-1638(+)
-              30533       33334  fragment_6:1-2802(-)
+              15774       19116  s1_fragment_2:1-3343(-)
+              19117       20030  s1_fragment_3:1-914(-)
+              20031       28894  s1_fragment_4:1-8864(+)
+              28895       30532  s1_fragment_5:1-1638(+)
+              30533       33334  s1_fragment_6:1-2802(-)
 
       scaffold_2
-                  1         547  fragment_0:1-547(+)
-                548       10328  fragment_1:1-9781(-)
+                  1         547  s2_fragment_0:1-547(+)
+                548       10328  s2_fragment_1:1-9781(-)
               10329       10528  Gap:200 scaffold
-              10529       20000  fragment_2:1-9472(+)
+              10529       20000  s2_fragment_2:1-9472(+)
               20001       20200  Gap:200 scaffold
-              20201       27594  fragment_3:1-7394(+)
+              20201       27594  s2_fragment_3:1-7394(+)
               27595       27794  Gap:200 scaffold
-              27795       33962  fragment_4:1-6168(+)
-              33963       37543  fragment_5:1-3581(+)
-              37544       42112  fragment_6:1-4569(+)
-              42113       50048  fragment_7:1-7936(+)
-              50049       54218  fragment_8:1-4170(-)
+              27795       33962  s2_fragment_4:1-6168(+)
+              33963       37543  s2_fragment_5:1-3581(+)
+              37544       42112  s2_fragment_6:1-4569(+)
+              42113       50048  s2_fragment_7:1-7936(+)
+              50049       54218  s2_fragment_8:1-4170(-)
               54219       54418  Gap:200 scaffold
-              54419       57333  fragment_9:1-2915(+)
-              57334       65403  fragment_10:1-8070(-)
-              65404       68622  fragment_11:1-3219(+)
-              68623       76647  fragment_12:1-8025(+)
+              54419       57333  s2_fragment_9:1-2915(+)
+              57334       65403  s2_fragment_10:1-8070(-)
+              65404       68622  s2_fragment_11:1-3219(+)
+              68623       76647  s2_fragment_12:1-8025(+)
 
       scaffold_3
-                  1        9394  fragment_0:1-9394(+)
-               9395       12385  fragment_1:1-2991(+)
-              12386       16518  fragment_2:1-4133(+)
-              16519       25077  fragment_3:1-8559(+)
+                  1        9394  s3_fragment_0:1-9394(+)
+               9395       12385  s3_fragment_1:1-2991(+)
+              12386       16518  s3_fragment_2:1-4133(+)
+              16519       25077  s3_fragment_3:1-8559(+)
               25078       25277  Gap:200 scaffold
-              25278       31645  fragment_4:1-6368(+)
+              25278       31645  s3_fragment_4:1-6368(+)
               31646       31845  Gap:200 scaffold
-              31846       34376  fragment_5:1-2531(+)
+              31846       34376  s3_fragment_5:1-2531(+)
     """
-    asm = example_assembly()
+    asm = make_random_assembly(seed="Random assembly")
     bait_list = (
         Fragment("scaffold_1", 1, 1, 1),  # First base of Scaffold
         Fragment("scaffold_1", 33334, 33334, 1),  # Last base of Scaffold
@@ -148,83 +148,30 @@ def test_find_overlapping():
     assert asm2.find_overlaps(bait_list[0]).rows == [bait_list[0]]
 
 
-def example_assembly():
-    """
-    Made from make_random_assembly(seed="Random assembly")
-    """
-    return IndexedAssembly(
-        name="rand_assmbly",
-        scaffolds=[
-            Scaffold(
-                name="scaffold_1",
-                rows=[
-                    Fragment(name="fragment_0", start=1, end=9613, strand=-1),
-                    Fragment(name="fragment_1", start=1, end=5960, strand=1),
-                    Gap(length=200, gap_type="scaffold"),
-                    Fragment(name="fragment_2", start=1, end=3343, strand=-1),
-                    Fragment(name="fragment_3", start=1, end=914, strand=-1),
-                    Fragment(name="fragment_4", start=1, end=8864, strand=1),
-                    Fragment(name="fragment_5", start=1, end=1638, strand=1),
-                    Fragment(name="fragment_6", start=1, end=2802, strand=-1),
-                ],
-            ),
-            Scaffold(
-                name="scaffold_2",
-                rows=[
-                    Fragment(name="fragment_0", start=1, end=547, strand=1),
-                    Fragment(name="fragment_1", start=1, end=9781, strand=-1),
-                    Gap(length=200, gap_type="scaffold"),
-                    Fragment(name="fragment_2", start=1, end=9472, strand=1),
-                    Gap(length=200, gap_type="scaffold"),
-                    Fragment(name="fragment_3", start=1, end=7394, strand=1),
-                    Gap(length=200, gap_type="scaffold"),
-                    Fragment(name="fragment_4", start=1, end=6168, strand=1),
-                    Fragment(name="fragment_5", start=1, end=3581, strand=1),
-                    Fragment(name="fragment_6", start=1, end=4569, strand=1),
-                    Fragment(name="fragment_7", start=1, end=7936, strand=1),
-                    Fragment(name="fragment_8", start=1, end=4170, strand=-1),
-                    Gap(length=200, gap_type="scaffold"),
-                    Fragment(name="fragment_9", start=1, end=2915, strand=1),
-                    Fragment(name="fragment_10", start=1, end=8070, strand=-1),
-                    Fragment(name="fragment_11", start=1, end=3219, strand=1),
-                    Fragment(name="fragment_12", start=1, end=8025, strand=1),
-                ],
-            ),
-            Scaffold(
-                name="scaffold_3",
-                rows=[
-                    Fragment(name="fragment_0", start=1, end=9394, strand=1),
-                    Fragment(name="fragment_1", start=1, end=2991, strand=1),
-                    Fragment(name="fragment_2", start=1, end=4133, strand=1),
-                    Fragment(name="fragment_3", start=1, end=8559, strand=1),
-                    Gap(length=200, gap_type="scaffold"),
-                    Fragment(name="fragment_4", start=1, end=6368, strand=1),
-                    Gap(length=200, gap_type="scaffold"),
-                    Fragment(name="fragment_5", start=1, end=2531, strand=1),
-                ],
-            ),
-        ],
-    )
-
-
-def make_random_assembly(seed=None, scaffolds=3):
+def make_random_assembly(
+    seed=None,
+    scaffolds=3,
+    rows=20,
+    fragment_length=10_000,
+    gap_threshold=0.4,
+):
     if seed:
         random.seed(seed)
-    a1 = IndexedAssembly("rand_asmbly")
+    a1 = IndexedAssembly(seed if seed else "rand_asmbly")
     g1 = Gap(200, "scaffold")
     for sn in range(1, scaffolds + 1):
         s = Scaffold(f"scaffold_{sn}")
-        for rn in range(random.randint(1, 20)):
+        for rn in range(random.randint(1, rows)):
             # Maybe add a Gap, but not on the first row
-            if rn != 0 and random.random() < 0.4:
+            if rn != 0 and random.random() <= gap_threshold:
                 s.add_row(g1)
 
             # Add a Fragment
             s.add_row(
                 Fragment(
-                    f"fragment_{rn}",
+                    f"s{sn}_fragment_{rn}",
                     1,
-                    random.randint(1, 10_000),
+                    random.randint(1, fragment_length),
                     1 if random.random() < 0.8 else -1,
                 )
             )
@@ -233,6 +180,5 @@ def make_random_assembly(seed=None, scaffolds=3):
 
 
 if __name__ == "__main__":
-    # asm1 = make_random_assembly(seed="Random assembly")
-    # print(asm1)
-    test_find_overlapping()
+    asm1 = make_random_assembly(seed="Random assembly")
+    print(asm1)

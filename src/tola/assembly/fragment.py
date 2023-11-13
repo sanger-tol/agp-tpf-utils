@@ -13,7 +13,7 @@ class Fragment:
             raise ValueError(msg)
 
         if self.start > self.end:
-            msg = f"start '{self.start}' must be <= end 'self.end'"
+            msg = f"start '{self.start}' must be <= end '{self.end}'"
             raise ValueError(msg)
 
     @property
