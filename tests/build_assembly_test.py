@@ -1,3 +1,4 @@
+import math
 import random
 import sys
 
@@ -36,12 +37,36 @@ def test_shuffled_assembly(seed="Shuffled assembly"):
         rows=100,
         fragment_length=100_000,
     )
-    # print(ia1)
 
+    m1, m2 = shuffle_and_remap_assembly(ia1, f"seed='{seed}'")
+    assert str(m1) == str(m2)
+
+
+def shuffle_and_remap_assembly(asm, name):
+    p1 = shuffled_assembly(asm, name)
+    # print(p1)
+    ba1 = BuildAssembly(name, default_gap=Gap(200, "scaffold"))
+    ba1.remap_to_input_assembly(p1, asm)
+    m1 = ba1.assembly_with_scaffolds_fused()
+    # print(m1)
+
+    p2 = fuzz_coordinates(p1)
+    ba2 = BuildAssembly(name, default_gap=Gap(200, "scaffold"))
+    ba2.remap_to_input_assembly(p2, asm)
+    m2 = ba2.assembly_with_scaffolds_fused()
+    ba2.log_multi_scaffolds()
+    # print(m2)
+
+    ### Are short contigs never lost?
+
+    return m1, m2
+
+
+def shuffled_assembly(asm, name):
     # Make a list of baits from random length chunks of rows
     baits = []
     max_chunk = 10
-    for scffld in ia1.scaffolds:
+    for scffld in asm.scaffolds:
         i = 0
         p = 0
         while i < len(scffld.rows):
@@ -57,66 +82,63 @@ def test_shuffled_assembly(seed="Shuffled assembly"):
             p = end
     random.shuffle(baits)
 
-    p1 = Assembly(f"Edited {seed}")
-    p1.bp_per_texel = 1
+    ptxt = Assembly(name)
+    ptxt.bp_per_texel = 1
     sn = 0
     while len(baits):
         sn += 1
         scffld = Scaffold(f"RL_{sn}")
-        p1.add_scaffold(scffld)
+        ptxt.add_scaffold(scffld)
         j = random.randint(1, 4 * max_chunk)
         scffld.rows = baits[0:j]
         del baits[0:j]
-
-    ba1 = BuildAssembly(f"Build {seed}", default_gap=Gap(200, "scaffold"))
-    ba1.remap_to_input_assembly(p1, ia1)
-    assert len(ba1.problem_scaffolds) == 0
-    m1 = ba1.assembly_with_scaffolds_fused()
-    # print(m1)
-
-    p2 = fuzz_coordinates(p1, 1000)
-    ba2 = BuildAssembly(ba1.name, default_gap=Gap(200, "scaffold"))
-    ba2.remap_to_input_assembly(p2, ia1)
-    m2 = ba2.assembly_with_scaffolds_fused()
-    ba2.log_problem_scaffolds()
-    if pairs := m2.find_overlapping_fragments():
-        report_overlaps(pairs)
-    # print(m2)
-
-    assert str(m1) == str(m2)
+    return ptxt
 
 
-def report_overlaps(pairs):
-    for pr in pairs:
-        f1, s1 = pr[0]
-        f2, s2 = pr[1]
-        print(f"\nDuplicated component:\n{s1.name} {f1.length:6d} {f1}\n{s2.name} {f2.length:6d} {f2}")
-
-
-def fuzz_coordinates(asm, bp_per_texel):
+def fuzz_coordinates(asm):
+    assembly_length = sum(x.length for x in asm.scaffolds)
+    bp_per_texel = assembly_length / 2**15
+    print(f"Assembly = {assembly_length} bp == {bp_per_texel} bp per texel")
     new = Assembly(asm.name)
     new.bp_per_texel = bp_per_texel
-    fuzz = bp_per_texel
     for scffld in asm.scaffolds:
         new_scffld = Scaffold(scffld.name)
         new.add_scaffold(new_scffld)
-        prev_fuzz = random.randint(-fuzz, fuzz)
         for row in scffld.rows:
             if isinstance(row, Gap):
                 new_scffld.add_row(row)
             else:
-                new_fuzz = random.randint(-fuzz, fuzz)
-                start = row.start + prev_fuzz
-                if start < 1:
-                    start = 1
-                end = row.end + new_fuzz
-                if end < 1:
-                    end = 1
-                if start > end:
-                    start, end = end, start
+                start = row.start
+                end = row.end
+
+                # Simulate edit of long fragments when Pretext is zoomed out
+                screen_res = row.length / 1000
+                if screen_res > bp_per_texel:
+                    start = 1 + round_down(start, screen_res)
+                    end = round_down(end, screen_res)
+
+                start = 1 + round_down(start, bp_per_texel)
+                end = round_down(end, bp_per_texel)
                 new_scffld.add_row(Fragment(row.name, start, end, row.strand))
-                prev_fuzz = new_fuzz
+
+    # if pairs := new.find_overlapping_fragments():
+    #     msg = (
+    #         f"Fuzzing ({bp_per_texel:.2f}) caused overlapping fragments:\n"
+    #         + "\n".join(
+    #             (
+    #                 f"\nOverlap: {p[0][0].overlap_length(p[1][0])}\n"
+    #                 f"{p[0][1].name} {p[0][0]}\n{p[1][1].name} {p[1][0]}"
+    #             )
+    #             for p in pairs
+    #         )
+    #     )
+    #     raise Exception(msg)
     return new
+
+
+def round_down(x, float_res):
+    res = int(float_res)
+    return int(res * math.floor(x / res))
 
 
 def make_random_assembly(
@@ -138,11 +160,13 @@ def make_random_assembly(
                 s.add_row(g1)
                 p += g1.length
 
+            end_offset = max(999, random.randint(1, fragment_length))
+
             # Add a Fragment
             f = Fragment(
                 s.name,
                 p + 1,
-                p + random.randint(fragment_length // 50, fragment_length),
+                p + end_offset,
                 1 if random.random() < 0.8 else -1,
             )
             s.add_row(f)
@@ -153,6 +177,16 @@ def make_random_assembly(
 
 if __name__ == "__main__":
     # test_shuffled_assembly()
-    random.seed()
-    rndm = random.randint(0, sys.maxsize)
-    test_shuffled_assembly(rndm)
+    while True:
+        # Seed 8808117548524440979 fails
+        random.seed()
+        rndm = random.randint(0, sys.maxsize)
+        asm = make_random_assembly(
+            seed=rndm,
+            scaffolds=1,
+            fragment_length=100_000_000
+        )
+        m1, m2 = shuffle_and_remap_assembly(asm, f"seed='{rndm}'")
+        if str(m1) != str(m2):
+            print(m2)
+            break

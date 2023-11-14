@@ -19,14 +19,14 @@ class BuildAssembly(Assembly):
     ):
         super().__init__(name, header, scaffolds, bp_per_texel)
         self.default_gap = default_gap
-        self.problem_scaffolds = []
         self.found_fragments = {}
+        self.fragments_found_more_than_once = {}
 
     def remap_to_input_assembly(self, prtxt_asm, input_asm):
         if not self.bp_per_texel:
             self.bp_per_texel = prtxt_asm.bp_per_texel
         self.find_assembly_overlaps(prtxt_asm, input_asm)
-        self.discard_overhanging_fragments(self.bp_per_texel)
+        self.discard_overhanging_fragments()
         self.add_missing_scaffolds_from_input(input_asm)
 
     def find_assembly_overlaps(self, prtxt_asm, input_asm):
@@ -41,44 +41,60 @@ class BuildAssembly(Assembly):
                     self.add_scaffold(found)
                     found.trim_large_overhangs(bp_per_texel)
                     self.store_fragments_found(found)
-
-                    if found.has_problem_overhang(bp_per_texel):
-                        self.problem_scaffolds.append(found)
                 else:
                     logging.warn(f"No overlaps found for: {prtxt_frag}")
 
-    def discard_overhanging_fragments(self, bp_per_texel):
-        problems = self.problem_scaffolds
-        while prob_count := len(problems):
-            ovr_resolver = OverhangResolver(bp_per_texel, problems)
-            fix_count, problems = ovr_resolver.make_fixes()
-            logging.debug(
-                f"Discarded {fix_count} overhanging fragments"
-                f" in {prob_count} problem scaffolds"
-            )
-            if not fix_count:
-                break
-        self.problem_scaffolds = problems
+    def discard_overhanging_fragments(self):
+        multi = self.fragments_found_more_than_once
 
-    def log_problem_scaffolds(self):
-        bp_per_texel = self.bp_per_texel
-        if probs := self.problem_scaffolds:
-            for scffld in probs:
-                # Log problem regions
-                if logging.root.level < logging.INFO:
-                    logging.debug(scffld)
-                else:
-                    err = scffld.length_error_in_texels(bp_per_texel)
-                    logging.info(
+        while multi:
+            ovr_resolver = OverhangResolver()
+            for fnd in multi.values():
+                for scffld in fnd.scaffolds:
+                    ovr_resolver.add_overhang_premise(fnd.fragment, scffld)
+            fixes_made = ovr_resolver.make_fixes()
+            if fixes_made:
+                for premise in fixes_made:
+                    # Remove the Scaffold we fixed
+                    fk = premise.fragment.key_tuple
+                    if fxd := multi.get(fk):
+                        fxd.remove_scaffold(premise.scaffold)
+                        if fxd.scaffold_count <= 1:
+                            # Fragment is no longer in more than one Scaffold,
+                            # so remove it from fragments_found_more_than_once
+                            del multi[fk]
+            else:
+                break
+
+    def log_multi_scaffolds(self):
+        multi = self.fragments_found_more_than_once
+
+        for fnd in multi.values():
+            ff = fnd.fragment
+            logging.warn(
+                f"\nFragment {ff} ({ff.length}) found in:\n"
+                + "\n".join(
+                    (
                         f"{scffld.start_overhang:9d} {scffld.end_overhang:9d}"
-                        + f"  {err:6.2f} pixels  {scffld.bait}",
+                        + f"  {scffld.bait} ({scffld.bait.length})"
                     )
+                    for scffld in fnd.scaffolds
+                )
+            )
 
     def store_fragments_found(self, scffld):
         store = self.found_fragments
+        multi = self.fragments_found_more_than_once
         for ff in scffld.fragments():
             ff_tuple = ff.key_tuple
-            store[ff_tuple] = 1 + store.get(ff_tuple, 0)
+            if fnd := store.get(ff_tuple):
+                # Already have it, so record that we've found it more than
+                # once
+                multi[ff_tuple] = fnd
+            else:
+                fnd = FoundFragment(ff)
+                store[ff_tuple] = fnd
+            fnd.add_scaffold(scffld)
 
     def add_missing_scaffolds_from_input(self, input_asm):
         found_frags = self.found_fragments
@@ -128,6 +144,27 @@ class BuildAssembly(Assembly):
             yield new_scffld
 
 
+class FoundFragment:
+    """
+    Little object to store fragments found and the list of Scaffolds it was
+    found in.
+    """
+    __slots__ = "fragment", "scaffolds"
+
+    def __init__(self, fragment):
+        self.fragment = fragment
+        self.scaffolds = []
+
+    @property
+    def scaffold_count(self):
+        return len(self.scaffolds)
+
+    def add_scaffold(self, scaffold):
+        self.scaffolds.append(scaffold)
+
+    def remove_scaffold(self, scaffold):
+        self.scaffolds.remove(scaffold)
+
 class OverhangPremise:
     """
     Stores a "what-if" for removal of a terminal (start or end) Fragment. Used
@@ -135,10 +172,11 @@ class OverhangPremise:
     Fragment is present in more than one OverlapResult.
     """
 
-    __slots__ = "scaffold", "position", "error_increase"
+    __slots__ = "scaffold", "fragment", "position", "error_increase"
 
-    def __init__(self, scaffold, position):
+    def __init__(self, scaffold, fragment, position):
         self.scaffold = scaffold
+        self.fragment = fragment
         if position == 1:
             self.error_increase = scaffold.error_increase_if_start_removed()
         elif position == -1:
@@ -147,10 +185,6 @@ class OverhangPremise:
             msg = f"position must be '1' (start) or '-1' (end) not '{position}'"
             raise ValueError(msg)
         self.position = position
-
-    @property
-    def fragment(self):
-        return self.scaffold.rows[0 if self.position == 1 else -1]
 
     @property
     def improves(self):
@@ -169,49 +203,37 @@ class OverhangPremise:
 
 class OverhangResolver:
     """
-    Takes in a list of "problem" OverlapResults, i.e. with start or end
-    overhangs longer than the expected bp_per_pixel inaccuracy. Performs one
-    round of comparing OverlapResult pairs, choosing which of the two to
-    remove the shared, terminal Frament from. Returns a count of the number
-    of fixes applied, and a list of the remaining "problem" OverlapResults.
+    Takes in a list of "problem" OverlapResults which share a Fragments.
+    Performs one round of comparing OverlapResult pairs, choosing which of
+    the two to remove the shared, terminal Fragment from. Returns a list of
+    the OverlapPremises which were applied.
     """
 
-    def __init__(self, bp_per_texel, scaffolds=None):
-        self.bp_per_texel = bp_per_texel
+    def __init__(self):
         self.premises_by_fragment_key = {}
-        if scaffolds:
-            self.add_scaffolds(scaffolds)
 
-    def add_scaffolds(self, scaffolds):
-        for scffld in scaffolds:
-            if scffld.start_overhang > self.bp_per_texel:
-                self.add_overhang_premise(scffld, 1)
-            if scffld.end_overhang > self.bp_per_texel:
-                self.add_overhang_premise(scffld, -1)
+    def add_overhang_premise(self, fragment, scffld):
+        if scffld.rows[0] is fragment:
+            premise = OverhangPremise(scffld, fragment, 1)
+        elif scffld.rows[-1] is fragment:
+            premise = OverhangPremise(scffld, fragment, -1)
+        else:
+            return
 
-    def add_overhang_premise(self, scffld, position):
-        premise = OverhangPremise(scffld, position)
-        fk = premise.fragment.key_tuple
+        fk = fragment.key_tuple
         self.premises_by_fragment_key.setdefault(fk, []).append(premise)
 
     def make_fixes(self):
-        fixes_made = 0
-        still_a_problem = {}
+        fixes_made = []
         for prem_list in self.premises_by_fragment_key.values():
             # Can only discard overhanging fragments present in more than one
             # Scaffold, or we would be removing sequence from the assembly.
+            best_to_worst = sorted(prem_list, key=lambda x: x.error_increase)
             if len(prem_list) > 1:
-                best_to_worst = sorted(prem_list, key=lambda x: x.error_increase)
                 bst = best_to_worst[0]
                 nxt = best_to_worst[1]
                 if bst.improves and nxt.makes_worse:
                     bst.apply()  # Remove the overhanging fragment
-                    fixes_made += 1
-            for premise in prem_list:
-                scffld = premise.scaffold
-                if scffld.has_problem_overhang(self.bp_per_texel):
-                    # Store Scaffolds keyed on bait so that Scaffolds with two
-                    # bad overhangs are not stored twice.
-                    still_a_problem[scffld.bait.key_tuple] = scffld
+                    fixes_made.append(bst)
 
-        return fixes_made, list(still_a_problem.values())
+        return fixes_made
