@@ -203,7 +203,7 @@ class OverhangPremise:
 
 class OverhangResolver:
     """
-    Takes in a list of "problem" OverlapResults which share a Fragments.
+    Takes in a list of "problem" OverlapResults which share a Fragment.
     Performs one round of comparing OverlapResult pairs, choosing which of
     the two to remove the shared, terminal Fragment from. Returns a list of
     the OverlapPremises which were applied.

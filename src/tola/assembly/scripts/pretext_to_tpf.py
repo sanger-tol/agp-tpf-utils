@@ -98,8 +98,8 @@ def cli(assembly_file, pretext_file, output_file, clobber, log_level):
     build_asm.log_multi_scaffolds()
 
     out_asm = build_asm.assembly_with_scaffolds_fused()
-    if pairs := out_asm.find_overlapping_fragments():
-        report_overlaps(pairs)
+    # if pairs := out_asm.find_overlapping_fragments():
+    #     report_overlaps(pairs)
 
     if out_fmt == "TPF":
         format_tpf(out_asm, out_fh)

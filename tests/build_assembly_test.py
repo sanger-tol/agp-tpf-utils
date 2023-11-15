@@ -38,7 +38,7 @@ def test_shuffled_assembly(seed="Shuffled assembly"):
         fragment_length=100_000,
     )
 
-    m1, m2 = shuffle_and_remap_assembly(ia1, f"seed='{seed}'")
+    m1, p2, m2 = shuffle_and_remap_assembly(ia1, f"seed={seed!r}")
     assert str(m1) == str(m2)
 
 
@@ -54,12 +54,13 @@ def shuffle_and_remap_assembly(asm, name):
     ba2 = BuildAssembly(name, default_gap=Gap(200, "scaffold"))
     ba2.remap_to_input_assembly(p2, asm)
     m2 = ba2.assembly_with_scaffolds_fused()
+    print(ba2)
     ba2.log_multi_scaffolds()
     # print(m2)
 
     ### Are short contigs never lost?
 
-    return m1, m2
+    return m1, p2, m2
 
 
 def shuffled_assembly(asm, name):
@@ -98,7 +99,7 @@ def shuffled_assembly(asm, name):
 def fuzz_coordinates(asm):
     assembly_length = sum(x.length for x in asm.scaffolds)
     bp_per_texel = assembly_length / 2**15
-    print(f"Assembly = {assembly_length} bp == {bp_per_texel} bp per texel")
+    print(f"Assembly '{asm.name}' = {assembly_length} bp == {bp_per_texel} bp per texel")
     new = Assembly(asm.name)
     new.bp_per_texel = bp_per_texel
     for scffld in asm.scaffolds:
@@ -113,9 +114,9 @@ def fuzz_coordinates(asm):
 
                 # Simulate edit of long fragments when Pretext is zoomed out
                 screen_res = row.length / 1000
-                if screen_res > bp_per_texel:
-                    start = 1 + round_down(start, screen_res)
-                    end = round_down(end, screen_res)
+                # if screen_res > bp_per_texel:
+                #     start = 1 + round_down(start, screen_res)
+                #     end = round_down(end, screen_res)
 
                 start = 1 + round_down(start, bp_per_texel)
                 end = round_down(end, bp_per_texel)
@@ -176,17 +177,44 @@ def make_random_assembly(
 
 
 if __name__ == "__main__":
-    # test_shuffled_assembly()
-    while True:
-        # Seed 8808117548524440979 fails
-        random.seed()
-        rndm = random.randint(0, sys.maxsize)
+    test_shuffled_assembly()
+
+    if True:
+        # rndm = 8808117548524440979
+        rndm = 7850684667499316592
         asm = make_random_assembly(
             seed=rndm,
             scaffolds=1,
-            fragment_length=100_000_000
+            fragment_length=100_000_000,
         )
-        m1, m2 = shuffle_and_remap_assembly(asm, f"seed='{rndm}'")
+        m1, p2, m2 = shuffle_and_remap_assembly(asm, f"seed={rndm!r}")
         if str(m1) != str(m2):
-            print(m2)
-            break
+            print(
+                m1,
+                "Fuzzed:",
+                p2,
+                "From fuzzed:",
+                m2,
+                sep="\n",
+            )
+
+    else:
+        while True:
+            random.seed()
+            rndm = random.randint(0, sys.maxsize)
+            asm = make_random_assembly(
+                seed=rndm,
+                scaffolds=1,
+                fragment_length=100_000_000,
+            )
+            m1, p2, m2 = shuffle_and_remap_assembly(asm, f"seed={rndm!r}")
+            if str(m1) != str(m2):
+                print(
+                    m1,
+                    "Fuzzed:",
+                    p2,
+                    "From fuzzed:",
+                    m2,
+                    sep="\n",
+                )
+                break

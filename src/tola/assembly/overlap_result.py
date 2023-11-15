@@ -13,18 +13,41 @@ class OverlapResult(Scaffold):
         self.start = start
         self.end = end
 
+    def __repr__(self):
+        scffld_repr = super().__repr__()
+        rows_start = "    rows=[\n"
+        return scffld_repr.replace(
+            rows_start,
+            (
+                f"    bait={self.bait!r},\n"
+                + f"    start={self.start},\n"
+                + f"    end={self.end},\n"
+                + rows_start
+            ),
+            1,
+        )
+
     def __str__(self):
+        """
+        String representation of OverlapResult object useful during
+        development.
+        """
         txt = io.StringIO()
         txt.write(
-            f"bait: {self.bait}\nlength: {self.length}\n"
-            f"difference: {self.length - self.bait.length}\n"
-            f"overhang: {self.start_overhang}\n"
+            f"{self.name}\n"
+            f"  length: {self.length:14_d}\n"
+            f"  bait:   {self.bait.length:14_d}  {self.bait}\n"
+            f"  diff:   {self.length - self.bait.length:14_d}\n"
+            f"  overhang: {self.start_overhang:_d}\n"
         )
         p = self.start - 1
         for row in self.rows:
-            txt.write(f" {p + 1 :11d} {p + row.length :11d} {row.length:9d}  {row}\n")
+            txt.write(
+                f"    {p + 1 :14_d} {p + row.length :14_d}"
+                f" {row.length:11_d}  {row}\n"
+            )
             p += row.length
-        txt.write(f"overhang: {self.end_overhang}\n")
+        txt.write(f"  overhang: {self.end_overhang:_d}")
         return txt.getvalue()
 
     @property
@@ -39,21 +62,50 @@ class OverlapResult(Scaffold):
     def end_overhang(self):
         return self.end - self.bait.end
 
+    @property
+    def start_row_bait_overlap(self):
+        start = max(self.bait.start, self.start)
+        end = min(
+            self.bait.end,
+            self.start + self.rows[0].length - 1,  # end of first row
+        )
+
+        if end < start:
+            return 0
+        else:
+            return end - start + 1
+
+    @property
+    def end_row_bait_overlap(self):
+        start = max(
+            self.bait.start,
+            self.end - self.rows[-1].length + 1,  # start of last row
+        )
+        end = min(self.bait.end, self.end)
+
+        if end < start:
+            return 0
+        else:
+            return end - start + 1
+
+    def reverse(self):
+        """
+        Not implemented - no use case (yet)
+        """
+        raise NotImplementedError
+
+    def append_scaffold(self):
+        """
+        Not implemented - no use case (yet)
+        """
+        raise NotImplementedError
+
     def to_scaffold(self):
         scffld = Scaffold(self.name, self.rows)
         if self.bait.strand == -1:
             return scffld.reverse()
         else:
             return scffld
-
-    def has_problem_overhang(self, bp_per_texel):
-        if (
-            abs(self.start_overhang) > bp_per_texel
-            or abs(self.end_overhang) > bp_per_texel
-        ):
-            return True
-        else:
-            return False
 
     def discard_start(self):
         discard = self.rows.pop(0)
@@ -100,12 +152,9 @@ class OverlapResult(Scaffold):
     def trim_large_overhangs(self, err_length):
         if (
             self.start_overhang > err_length
-            and self.bait.overlap_length(self.rows[0]) < err_length
+            and self.start_row_bait_overlap < err_length
         ):
             self.discard_start()
 
-        if (
-            self.end_overhang > err_length
-            and self.bait.overlap_length(self.rows[-1]) < err_length
-        ):
+        if self.end_overhang > err_length and self.end_row_bait_overlap < err_length:
             self.discard_end()

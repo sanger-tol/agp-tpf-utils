@@ -27,10 +27,8 @@ class Scaffold:
     def __str__(self):
         txt = io.StringIO()
         txt.write(f"{self.name}\n")
-        p = 0
         for row in self.rows:
-            txt.write(f"  {p + 1 :11d} {p + row.length :11d}  {row}\n")
-            p += row.length
+            txt.write(f"  {row.length:14_d}  {row}\n")
         return txt.getvalue()
 
     def add_row(self, row):

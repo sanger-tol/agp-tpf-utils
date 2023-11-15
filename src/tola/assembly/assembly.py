@@ -39,6 +39,7 @@ class Assembly:
         for scffld in self.scaffolds:
             txt.write("\n")
             txt.write(textwrap.indent(str(scffld), "  "))
+
         return txt.getvalue()
 
     def add_header_line(self, txt):

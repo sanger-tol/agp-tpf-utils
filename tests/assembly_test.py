@@ -99,16 +99,16 @@ def test_str_and_repr():
           # HiC MAP RESOLUTION: 8666.611572 bp/texel
 
           chr1
-                      1       20000  scaffold_12:1-20000(+)
-                  20001       20100  Gap:100 Type-2
-                  20101      137013  scaffold_12:23200-140112(-)
-                 137014      137213  Gap:200 Type-2
-                 137214      241592  scaffold_12:140113-244491(+) Painted
-                 241593      485824  scaffold_3:1-244232(+)
+                    20_000  scaffold_12:1-20000(+)
+                       100  Gap:100 Type-2
+                   116_913  scaffold_12:23200-140112(-)
+                       200  Gap:200 Type-2
+                   104_379  scaffold_12:140113-244491(+) Painted
+                   244_232  scaffold_3:1-244232(+)
 
           chrX
-                      1 11033114755  scaffold_7:1-11033114755(+) Painted X
-            11033114756 11033114765  scaffold_7:11049229141-11049229150(+) X Painted
+            11_033_114_755  scaffold_7:1-11033114755(+) Painted X
+                        10  scaffold_7:11049229141-11049229150(+) X Painted
         """,
     )
     assert repr(a1) == strip_leading_spaces(
@@ -145,4 +145,4 @@ def test_str_and_repr():
 
 if __name__ == "__main__":
     test_natural_sort()
-    test_str()
+    test_str_and_repr()

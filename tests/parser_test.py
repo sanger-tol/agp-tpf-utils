@@ -36,18 +36,18 @@ def test_parse_agp():
           # HiC MAP RESOLUTION: 8666.611572 bp/texel
 
           Scaffold_1
-                      1    21337197  scaffold_1:1-21337197(+) Painted
-               21337198    21337297  Gap:100 scaffold
-               21337298    21917959  scaffold_21:1-580662(+)
-               21917960    21918059  Gap:100 scaffold
-               21918060    24379376  scaffold_1:21770529-24231845(-) Painted
+                21_337_197  scaffold_1:1-21337197(+) Painted
+                       100  Gap:100 scaffold
+                   580_662  scaffold_21:1-580662(+)
+                       100  Gap:100 scaffold
+                 2_461_317  scaffold_1:21770529-24231845(-) Painted
 
           Scaffold_2
-                      1     3206646  scaffold_2:1-3206646(+) Painted
-                3206647     3206746  Gap:100 scaffold
-                3206747     3267412  scaffold_67:1-60666(+) Painted X
-                3267413     3267512  Gap:100 scaffold
-                3267513    28348686  scaffold_2:3206647-28287820(.) Painted
+                 3_206_646  scaffold_2:1-3206646(+) Painted
+                       100  Gap:100 scaffold
+                    60_666  scaffold_67:1-60666(+) Painted X
+                       100  Gap:100 scaffold
+                25_081_174  scaffold_2:3206647-28287820(.) Painted
         """,
     )
 
@@ -95,24 +95,24 @@ def test_parse_tpf():
         Assembly: aaBbbCccc1
 
           scaffold_1
-                      1       93024  scaffold_1:1-93024(+)
-                  93025       93224  Gap:200 scaffold
-                  93225      232397  scaffold_1:93225-232397(+)
-                 232398      232597  Gap:200 scaffold
-                 232598      261916  scaffold_1:232598-261916(+)
-                 261917      262116  Gap:200 scaffold
-                 262117      906261  scaffold_1:262117-906261(+)
+                    93_024  scaffold_1:1-93024(+)
+                       200  Gap:200 scaffold
+                   139_173  scaffold_1:93225-232397(+)
+                       200  Gap:200 scaffold
+                    29_319  scaffold_1:232598-261916(+)
+                       200  Gap:200 scaffold
+                   644_145  scaffold_1:262117-906261(+)
 
           scaffold_2
-                      1      166725  scaffold_2:1-166725(+)
-                 166726      166925  Gap:200 scaffold
-                 166926      629099  scaffold_2:166926-629099(-)
-                 629100      629299  Gap:200 scaffold
-                 629300      719848  scaffold_2:629300-719848(-)
-                 719849      720048  Gap:200 scaffold
-                 720049     3207246  scaffold_2:720049-3207246(+)
-                3207247     3207446  Gap:200 short_arm
-                3207447     3240707  scaffold_2:3207447-3240707(+)
+                   166_725  scaffold_2:1-166725(+)
+                       200  Gap:200 scaffold
+                   462_174  scaffold_2:166926-629099(-)
+                       200  Gap:200 scaffold
+                    90_549  scaffold_2:629300-719848(-)
+                       200  Gap:200 scaffold
+                 2_487_198  scaffold_2:720049-3207246(+)
+                       200  Gap:200 short_arm
+                    33_261  scaffold_2:3207447-3240707(+)
         """,
     )
 
