@@ -95,11 +95,8 @@ def cli(assembly_file, pretext_file, output_file, clobber, log_level):
 
     build_asm = BuildAssembly(out_name, default_gap=Gap(200, "scaffold"))
     build_asm.remap_to_input_assembly(prtxt_asm, input_asm)
-    build_asm.log_multi_scaffolds()
 
     out_asm = build_asm.assembly_with_scaffolds_fused()
-    # if pairs := out_asm.find_overlapping_fragments():
-    #     report_overlaps(pairs)
 
     if out_fmt == "TPF":
         format_tpf(out_asm, out_fh)

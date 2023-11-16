@@ -70,11 +70,45 @@ class BuildAssembly(Assembly):
     def cut_remaining_overhangs(self):
         multi = self.fragments_found_more_than_once
 
-        for fnd in multi.values():
+        for fk, fnd in multi.items():
             self.cut_fragments(fnd)
 
+        self.fragments_found_more_than_once = {}
+
     def cut_fragments(self, fnd):
-        pass
+        # Make a new Fragment for each region of the fragment found in each
+        # OverlapResult
+        frgmnt = fnd.fragment
+        sub_fragments = [s.trim_fragment(frgmnt) for s in fnd.scaffolds]
+
+        # Check that sub fragments abut each other and do not overlap
+        abut_count = 0
+        overlap_count = 0
+        lgth = len(sub_fragments)
+        for i in range(0, lgth):
+            frag_a = sub_fragments[i]
+            for j in range(i + 1, lgth):
+                frag_b = sub_fragments[j]
+                if frag_a.abuts(frag_b):
+                    abut_count += 1
+                if frag_a.overlaps(frag_b):
+                    overlap_count += 1
+        msg = ""
+        if not overlap_count == 0:
+            msg += (
+                f"Expecting 0 but got {overlap_count} overlaps in new sub fragments\n"
+            )
+        if not abut_count == lgth - 1:
+            msg += f"Execting {lgth -1} abutting sub fragments but got {abut_count}\n"
+        if msg:
+            msg += "\n" + "\n\n".join(str(s) for s in fnd.scaffolds)
+            raise ValueError(msg)
+
+        sub_fragments.sort(key=lambda f: f.start)
+        logging.warn(
+            f"Fragment {frgmnt} cut into:\n"
+            + "".join(f"  {sub}\n" for sub in sub_fragments)
+        )
 
     def log_multi_scaffolds(self):
         multi = self.fragments_found_more_than_once
@@ -159,6 +193,7 @@ class FoundFragment:
     Little object to store fragments found and the list of Scaffolds it was
     found in.
     """
+
     __slots__ = "fragment", "scaffolds"
 
     def __init__(self, fragment):
@@ -174,6 +209,7 @@ class FoundFragment:
 
     def remove_scaffold(self, scaffold):
         self.scaffolds.remove(scaffold)
+
 
 class OverhangPremise:
     """

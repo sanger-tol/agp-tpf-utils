@@ -1,6 +1,7 @@
 import io
 
 from tola.assembly.gap import Gap
+from tola.assembly.fragment import Fragment
 from tola.assembly.scaffold import Scaffold
 
 
@@ -93,6 +94,30 @@ class OverlapResult(Scaffold):
             return 0
         else:
             return end - start + 1
+
+    def trim_fragment(self, trim: Fragment):
+        start = trim.start
+        end = trim.end
+
+        # Fragment may be at both start and end
+        idx = None
+        if self.rows[0] is trim:
+            # fragment is at the start
+            idx = 0
+            start += self.start_overhang
+            self.start += self.start_overhang
+        if self.rows[-1] is trim:
+            # fragment is at the end
+            idx = -1
+            end -= self.end_overhang
+            self.end -= self.end_overhang
+        if idx is None:
+            msg = f"Fragment {trim} not found in:\n{self}"
+            raise ValueError(msg)
+
+        new = Fragment(trim.name, start, end, trim.strand, self.bait.tags)
+        self.rows[idx] = new
+        return new
 
     def reverse(self):
         """
