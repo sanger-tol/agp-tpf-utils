@@ -1,7 +1,17 @@
+from functools import cache
+
+
 class Gap:
     __slots__ = "_length", "_gap_type"
 
-    def __init__(self, length, gap_type, tags=()):
+    @cache
+    def __new__(cls, *args, **kwargs):
+        """
+        Only create one instance of each Gap (length + type) combination
+        """
+        return super(Gap, cls).__new__(cls)
+
+    def __init__(self, length, gap_type):
         self._length = int(length)
         self._gap_type = str(gap_type)
 

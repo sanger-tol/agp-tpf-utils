@@ -27,6 +27,7 @@ class BuildAssembly(Assembly):
             self.bp_per_texel = prtxt_asm.bp_per_texel
         self.find_assembly_overlaps(prtxt_asm, input_asm)
         self.discard_overhanging_fragments()
+        self.cut_remaining_overhangs()
         self.add_missing_scaffolds_from_input(input_asm)
 
     def find_assembly_overlaps(self, prtxt_asm, input_asm):
@@ -65,6 +66,15 @@ class BuildAssembly(Assembly):
                             del multi[fk]
             else:
                 break
+
+    def cut_remaining_overhangs(self):
+        multi = self.fragments_found_more_than_once
+
+        for fnd in multi.values():
+            self.cut_fragments(fnd)
+
+    def cut_fragments(self, fnd):
+        pass
 
     def log_multi_scaffolds(self):
         multi = self.fragments_found_more_than_once

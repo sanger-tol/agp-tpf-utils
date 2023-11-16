@@ -17,8 +17,9 @@ Parses and reformats AGP and TPF files, converting into either format.
 
 ### [`pretext-to-tpf`](src/tola/assembly/scripts/pretext_to_tpf.py)
 
-Takes the AGP file output by Pretext and creates TPF files containing
-precise coordinates of the curated assembly.
+Takes the AGP file output by
+[PretextView](https://github.com/wtsi-hpag/PretextView)
+and creates TPF files containing precise coordinates of the curated assembly.
 
 ## File Formats
 
