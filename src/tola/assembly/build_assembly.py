@@ -1,4 +1,5 @@
 import logging
+import re
 
 from tola.assembly.assembly import Assembly
 from tola.assembly.gap import Gap
@@ -31,14 +32,13 @@ class BuildAssembly(Assembly):
         self.add_missing_scaffolds_from_input(input_asm)
 
     def find_assembly_overlaps(self, prtxt_asm, input_asm):
-        scffld_n = 0
+        chr_namer = ChrNamer()
         bp_per_texel = self.bp_per_texel
         for prtxt_scffld in prtxt_asm.scaffolds:
-            scffld_n += 1
-            scffld_name = f"R{scffld_n}"
+            chr_namer.make_chr_name(prtxt_scffld)
             for prtxt_frag in prtxt_scffld.fragments():
                 if found := input_asm.find_overlaps(prtxt_frag):
-                    found.name = scffld_name
+                    found.name = chr_namer.scaffold_name(prtxt_frag)
                     self.add_scaffold(found)
                     found.trim_large_overhangs(bp_per_texel)
                     self.store_fragments_found(found)
@@ -76,12 +76,25 @@ class BuildAssembly(Assembly):
         self.fragments_found_more_than_once = {}
 
     def cut_fragments(self, fnd):
-        # Make a new Fragment for each region of the fragment found in each
-        # OverlapResult
+        """
+        Make a new Fragment for each region of the fragment found in each
+        OverlapResult
+        """
         frgmnt = fnd.fragment
         sub_fragments = [s.trim_fragment(frgmnt) for s in fnd.scaffolds]
 
-        # Check that sub fragments abut each other and do not overlap
+        self.qc_sub_fragments(fnd, sub_fragments)
+
+        sub_fragments.sort(key=lambda f: f.start)
+        logging.warn(
+            f"Fragment {frgmnt} cut into:\n"
+            + "".join(f"  {sub}\n" for sub in sub_fragments)
+        )
+
+    def qc_sub_fragments(self, fnd, sub_fragments):
+        """
+        Check that sub fragments abut each other and do not overlap
+        """
         abut_count = 0
         overlap_count = 0
         lgth = len(sub_fragments)
@@ -103,12 +116,6 @@ class BuildAssembly(Assembly):
         if msg:
             msg += "\n" + "\n\n".join(str(s) for s in fnd.scaffolds)
             raise ValueError(msg)
-
-        sub_fragments.sort(key=lambda f: f.start)
-        logging.warn(
-            f"Fragment {frgmnt} cut into:\n"
-            + "".join(f"  {sub}\n" for sub in sub_fragments)
-        )
 
     def log_multi_scaffolds(self):
         multi = self.fragments_found_more_than_once
@@ -186,6 +193,64 @@ class BuildAssembly(Assembly):
 
         if new_scffld:
             yield new_scffld
+
+
+class ChrNamer:
+    """
+    Tracks naming of chr_nameomosomes as Pretext assembly is processed
+    """
+
+    def __init__(self):
+        self.chr_name_n = 0
+        self.current_chr_name = None
+        self.haplotig_n = 0
+        self.current_haplotig = None
+        self.unloc_n = 0
+
+    def make_chr_name(self, scaffold):
+        tag_set = scaffold.fragment_tags()
+
+        chr_name = None
+        is_painted = False
+        for tags in tag_set:
+            for t in tags:
+                if t == "Painted":
+                    is_painted = True
+                elif m := re.match(r"[A-Z]\d*$", t):
+                    cn = m.group(0)
+                    if chr_name and cn != chr_name:
+                        msg = (
+                            f"Found more than one chr_name name: '{chr_name}' and '{cn}'"
+                            f" in scaffold:\n\n{scaffold}"
+                        )
+                        raise ValueError(msg)
+                    chr_name = cn
+        if not chr_name:
+            if is_painted:
+                self.chr_name_n += 1
+                chr_name = f"RL_{self.chr_name_n}"
+            else:
+                chr_name = scaffold.rows[0].name
+
+        self.current_chr_name = chr_name
+        self.unloc_n = 0
+
+        return chr_name
+
+    def unloc_name(self):
+        self.unloc_n += 1
+        return f"{self.current_chr_name}_unloc_{self.unloc_n}"
+
+    def haplotig_name(self):
+        self.haplotig_n += 1
+        return f"H_{self.haplotig_n}"
+
+    def scaffold_name(self, fragment):
+        if "Unloc" in fragment.tags:
+            return self.unloc_name()
+        if "Haplotig" in fragment.tags:
+            return self.haplotig_name()
+        return self.current_chr_name
 
 
 class FoundFragment:

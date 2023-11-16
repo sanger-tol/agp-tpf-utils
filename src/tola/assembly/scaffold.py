@@ -68,6 +68,13 @@ class Scaffold:
             if isinstance(row, Gap):
                 yield i, row
 
+    def fragment_tags(self):
+        tag_set = set()
+        for frag in self.fragments():
+            if t := frag.tags:
+                tag_set.add(t)
+        return tag_set
+
     def reverse(self):
         new = self.__class__(self.name)
         new.rows = self.rows[::-1]
