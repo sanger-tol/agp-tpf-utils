@@ -23,6 +23,31 @@ def example_overlap_result():
     )
 
 
+def test_simple():
+    o1 = OverlapResult(
+        name="Simple example",
+        bait=Fragment(name="small_bait", start=3, end=20, strand=-1),
+        start=1,
+        end=13,
+        rows=[
+            Fragment(name="tiny_a", start=1, end=5, strand=1),
+            Gap(length=2, gap_type="scaffold"),
+            Fragment(name="tiny_b", start=1, end=6, strand=1),
+        ],
+    )
+    print(o1)
+    assert o1.start == 1
+    assert o1.end == 13
+    assert o1.length == 13
+    assert o1.start_overhang == 2
+    assert o1.end_overhang == -7
+    assert o1.start_row_bait_overlap == 3
+    assert o1.end_row_bait_overlap == 6
+    assert o1.error_increase_if_start_removed() == 7
+    assert o1.error_increase_if_end_removed() == 8
+    assert o1.length_error_in_texels(10) == 5 / 10
+
+
 def test_properties():
     o1 = example_overlap_result()
     print(o1)
@@ -35,7 +60,7 @@ def test_properties():
     assert o1.end_row_bait_overlap == 10_000
     assert o1.error_increase_if_start_removed() == 9200
     assert o1.error_increase_if_end_removed() == 9200
-    assert o1.length_error_in_texels(750) == (2 / 3)
+    assert o1.length_error_in_texels(750) == 2 / 3
 
 
 def test_manipulations():
@@ -70,7 +95,13 @@ def test_trim_overhangs():
     assert o1.start_row_bait_overlap == 9000
 
     o1.trim_large_overhangs(20_000)
+    assert len(o1.rows) == 3
+    assert [x.name for x in o1.fragments()] == ["frag_2", "frag_3"]
     assert o1.start_overhang == -9_200
+
+    # Check running again doesn't remove anything
+    o1.trim_large_overhangs(20_000)
+    assert len(o1.rows) == 3
 
     o2 = example_overlap_result()
     o2.discard_end()
@@ -140,4 +171,9 @@ def test_str_repr():
 
 
 if __name__ == "__main__":
+    test_simple()
+    test_properties()
+    test_manipulations()
+    test_trim_overhangs()
+    test_to_scaffold()
     test_str_repr()

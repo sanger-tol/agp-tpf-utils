@@ -64,6 +64,9 @@ class OverlapResult(Scaffold):
 
     @property
     def start_row_bait_overlap(self):
+        """
+        Length of the overlap between the bait and the first row.
+        """
         start = max(self.bait.start, self.start)
         end = min(
             self.bait.end,
@@ -77,6 +80,9 @@ class OverlapResult(Scaffold):
 
     @property
     def end_row_bait_overlap(self):
+        """
+        Length of the overlap between the bait and the last row.
+        """
         start = max(
             self.bait.start,
             self.end - self.rows[-1].length + 1,  # start of last row
