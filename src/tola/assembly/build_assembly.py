@@ -38,12 +38,13 @@ class BuildAssembly(Assembly):
             chr_namer.make_chr_name(prtxt_scffld)
             for prtxt_frag in prtxt_scffld.fragments():
                 if found := input_asm.find_overlaps(prtxt_frag):
-                    found.name = chr_namer.scaffold_name(prtxt_frag)
+                    chr_namer.name_scaffold(found, prtxt_frag)
                     self.add_scaffold(found)
                     found.trim_large_overhangs(bp_per_texel)
                     self.store_fragments_found(found)
                 else:
                     logging.warn(f"No overlaps found for: {prtxt_frag}")
+            chr_namer.rename_unlocs_by_size()
 
     def discard_overhanging_fragments(self):
         multi = self.fragments_found_more_than_once
@@ -197,7 +198,7 @@ class BuildAssembly(Assembly):
 
 class ChrNamer:
     """
-    Tracks naming of chr_nameomosomes as Pretext assembly is processed
+    Tracks naming of chromosomes as Pretext assembly is processed
     """
 
     def __init__(self):
@@ -206,12 +207,13 @@ class ChrNamer:
         self.haplotig_n = 0
         self.current_haplotig = None
         self.unloc_n = 0
+        self.unloc_scaffolds = []
 
     def make_chr_name(self, scaffold):
         tag_set = scaffold.fragment_tags()
 
         chr_name = None
-        is_painted = False
+        is_painted = False  # Has HiC contacts
         for tags in tag_set:
             for t in tags:
                 if t == "Painted":
@@ -225,6 +227,7 @@ class ChrNamer:
                         )
                         raise ValueError(msg)
                     chr_name = cn
+
         if not chr_name:
             if is_painted:
                 self.chr_name_n += 1
@@ -245,12 +248,26 @@ class ChrNamer:
         self.haplotig_n += 1
         return f"H_{self.haplotig_n}"
 
-    def scaffold_name(self, fragment):
+    def name_scaffold(self, scaffold, fragment):
+        name = None
         if "Unloc" in fragment.tags:
-            return self.unloc_name()
-        if "Haplotig" in fragment.tags:
-            return self.haplotig_name()
-        return self.current_chr_name
+            name = self.unloc_name()
+            self.unloc_scaffolds.append(scaffold)
+        elif "Haplotig" in fragment.tags:
+            name = self.haplotig_name()
+        else:
+            name = self.current_chr_name
+        scaffold.name = name
+
+    def rename_unlocs_by_size(self):
+        unlocs = self.unloc_scaffolds
+        if not unlocs:
+            return
+        unloc_names = [s.name for s in unlocs]
+        unloc_by_size = sorted(unlocs, key=lambda s: s.length, reverse=True)
+        for s, n in zip(unloc_by_size, unloc_names, strict=True):
+            s.name = n
+        self.unloc_scaffolds = []
 
 
 class FoundFragment:
