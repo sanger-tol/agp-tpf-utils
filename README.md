@@ -6,6 +6,20 @@ project, where the combination of long read sequencing and HiC data is used
 to produce whole genome assemblies. It is not therefore intended to cover the
 full range of AGP and TPF syntax.
 
+## Scripts
+
+Added to your `PATH` if the suggested development venv is set up. Run with
+`--help` for usage.
+
+### [`asm-format`](src/tola/assembly/scripts/asm_format.py)
+
+Parses and reformats AGP and TPF files, converting into either format.
+
+### [`pretext-to-tpf`](src/tola/assembly/scripts/pretext_to_tpf.py)
+
+Takes the AGP file output by Pretext and creates TPF files containing
+precise coordinates of the curated assembly.
+
 ## File Formats
 
 Both TPF and AGP file formats described here contain the same information. AGP
