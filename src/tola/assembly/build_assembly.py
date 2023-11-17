@@ -11,8 +11,9 @@ class BuildAssembly(Assembly):
     """
     Class for building an Assembly from a Pretext Assembly and the
     IndexedAssembly source. Stores a list of mutable OverlapResults rather
-    than Scaffolds, which are fused into Scaffolds by name and returned in a
-    new Assembly object from the assembly_with_scaffolds_fused() method.
+    than Scaffolds, which are fused into Scaffolds by name and returned in
+    new Assembly object(s) from the assemblies_with_scaffolds_fused()
+    method.
     """
 
     def __init__(
@@ -26,9 +27,10 @@ class BuildAssembly(Assembly):
     def remap_to_input_assembly(self, prtxt_asm, input_asm):
         if not self.bp_per_texel:
             self.bp_per_texel = prtxt_asm.bp_per_texel
-        self.find_assembly_overlaps(prtxt_asm, input_asm)
+        chr_namer = self.find_assembly_overlaps(prtxt_asm, input_asm)
         self.discard_overhanging_fragments()
         self.cut_remaining_overhangs()
+        chr_namer.rename_haplotigs_by_size()
         self.add_missing_scaffolds_from_input(input_asm)
 
     def find_assembly_overlaps(self, prtxt_asm, input_asm):
@@ -45,6 +47,7 @@ class BuildAssembly(Assembly):
                 else:
                     logging.warn(f"No overlaps found for: {prtxt_frag}")
             chr_namer.rename_unlocs_by_size()
+        return chr_namer
 
     def discard_overhanging_fragments(self):
         multi = self.fragments_found_more_than_once
@@ -113,7 +116,7 @@ class BuildAssembly(Assembly):
                 f"Expecting 0 but got {overlap_count} overlaps in new sub fragments\n"
             )
         if not abut_count == lgth - 1:
-            msg += f"Execting {lgth -1} abutting sub fragments but got {abut_count}\n"
+            msg += f"Execting {lgth - 1} abutting sub fragments but got {abut_count}\n"
         if msg:
             msg += "\n" + "\n\n".join(str(s) for s in fnd.scaffolds)
             raise ValueError(msg)
@@ -171,11 +174,19 @@ class BuildAssembly(Assembly):
             if new_scffld:
                 self.add_scaffold(new_scffld)
 
-    def assembly_with_scaffolds_fused(self):
+    def assemblies_with_scaffolds_fused(self):
         new_asm = Assembly(self.name)
+        new_haplotig_asm = Assembly(self.name + "_haplotigs")
         for scffld in self.scaffolds_fused_by_name():
-            new_asm.add_scaffold(scffld)
-        return new_asm
+            if scffld.name.startswith("H_"):
+                new_haplotig_asm.add_scaffold(scffld)
+            else:
+                new_asm.add_scaffold(scffld)
+        assemblies = [new_asm]
+        if new_haplotig_asm.scaffolds:
+            new_haplotig_asm.scaffolds = new_haplotig_asm.scaffolds_sorted_by_name()
+            assemblies.append(new_haplotig_asm)
+        return assemblies
 
     def scaffolds_fused_by_name(self):
         gap = self.default_gap
@@ -206,6 +217,7 @@ class ChrNamer:
         self.current_chr_name = None
         self.haplotig_n = 0
         self.current_haplotig = None
+        self.haplotig_scaffolds = []
         self.unloc_n = 0
         self.unloc_scaffolds = []
 
@@ -237,6 +249,7 @@ class ChrNamer:
 
         self.current_chr_name = chr_name
         self.unloc_n = 0
+        self.unloc_scaffolds = []
 
         return chr_name
 
@@ -255,19 +268,24 @@ class ChrNamer:
             self.unloc_scaffolds.append(scaffold)
         elif "Haplotig" in fragment.tags:
             name = self.haplotig_name()
+            self.haplotig_scaffolds.append(scaffold)
         else:
             name = self.current_chr_name
         scaffold.name = name
 
     def rename_unlocs_by_size(self):
-        unlocs = self.unloc_scaffolds
-        if not unlocs:
+        self.rename_by_size(self.unloc_scaffolds)
+
+    def rename_haplotigs_by_size(self):
+        self.rename_by_size(self.haplotig_scaffolds)
+
+    def rename_by_size(self, scaffolds):
+        if not scaffolds:
             return
-        unloc_names = [s.name for s in unlocs]
-        unloc_by_size = sorted(unlocs, key=lambda s: s.length, reverse=True)
-        for s, n in zip(unloc_by_size, unloc_names, strict=True):
+        names = [s.name for s in scaffolds]
+        by_size = sorted(scaffolds, key=lambda s: s.length, reverse=True)
+        for s, n in zip(by_size, names, strict=True):
             s.name = n
-        self.unloc_scaffolds = []
 
 
 class FoundFragment:

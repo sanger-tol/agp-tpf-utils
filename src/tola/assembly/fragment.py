@@ -104,7 +104,19 @@ class Fragment:
         return False
 
     def reverse(self):
-        return self.__class__(self.name, self.start, self.end, -1 * self.strand)
+        return self.__class__(
+            self.name,
+            self.start,
+            self.end,
+            -1 * self.strand,
+            self.tags,
+        )
 
     def rename(self, new_name):
-        return self.__class__(new_name, self.start, self.end, self.strand)
+        return self.__class__(
+            new_name,
+            self.start,
+            self.end,
+            self.strand,
+            self.tags,
+        )
