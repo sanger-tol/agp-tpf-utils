@@ -115,7 +115,8 @@ class OverlapResult(Scaffold):
             msg = f"Fragment {trim} not found in:\n{self}"
             raise ValueError(msg)
 
-        new = Fragment(trim.name, start, end, trim.strand, self.bait.tags)
+        bait_tags = (x for x in self.bait.tags if x != "Painted")
+        new = Fragment(trim.name, start, end, trim.strand, ("Cut", *bait_tags))
         self.rows[idx] = new
         return new
 
