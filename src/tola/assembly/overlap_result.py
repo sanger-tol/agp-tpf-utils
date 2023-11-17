@@ -182,6 +182,9 @@ class OverlapResult(Scaffold):
         return abs(self.length - self.bait.length) / bp_per_texel
 
     def trim_large_overhangs(self, err_length):
+        if len(self.rows) == 1:
+            return
+
         if (
             self.start_overhang > err_length
             and self.start_row_bait_overlap < err_length

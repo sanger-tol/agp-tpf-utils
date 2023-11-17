@@ -316,10 +316,14 @@ class OverhangPremise:
 
     @property
     def improves(self):
+        if len(self.scaffold.rows) == 1:
+            return False
         return True if self.error_increase < 0 else False
 
     @property
     def makes_worse(self):
+        if len(self.scaffold.rows) == 1:
+            return True
         return True if self.error_increase > 0 else False
 
     def apply(self):
