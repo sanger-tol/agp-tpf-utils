@@ -111,11 +111,11 @@ class BuildAssembly(Assembly):
                 if frag_a.overlaps(frag_b):
                     overlap_count += 1
         msg = ""
-        if not overlap_count == 0:
+        if overlap_count != 0:
             msg += (
                 f"Expecting 0 but got {overlap_count} overlaps in new sub fragments\n"
             )
-        if not abut_count == lgth - 1:
+        if abut_count != lgth - 1:
             msg += f"Execting {lgth - 1} abutting sub fragments but got {abut_count}\n"
         if msg:
             msg += "\n" + "\n\n".join(str(s) for s in fnd.scaffolds)

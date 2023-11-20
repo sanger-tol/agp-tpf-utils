@@ -36,7 +36,7 @@ Each line in the
 contains 9 tab delimited columns. Of these columns:
 
 - **DNA Sequence**
-    - **column 5** the "component_type" contains *W* in our assemblies,
+    - **column 5** the "component_type" contains `W` in our assemblies,
         meaning a contig from Whole Genome Shotgun (WGS) sequencing.
     - **columns 10 and greater** are extra tag metadata columns not included
         in the AGP v2.1 specification. (See below for their possible
@@ -114,7 +114,7 @@ pip install --editable .
 An alias such as this:
 
 ```sh
-alias tau="cd $HOME/git/agp-tpf-utils && source ./venv/bin/activate"
+alias atu="cd $HOME/git/agp-tpf-utils && source ./venv/bin/activate"
 ```
 
 in your shell's `.*rc` file (*e.g.* `~/.bashrc` for `bash` or `~/.zshrc` for

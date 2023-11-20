@@ -3,13 +3,11 @@ import logging
 import pathlib
 import sys
 
-from tola.assembly.assembly import Assembly
 from tola.assembly.build_assembly import BuildAssembly
 from tola.assembly.gap import Gap
 from tola.assembly.indexed_assembly import IndexedAssembly
 from tola.assembly.format import format_agp, format_tpf
 from tola.assembly.parser import parse_agp, parse_tpf
-from tola.assembly.scaffold import Scaffold
 from tola.assembly.scripts.asm_format import format_from_file_extn
 
 
@@ -100,7 +98,6 @@ def write_assembly(out_asm, output_file, clobber):
             sys.exit(1)
     else:
         out_fmt = "STR"
-        out_name = "stdout"
         out_fh = sys.stdout
 
     if out_fmt == "TPF":
