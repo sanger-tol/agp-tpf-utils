@@ -104,13 +104,17 @@ class OverlapResult(Scaffold):
         if self.rows[0] is trim:
             # fragment is at the start
             idx = 0
-            start += self.start_overhang
-            self.start += self.start_overhang
+            start_ovr = self.start_overhang
+            if start_ovr > 0:
+                start += start_ovr
+                self.start += start_ovr
         if self.rows[-1] is trim:
             # fragment is at the end
             idx = -1
-            end -= self.end_overhang
-            self.end -= self.end_overhang
+            end_ovr = self.end_overhang
+            if end_ovr > 0:
+                end -= end_ovr
+                self.end -= end_ovr
         if idx is None:
             msg = f"Fragment {trim} not found in:\n{self}"
             raise ValueError(msg)
