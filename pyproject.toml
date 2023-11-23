@@ -6,12 +6,12 @@ build-backend = "setuptools.build_meta"
 name = "tola-agp-tpf-utils"
 version = "1.0.0"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 dependencies = [
     "click",
     "pytest",
     "ruff",
-    'importlib-metadata; python_version>="3.8"',
+    'importlib-metadata; python_version>="3.10"',
 ]
 
 [project.scripts]

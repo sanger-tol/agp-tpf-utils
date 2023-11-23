@@ -1,8 +1,16 @@
 import logging
-import re
 
+from collections.abc import Iterator
 from tola.assembly.assembly import Assembly
+from tola.assembly.build_utils import (
+    ChrNamer,
+    FoundFragment,
+    OverhangPremise,
+    OverhangResolver,
+)
+from tola.assembly.fragment import Fragment
 from tola.assembly.gap import Gap
+from tola.assembly.indexed_assembly import IndexedAssembly
 from tola.assembly.overlap_result import OverlapResult
 from tola.assembly.scaffold import Scaffold
 
@@ -17,14 +25,21 @@ class BuildAssembly(Assembly):
     """
 
     def __init__(
-        self, name, header=None, scaffolds=None, default_gap=None, bp_per_texel=None
+        self,
+        name,
+        header=None,
+        scaffolds=None,
+        default_gap=None,
+        bp_per_texel=None,
     ):
         super().__init__(name, header, scaffolds, bp_per_texel)
         self.default_gap = default_gap
         self.found_fragments = {}
         self.fragments_found_more_than_once = {}
 
-    def remap_to_input_assembly(self, prtxt_asm, input_asm):
+    def remap_to_input_assembly(
+        self, prtxt_asm: Assembly, input_asm: IndexedAssembly
+    ) -> None:
         if not self.bp_per_texel:
             self.bp_per_texel = prtxt_asm.bp_per_texel
         chr_namer = self.find_assembly_overlaps(prtxt_asm, input_asm)
@@ -33,7 +48,9 @@ class BuildAssembly(Assembly):
         chr_namer.rename_haplotigs_by_size()
         self.add_missing_scaffolds_from_input(input_asm)
 
-    def find_assembly_overlaps(self, prtxt_asm, input_asm):
+    def find_assembly_overlaps(
+        self, prtxt_asm: Assembly, input_asm: IndexedAssembly
+    ) -> ChrNamer:
         chr_namer = ChrNamer()
         bp_per_texel = self.bp_per_texel
         for prtxt_scffld in prtxt_asm.scaffolds:
@@ -49,7 +66,7 @@ class BuildAssembly(Assembly):
             chr_namer.rename_unlocs_by_size()
         return chr_namer
 
-    def discard_overhanging_fragments(self):
+    def discard_overhanging_fragments(self) -> None:
         multi = self.fragments_found_more_than_once
 
         while multi:
@@ -71,7 +88,7 @@ class BuildAssembly(Assembly):
             else:
                 break
 
-    def cut_remaining_overhangs(self):
+    def cut_remaining_overhangs(self) -> None:
         multi = self.fragments_found_more_than_once
 
         for fk, fnd in multi.items():
@@ -79,7 +96,7 @@ class BuildAssembly(Assembly):
 
         self.fragments_found_more_than_once = {}
 
-    def cut_fragments(self, fnd):
+    def cut_fragments(self, fnd: FoundFragment) -> None:
         """
         Make a new Fragment for each region of the fragment found in each
         OverlapResult
@@ -95,7 +112,9 @@ class BuildAssembly(Assembly):
             + "".join(f"  {sub}\n" for sub in sub_fragments)
         )
 
-    def qc_sub_fragments(self, fnd, sub_fragments):
+    def qc_sub_fragments(
+        self, fnd: FoundFragment, sub_fragments: list[Fragment]
+    ) -> None:
         """
         Check that sub fragments abut each other and do not overlap
         """
@@ -121,7 +140,7 @@ class BuildAssembly(Assembly):
             msg += "\n" + "\n\n".join(str(s) for s in fnd.scaffolds)
             raise ValueError(msg)
 
-    def log_multi_scaffolds(self):
+    def log_multi_scaffolds(self) -> None:
         multi = self.fragments_found_more_than_once
 
         for fnd in multi.values():
@@ -137,7 +156,7 @@ class BuildAssembly(Assembly):
                 )
             )
 
-    def store_fragments_found(self, scffld):
+    def store_fragments_found(self, scffld: Scaffold) -> None:
         store = self.found_fragments
         multi = self.fragments_found_more_than_once
         for ff in scffld.fragments():
@@ -151,7 +170,7 @@ class BuildAssembly(Assembly):
                 store[ff_tuple] = fnd
             fnd.add_scaffold(scffld)
 
-    def add_missing_scaffolds_from_input(self, input_asm):
+    def add_missing_scaffolds_from_input(self, input_asm: Assembly) -> None:
         found_frags = self.found_fragments
         for scffld in input_asm.scaffolds:
             new_scffld = None
@@ -174,7 +193,7 @@ class BuildAssembly(Assembly):
             if new_scffld:
                 self.add_scaffold(new_scffld)
 
-    def assemblies_with_scaffolds_fused(self):
+    def assemblies_with_scaffolds_fused(self) -> list[Assembly]:
         new_asm = Assembly(self.name)
         new_haplotig_asm = Assembly(self.name + "_haplotigs")
         for scffld in self.scaffolds_fused_by_name():
@@ -188,7 +207,7 @@ class BuildAssembly(Assembly):
             assemblies.append(new_haplotig_asm)
         return assemblies
 
-    def scaffolds_fused_by_name(self):
+    def scaffolds_fused_by_name(self) -> Iterator[Scaffold]:
         gap = self.default_gap
         new_scffld = None
         current_name = ""
@@ -205,185 +224,3 @@ class BuildAssembly(Assembly):
 
         if new_scffld:
             yield new_scffld
-
-
-class ChrNamer:
-    """
-    Tracks naming of chromosomes as Pretext assembly is processed
-    """
-
-    def __init__(self):
-        self.chr_name_n = 0
-        self.current_chr_name = None
-        self.haplotig_n = 0
-        self.current_haplotig = None
-        self.haplotig_scaffolds = []
-        self.unloc_n = 0
-        self.unloc_scaffolds = []
-
-    def make_chr_name(self, scaffold):
-        tag_set = scaffold.fragment_tags()
-
-        chr_name = None
-        is_painted = False  # Has HiC contacts
-        for tags in tag_set:
-            for t in tags:
-                if t == "Painted":
-                    is_painted = True
-                elif m := re.match(r"[A-Z]\d*$", t):
-                    cn = m.group(0)
-                    if chr_name and cn != chr_name:
-                        msg = (
-                            f"Found more than one chr_name name: '{chr_name}' and '{cn}'"
-                            f" in scaffold:\n\n{scaffold}"
-                        )
-                        raise ValueError(msg)
-                    chr_name = cn
-
-        if not chr_name:
-            if is_painted:
-                self.chr_name_n += 1
-                chr_name = f"RL_{self.chr_name_n}"
-            else:
-                chr_name = scaffold.rows[0].name
-
-        self.current_chr_name = chr_name
-        self.unloc_n = 0
-        self.unloc_scaffolds = []
-
-        return chr_name
-
-    def unloc_name(self):
-        self.unloc_n += 1
-        return f"{self.current_chr_name}_unloc_{self.unloc_n}"
-
-    def haplotig_name(self):
-        self.haplotig_n += 1
-        return f"H_{self.haplotig_n}"
-
-    def name_scaffold(self, scaffold, fragment):
-        name = None
-        if "Unloc" in fragment.tags:
-            name = self.unloc_name()
-            self.unloc_scaffolds.append(scaffold)
-        elif "Haplotig" in fragment.tags:
-            name = self.haplotig_name()
-            self.haplotig_scaffolds.append(scaffold)
-        else:
-            name = self.current_chr_name
-        scaffold.name = name
-
-    def rename_unlocs_by_size(self):
-        self.rename_by_size(self.unloc_scaffolds)
-
-    def rename_haplotigs_by_size(self):
-        self.rename_by_size(self.haplotig_scaffolds)
-
-    def rename_by_size(self, scaffolds):
-        if not scaffolds:
-            return
-        names = [s.name for s in scaffolds]
-        by_size = sorted(scaffolds, key=lambda s: s.length, reverse=True)
-        for s, n in zip(by_size, names, strict=True):
-            s.name = n
-
-
-class FoundFragment:
-    """
-    Little object to store fragments found and the list of Scaffolds it was
-    found in.
-    """
-
-    __slots__ = "fragment", "scaffolds"
-
-    def __init__(self, fragment):
-        self.fragment = fragment
-        self.scaffolds = []
-
-    @property
-    def scaffold_count(self):
-        return len(self.scaffolds)
-
-    def add_scaffold(self, scaffold):
-        self.scaffolds.append(scaffold)
-
-    def remove_scaffold(self, scaffold):
-        self.scaffolds.remove(scaffold)
-
-
-class OverhangPremise:
-    """
-    Stores a "what-if" for removal of a terminal (start or end) Fragment. Used
-    to decide which OverlapResult to remove a Fragment from, where the
-    Fragment is present in more than one OverlapResult.
-    """
-
-    __slots__ = "scaffold", "fragment", "position", "error_increase"
-
-    def __init__(self, scaffold, fragment, position):
-        self.scaffold = scaffold
-        self.fragment = fragment
-        if position == 1:
-            self.error_increase = scaffold.error_increase_if_start_removed()
-        elif position == -1:
-            self.error_increase = scaffold.error_increase_if_end_removed()
-        else:
-            msg = f"position must be '1' (start) or '-1' (end) not '{position}'"
-            raise ValueError(msg)
-        self.position = position
-
-    @property
-    def improves(self):
-        if len(self.scaffold.rows) == 1:
-            return False
-        return True if self.error_increase < 0 else False
-
-    @property
-    def makes_worse(self):
-        if len(self.scaffold.rows) == 1:
-            return True
-        return True if self.error_increase > 0 else False
-
-    def apply(self):
-        if self.position == 1:
-            self.scaffold.discard_start()
-        else:
-            self.scaffold.discard_end()
-
-
-class OverhangResolver:
-    """
-    Takes in a list of "problem" OverlapResults which share a Fragment.
-    Performs one round of comparing OverlapResult pairs, choosing which of
-    the two to remove the shared, terminal Fragment from. Returns a list of
-    the OverlapPremises which were applied.
-    """
-
-    def __init__(self):
-        self.premises_by_fragment_key = {}
-
-    def add_overhang_premise(self, fragment, scffld):
-        if scffld.rows[0] is fragment:
-            premise = OverhangPremise(scffld, fragment, 1)
-        elif scffld.rows[-1] is fragment:
-            premise = OverhangPremise(scffld, fragment, -1)
-        else:
-            return
-
-        fk = fragment.key_tuple
-        self.premises_by_fragment_key.setdefault(fk, []).append(premise)
-
-    def make_fixes(self):
-        fixes_made = []
-        for prem_list in self.premises_by_fragment_key.values():
-            # Can only discard overhanging fragments present in more than one
-            # Scaffold, or we would be removing sequence from the assembly.
-            best_to_worst = sorted(prem_list, key=lambda x: x.error_increase)
-            if len(prem_list) > 1:
-                bst = best_to_worst[0]
-                nxt = best_to_worst[1]
-                if bst.improves and nxt.makes_worse:
-                    bst.apply()  # Remove the overhanging fragment
-                    fixes_made.append(bst)
-
-        return fixes_made
