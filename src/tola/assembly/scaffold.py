@@ -5,12 +5,14 @@ from tola.assembly.gap import Gap
 
 
 class Scaffold:
-    def __init__(self, name, rows=None):
+    def __init__(self, name, rows=None, tag=None, haplotype=None):
         self.name = str(name)
         if rows:
             self.rows = [*rows]
         else:
             self.rows = []
+        self.tag = tag
+        self.haplotype = haplotype
 
     def __repr__(self):
         txt = io.StringIO()
@@ -71,7 +73,7 @@ class Scaffold:
     def fragment_tags(self):
         tag_set = set()
         for frag in self.fragments():
-            if t := frag.tags:
+            for t in frag.tags:
                 tag_set.add(t)
         return tag_set
 

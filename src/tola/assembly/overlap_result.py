@@ -6,10 +6,10 @@ from tola.assembly.scaffold import Scaffold
 
 
 class OverlapResult(Scaffold):
-    def __init__(self, bait, rows, start, end, name=None):
+    def __init__(self, bait, rows, start, end, name=None, tag=None, haplotype=None):
         if not name:
             name = f"matches to {bait.name} {bait.start} to {bait.end}"
-        super().__init__(name, rows)
+        super().__init__(name, rows, tag, haplotype)
         self.bait = bait
         self.start = start
         self.end = end
@@ -186,7 +186,7 @@ class OverlapResult(Scaffold):
         return abs(self.length - self.bait.length) / bp_per_texel
 
     def trim_large_overhangs(self, err_length):
-        if len(self.rows) == 1:
+        if len(self.rows) == 1 and self.bait.length > err_length:
             return
 
         if (

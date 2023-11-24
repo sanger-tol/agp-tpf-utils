@@ -1,4 +1,5 @@
 import logging
+import math
 
 from collections.abc import Iterator
 from tola.assembly.assembly import Assembly
@@ -36,31 +37,33 @@ class BuildAssembly(Assembly):
         self.default_gap = default_gap
         self.found_fragments = {}
         self.fragments_found_more_than_once = {}
+        self.chr_namer = ChrNamer()
 
     def remap_to_input_assembly(
         self, prtxt_asm: Assembly, input_asm: IndexedAssembly
     ) -> None:
         if not self.bp_per_texel:
             self.bp_per_texel = prtxt_asm.bp_per_texel
-        chr_namer = self.find_assembly_overlaps(prtxt_asm, input_asm)
+        self.find_assembly_overlaps(prtxt_asm, input_asm)
         self.discard_overhanging_fragments()
         self.cut_remaining_overhangs()
-        chr_namer.rename_haplotigs_by_size()
+        self.chr_namer.rename_haplotigs_by_size()
         self.add_missing_scaffolds_from_input(input_asm)
 
     def find_assembly_overlaps(
         self, prtxt_asm: Assembly, input_asm: IndexedAssembly
     ) -> ChrNamer:
-        chr_namer = ChrNamer()
-        bp_per_texel = self.bp_per_texel
+        chr_namer = self.chr_namer
+        err_length = 1 + math.floor(self.bp_per_texel)
         for prtxt_scffld in prtxt_asm.scaffolds:
             chr_namer.make_chr_name(prtxt_scffld)
             for prtxt_frag in prtxt_scffld.fragments():
                 if found := input_asm.find_overlaps(prtxt_frag):
-                    chr_namer.name_scaffold(found, prtxt_frag)
-                    self.add_scaffold(found)
-                    found.trim_large_overhangs(bp_per_texel)
-                    self.store_fragments_found(found)
+                    chr_namer.label_scaffold(found, prtxt_frag)
+                    found.trim_large_overhangs(err_length)
+                    if found.rows:
+                        self.add_scaffold(found)
+                        self.store_fragments_found(found)
                 else:
                     logging.warn(f"No overlaps found for: {prtxt_frag}")
             chr_namer.rename_unlocs_by_size()
@@ -171,6 +174,7 @@ class BuildAssembly(Assembly):
             fnd.add_scaffold(scffld)
 
     def add_missing_scaffolds_from_input(self, input_asm: Assembly) -> None:
+        chr_namer = self.chr_namer
         found_frags = self.found_fragments
         for scffld in input_asm.scaffolds:
             new_scffld = None
@@ -191,32 +195,44 @@ class BuildAssembly(Assembly):
                     last_added_i = i
 
             if new_scffld:
+                chr_namer.make_chr_name(new_scffld)
+                new_scffld.haplotype = chr_namer.current_haplotype
                 self.add_scaffold(new_scffld)
 
     def assemblies_with_scaffolds_fused(self) -> list[Assembly]:
-        new_asm = Assembly(self.name)
-        new_haplotig_asm = Assembly(self.name + "_haplotigs")
+        assemblies = {}
         for scffld in self.scaffolds_fused_by_name():
-            if scffld.name.startswith("H_"):
-                new_haplotig_asm.add_scaffold(scffld)
+            if tag := scffld.tag:
+                asm_key = tag
+                asm_name = f"{self.name}_{tag}s"
+            elif hap := scffld.haplotype:
+                asm_key = hap
+                asm_name = f"{self.name}_{hap}"
             else:
-                new_asm.add_scaffold(scffld)
-        assemblies = [new_asm]
-        if new_haplotig_asm.scaffolds:
-            new_haplotig_asm.scaffolds = new_haplotig_asm.scaffolds_sorted_by_name()
-            assemblies.append(new_haplotig_asm)
-        return assemblies
+                asm_key = None
+                asm_name = self.name
+            new_asm = assemblies.setdefault(asm_key, Assembly(asm_name))
+            new_asm.add_scaffold(scffld)
+
+        asm_list = list(assemblies.values())
+        for asm in asm_list:
+            asm.smart_sort_scaffolds(self.chr_namer.autosome_prefix)
+
+        return asm_list
 
     def scaffolds_fused_by_name(self) -> Iterator[Scaffold]:
         gap = self.default_gap
         new_scffld = None
-        current_name = ""
+        current_hap_chr = None, None
         for scffld in self.scaffolds:
-            if scffld.name != current_name:
+            hap_chr = scffld.haplotype, scffld.name
+            if hap_chr != current_hap_chr:
                 if new_scffld:
                     yield new_scffld
-                current_name = scffld.name
-                new_scffld = Scaffold(scffld.name)
+                current_hap_chr = hap_chr
+                new_scffld = Scaffold(
+                    scffld.name, tag=scffld.tag, haplotype=scffld.haplotype
+                )
             if isinstance(scffld, OverlapResult):
                 new_scffld.append_scaffold(scffld.to_scaffold(), gap)
             else:

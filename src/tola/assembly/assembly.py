@@ -2,6 +2,7 @@ import io
 import re
 import textwrap
 
+from tola.assembly.scaffold import Scaffold
 
 class Assembly:
     def __init__(self, name, header=None, scaffolds=None, bp_per_texel=None):
@@ -42,10 +43,10 @@ class Assembly:
 
         return txt.getvalue()
 
-    def add_header_line(self, txt):
+    def add_header_line(self, txt: str):
         self.header.append(txt)
 
-    def add_scaffold(self, scffld):
+    def add_scaffold(self, scffld: Scaffold):
         self.scaffolds.append(scffld)
 
     @property
@@ -61,7 +62,7 @@ class Assembly:
             return bpt
 
     @bp_per_texel.setter
-    def bp_per_texel(self, bp_per_texel):
+    def bp_per_texel(self, bp_per_texel: float):
         self._bp_per_texel = bp_per_texel
 
     @staticmethod
@@ -72,6 +73,16 @@ class Assembly:
 
     def scaffolds_sorted_by_name(self):
         return sorted(self.scaffolds, key=self.name_natural_key)
+
+    def smart_sort_scaffolds(self, autosome_prefix: str):
+        def smart_sort_key(scaffold: Scaffold):
+            rank = 1
+            if scaffold.name.startswith(autosome_prefix):
+                rank = 0
+            elif scaffold.name == scaffold.rows[0].name:
+                rank = 2
+            return rank, self.name_natural_key(scaffold)
+        self.scaffolds.sort(key=smart_sort_key)
 
     def find_overlapping_fragments(self):
         over_pairs = []

@@ -14,72 +14,109 @@ class ChrNamer:
     Tracks naming of chromosomes as Pretext assembly is processed
     """
 
-    def __init__(self):
-        self.chr_name_n = 0
+    def __init__(self, autosome_prefix="RL_"):
+        self.autosome_prefix = autosome_prefix
+        self.hap_chr_name_n = {}
         self.current_chr_name = None
+        self.current_haplotype = None
         self.haplotig_n = 0
-        self.current_haplotig = None
         self.haplotig_scaffolds = []
         self.unloc_n = 0
         self.unloc_scaffolds = []
 
-    def make_chr_name(self, scaffold: Scaffold) -> str:
-        tag_set = scaffold.fragment_tags()
-
+    def make_chr_name(self, scaffold: Scaffold) -> None:
+        """
+        Using the tags in the Scaffold from Pretext, work out what the
+        chromosome name should be.
+        """
         chr_name = None
+        haplotype = None
         is_painted = False  # Has HiC contacts
-        for tags in tag_set:
-            for t in tags:
-                if t == "Painted":
-                    is_painted = True
-                elif m := re.match(r"[A-Z]\d*$", t):
-                    cn = m.group(0)
-                    if chr_name and cn != chr_name:
-                        msg = (
-                            f"Found more than one chr_name name: '{chr_name}' and '{cn}'"
-                            f" in scaffold:\n\n{scaffold}"
-                        )
-                        raise ValueError(msg)
-                    chr_name = cn
+        for tag in scaffold.fragment_tags():
+            if tag == "Painted":
+                is_painted = True
+            elif m := re.match(r"[A-Z]\d*$", tag):
+                # This tag looks like a chromosome name
+                cn = m.group(0)
+                if chr_name and cn != chr_name:
+                    msg = (
+                        f"Found more than one chr_name name: '{chr_name}'"
+                        f" and '{cn}' in scaffold:\n\n{scaffold}"
+                    )
+                    raise ValueError(msg)
+                chr_name = cn
+            elif tag not in ("Contaminant", "Haplotig", "Unloc"):
+                # Any tag that doesn't look like a chromosome name is assumed
+                # to be a haplotype, and we only expect to find one within
+                # each Pretext Scaffold
+                if haplotype:
+                    msg = (
+                        f"Found both '{haplotype}' and '{tag}', when only one'"
+                        f" is expected, in scaffold:\n\n{scaffold}"
+                    )
+                    raise ValueError(msg)
+                else:
+                    haplotype = tag
 
         if not chr_name:
             if is_painted:
-                self.chr_name_n += 1
-                chr_name = f"RL_{self.chr_name_n}"
+                chr_name = self.autosome_name(haplotype)
             else:
+                # Unpainted scaffolds keep the name they have in the input
+                # assembly
                 chr_name = scaffold.rows[0].name
 
+                # Does its name begin with the name of a haplotype?
+                # (This will fail if unplaced contigs from a haplotype appear
+                # before the first Scaffold assigned to that haplotype in the
+                # Pretext Assembly.)
+                if m := re.match(r"([^_]+)_", chr_name):
+                    prefix = m.group(1)
+                    if self.hap_chr_name_n.get(prefix):
+                        haplotype = prefix
+
         self.current_chr_name = chr_name
+        self.current_haplotype = haplotype
         self.unloc_n = 0
         self.unloc_scaffolds = []
 
-        return chr_name
+    def label_scaffold(self, scaffold: Scaffold, fragment: Fragment) -> None:
+        name = self.current_chr_name
+        if "Contaminant" in fragment.tags:
+            scaffold.tag = "Contaminant"
+        elif "Haplotig" in fragment.tags:
+            name = self.haplotig_name()
+            scaffold.tag = "Haplotig"
+            self.haplotig_scaffolds.append(scaffold)
+        elif "Unloc" in fragment.tags:
+            name = self.unloc_name()
+            self.unloc_scaffolds.append(scaffold)
 
-    def unloc_name(self) -> str:
-        self.unloc_n += 1
-        return f"{self.current_chr_name}_unloc_{self.unloc_n}"
+        scaffold.name = name
+        scaffold.haplotype = self.current_haplotype
+
+    def autosome_name(self, haplotype: str) -> str:
+        """
+        Name the next autosome in the haplotype
+        """
+        chr_n = self.hap_chr_name_n.get(haplotype, 0)
+        chr_n += 1
+        self.hap_chr_name_n[haplotype] = chr_n
+        return self.autosome_prefix + str(chr_n)
 
     def haplotig_name(self) -> str:
         self.haplotig_n += 1
         return f"H_{self.haplotig_n}"
 
-    def name_scaffold(self, scaffold: Scaffold, fragment: Fragment) -> None:
-        name = None
-        if "Unloc" in fragment.tags:
-            name = self.unloc_name()
-            self.unloc_scaffolds.append(scaffold)
-        elif "Haplotig" in fragment.tags:
-            name = self.haplotig_name()
-            self.haplotig_scaffolds.append(scaffold)
-        else:
-            name = self.current_chr_name
-        scaffold.name = name
-
-    def rename_unlocs_by_size(self) -> None:
-        self.rename_by_size(self.unloc_scaffolds)
+    def unloc_name(self) -> str:
+        self.unloc_n += 1
+        return f"{self.current_chr_name}_unloc_{self.unloc_n}"
 
     def rename_haplotigs_by_size(self) -> None:
         self.rename_by_size(self.haplotig_scaffolds)
+
+    def rename_unlocs_by_size(self) -> None:
+        self.rename_by_size(self.unloc_scaffolds)
 
     def rename_by_size(self, scaffolds: list[Scaffold]) -> None:
         if not scaffolds:
