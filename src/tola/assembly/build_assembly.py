@@ -52,7 +52,8 @@ class BuildAssembly(Assembly):
 
     def find_assembly_overlaps(
         self, prtxt_asm: Assembly, input_asm: IndexedAssembly
-    ) -> ChrNamer:
+    ) -> None:
+        logging.info(f"Pretext resolution = {self.bp_per_texel:,.0f} bp per texel\n")
         chr_namer = self.chr_namer
         err_length = 1 + math.floor(self.bp_per_texel)
         for prtxt_scffld in prtxt_asm.scaffolds:
@@ -67,7 +68,6 @@ class BuildAssembly(Assembly):
                 else:
                     logging.warn(f"No overlaps found for: {prtxt_frag}")
             chr_namer.rename_unlocs_by_size()
-        return chr_namer
 
     def discard_overhanging_fragments(self) -> None:
         multi = self.fragments_found_more_than_once
@@ -111,8 +111,8 @@ class BuildAssembly(Assembly):
 
         sub_fragments.sort(key=lambda f: f.start)
         logging.warn(
-            f"Fragment {frgmnt} cut into:\n"
-            + "".join(f"  {sub}\n" for sub in sub_fragments)
+            f"Fragment {frgmnt} ({frgmnt.length:,d} bp) cut into:\n"
+            + "".join(f" {sub.length:14,d}  {sub}\n" for sub in sub_fragments)
         )
 
     def qc_sub_fragments(
