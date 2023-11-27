@@ -2,6 +2,7 @@
 Utility objects used by BuildAssembly
 """
 
+import logging
 import re
 
 from tola.assembly.fragment import Fragment
@@ -172,6 +173,13 @@ class OverhangPremise:
         self.position = position
 
     @property
+    def bait_overlap(self) -> int:
+        if self.position == 1:
+            return self.scaffold.start_row_bait_overlap
+        else:
+            return self.scaffold.end_row_bait_overlap
+
+    @property
     def improves(self) -> bool:
         if len(self.scaffold.rows) == 1:
             return False
@@ -198,8 +206,9 @@ class OverhangResolver:
     the OverlapPremises which were applied.
     """
 
-    def __init__(self):
+    def __init__(self, error_length=None):
         self.premises_by_fragment_key = {}
+        self.error_length = error_length
 
     def add_overhang_premise(self, fragment: Fragment, scffld: OverlapResult) -> None:
         if scffld.rows[0] is fragment:
@@ -214,11 +223,31 @@ class OverhangResolver:
 
     def make_fixes(self) -> list[OverlapResult]:
         fixes_made = []
+        err_length = self.error_length
+
         for prem_list in self.premises_by_fragment_key.values():
-            # Can only discard overhanging fragments present in more than one
-            # Scaffold, or we would be removing sequence from the assembly.
-            best_to_worst = sorted(prem_list, key=lambda x: x.error_increase)
-            if len(prem_list) > 1:
+            prem_count = len(prem_list)
+
+            if prem_count == 2:
+                # To prevent cuts being made which result in Fragments smaller
+                # than a Pretext pixel, remove Fragment from the OverlapResult
+                # scaffold with the shortest overlap to the bait Fragment.
+                frst = prem_list[0]
+                scnd = prem_list[1]
+                if frst.bait_overlap < err_length and scnd.bait_overlap < err_length:
+                    if frst.bait_overlap < scnd.bait_overlap:
+                        frst.apply()
+                        fixes_made.append(frst)
+                    else:
+                        scnd.apply()
+                        fixes_made.append(scnd)
+                    continue
+
+            if prem_count > 1:
+                # Can only discard overhanging fragments present in more than
+                # one Scaffold, or we would be removing sequence data from
+                # the assembly.
+                best_to_worst = sorted(prem_list, key=lambda x: x.error_increase)
                 bst = best_to_worst[0]
                 nxt = best_to_worst[1]
                 if bst.improves and nxt.makes_worse:

@@ -69,7 +69,10 @@ def report_overlap(scffld, i, frgmnt, bait, ovr):
     else:
         pos = f"row {1 + i}"
 
-    click.echo(f"  {pos} of {scffld.name}: {frgmnt}\n    overlaps {bait} by {ovr:,d} bp")
+    click.echo(
+        f"  {pos} of {scffld.name}: {frgmnt}\n    overlaps {bait} by {ovr:,d} bp"
+    )
+
 
 def error_exit(msg, code=2):
     click.echo(msg, err=True)

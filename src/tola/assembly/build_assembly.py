@@ -39,6 +39,16 @@ class BuildAssembly(Assembly):
         self.fragments_found_more_than_once = {}
         self.chr_namer = ChrNamer()
 
+    @property
+    def error_length(self) -> int:
+        """
+        Expected maximum resolution from bp_per_texel as an integer which is
+        guaranteed to be larger than the smallest length from Pretext, even
+        if the resolution's floating point value after the decimal point is
+        zero.  i.e. 2300.000000 becomes 2301
+        """
+        return 1 + math.floor(self.bp_per_texel)
+
     def remap_to_input_assembly(
         self, prtxt_asm: Assembly, input_asm: IndexedAssembly
     ) -> None:
@@ -55,7 +65,7 @@ class BuildAssembly(Assembly):
     ) -> None:
         logging.info(f"Pretext resolution = {self.bp_per_texel:,.0f} bp per texel\n")
         chr_namer = self.chr_namer
-        err_length = 1 + math.floor(self.bp_per_texel)
+        err_length = self.error_length
         for prtxt_scffld in prtxt_asm.scaffolds:
             chr_namer.make_chr_name(prtxt_scffld)
             for prtxt_frag in prtxt_scffld.fragments():
@@ -73,7 +83,7 @@ class BuildAssembly(Assembly):
         multi = self.fragments_found_more_than_once
 
         while multi:
-            ovr_resolver = OverhangResolver()
+            ovr_resolver = OverhangResolver(self.error_length)
             for fnd in multi.values():
                 for scffld in fnd.scaffolds:
                     ovr_resolver.add_overhang_premise(fnd.fragment, scffld)
