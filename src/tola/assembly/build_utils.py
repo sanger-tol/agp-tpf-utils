@@ -2,7 +2,6 @@
 Utility objects used by BuildAssembly
 """
 
-import logging
 import re
 
 from tola.assembly.fragment import Fragment
@@ -46,7 +45,7 @@ class ChrNamer:
                     )
                     raise ValueError(msg)
                 chr_name = cn
-            elif tag not in ("Contaminant", "Haplotig", "Unloc"):
+            elif tag not in ("Contaminant", "Cut", "Haplotig", "Unloc"):
                 # Any tag that doesn't look like a chromosome name is assumed
                 # to be a haplotype, and we only expect to find one within
                 # each Pretext Scaffold
