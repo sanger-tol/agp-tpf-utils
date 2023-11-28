@@ -28,6 +28,52 @@ def test_natural_sort():
     ]
 
 
+def test_smart_sort():
+    a1 = Assembly(
+        name="test",
+        scaffolds=[
+            Scaffold(
+                name="scaffold_222",
+                rows=[Fragment("scaffold_222", 1, 12_000, 1)],
+            ),
+            Scaffold(
+                name="X",
+                rows=[Fragment("scaffold_12", 1, 23_000, 1)],
+            ),
+            Scaffold(
+                name="B1",
+                rows=[Fragment("scaffold_22", 1, 34_000, 1)],
+            ),
+            Scaffold(
+                name="R2",
+                rows=[Fragment("scaffold_32", 1, 45_000, 1)],
+            ),
+            Scaffold(
+                name="R1",
+                rows=[Fragment("scaffold_42", 1, 56_000, 1)],
+            ),
+            Scaffold(
+                name="R22",
+                rows=[Fragment("scaffold_62", 1, 67_000, 1)],
+            ),
+            Scaffold(
+                name="R10",
+                rows=[Fragment("scaffold_72", 1, 78_000, 1)],
+            ),
+        ],
+    )
+    a1.smart_sort_scaffolds(autosome_prefix="R")
+    assert list(s.name for s in a1.scaffolds) == [
+        "R1",
+        "R2",
+        "R10",
+        "R22",
+        "B1",
+        "X",
+        "scaffold_222",
+    ]
+
+
 def test_str_and_repr():
     """
     Tests the implementation of __str__ and __repr__ in Assembly. Because it

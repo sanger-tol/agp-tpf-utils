@@ -4,6 +4,7 @@ import textwrap
 
 from tola.assembly.scaffold import Scaffold
 
+
 class Assembly:
     def __init__(self, name, header=None, scaffolds=None, bp_per_texel=None):
         self.name = str(name)
@@ -65,6 +66,18 @@ class Assembly:
     def bp_per_texel(self, bp_per_texel: float):
         self._bp_per_texel = bp_per_texel
 
+    @property
+    def length(self):
+        return sum(s.length for s in self.scaffolds)
+
+    @property
+    def fragments_length(self):
+        return sum(s.fragments_length for s in self.scaffolds)
+
+    @property
+    def gaps_length(self):
+        return sum(s.gaps_length for s in self.scaffolds)
+
     @staticmethod
     def name_natural_key(obj):
         return tuple(
@@ -82,6 +95,7 @@ class Assembly:
             elif scaffold.name == scaffold.rows[0].name:
                 rank = 2
             return rank, self.name_natural_key(scaffold)
+
         self.scaffolds.sort(key=smart_sort_key)
 
     def find_overlapping_fragments(self):

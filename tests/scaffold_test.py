@@ -12,6 +12,8 @@ def test_create():
     )
     assert isinstance(s1, Scaffold)
     assert s1.length == 137_112
+    assert s1.fragments_length == 136_912
+    assert s1.gaps_length == 200
 
 
 def test_iterators():

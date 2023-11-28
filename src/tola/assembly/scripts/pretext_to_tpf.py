@@ -3,10 +3,11 @@ import logging
 import pathlib
 import sys
 
+from tola.assembly.assembly_stats import AssemblyStats
 from tola.assembly.build_assembly import BuildAssembly
+from tola.assembly.format import format_agp, format_tpf
 from tola.assembly.gap import Gap
 from tola.assembly.indexed_assembly import IndexedAssembly
-from tola.assembly.format import format_agp, format_tpf
 from tola.assembly.parser import parse_agp, parse_tpf
 from tola.assembly.scripts.asm_format import format_from_file_extn
 
@@ -84,6 +85,8 @@ def cli(assembly_file, pretext_file, output_file, clobber, log_level):
     out_assemblies = build_asm.assemblies_with_scaffolds_fused()
     for out_asm in out_assemblies:
         write_assembly(out_asm, output_file, clobber)
+        stats = AssemblyStats(build_asm.chr_namer.autosome_prefix, out_asm, input_asm)
+        stats.log_stats()
 
 
 def write_assembly(out_asm, output_file, clobber):

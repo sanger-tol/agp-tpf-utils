@@ -38,10 +38,15 @@ class Scaffold:
 
     @property
     def length(self):
-        srl = 0
-        for row in self.rows:
-            srl += row.length
-        return srl
+        return sum(r.length for r in self.rows)
+
+    @property
+    def fragments_length(self):
+        return sum(f.length for f in self.fragments())
+
+    @property
+    def gaps_length(self):
+        return sum(g.length for g in self.gaps())
 
     @property
     def last_row_is_fragment(self):
