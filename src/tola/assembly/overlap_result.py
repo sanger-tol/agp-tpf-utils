@@ -102,7 +102,20 @@ class OverlapResult(Scaffold):
     def length_error_in_texels(self, bp_per_texel):
         return abs(self.length_error) / bp_per_texel
 
-    def trim_fragment(self, trim: Fragment):
+    def fragment_start_if_trimmed(self, frag: Fragment) -> int:
+        if frag.strand == 1:
+            if self.rows[0] is frag:
+                # Forward strand fragment at start of OverlapResult
+                return frag.start + self.start_overhang
+        else:
+            if self.rows[-1] is frag:
+                # Reverse strand fragment at end of OverlapResult
+                return frag.start + self.end_overhang
+
+        # Start would not be changed
+        return frag.start
+
+    def trim_fragment(self, trim: Fragment, keep_start=False, keep_end=False):
         start = trim.start
         end = trim.end
 
@@ -112,15 +125,21 @@ class OverlapResult(Scaffold):
             # fragment is at the start
             idx = 0
             start_ovr = self.start_overhang
-            if start_ovr > 0:
-                start += start_ovr
+            if start_ovr > 0 and not keep_start:
+                if trim.strand == 1:
+                    start += start_ovr
+                else:
+                    end -= start_ovr
                 self.start += start_ovr
         if self.rows[-1] is trim:
             # fragment is at the end
             idx = -1
             end_ovr = self.end_overhang
-            if end_ovr > 0:
-                end -= end_ovr
+            if end_ovr > 0 and not keep_end:
+                if trim.strand == 1:
+                    end -= end_ovr
+                else:
+                    start += end_ovr
                 self.end -= end_ovr
         if idx is None:
             msg = f"Fragment {trim} not found in:\n{self}"

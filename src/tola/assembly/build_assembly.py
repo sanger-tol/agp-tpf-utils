@@ -116,12 +116,20 @@ class BuildAssembly(Assembly):
         OverlapResult
         """
         frgmnt = fnd.fragment
-        sub_fragments = [s.trim_fragment(frgmnt) for s in fnd.scaffolds]
+        ordered_scaffolds = sorted(
+            fnd.scaffolds, key=lambda s: s.fragment_start_if_trimmed(frgmnt)
+        )
 
+        sub_fragments = []
+        last_i = len(ordered_scaffolds) - 1
+        for i, scffld in enumerate(ordered_scaffolds):
+            keep_start = True if i == 0 else False
+            keep_end = True if i == last_i else False
+            sub_fragments.append(scffld.trim_fragment(frgmnt, keep_start, keep_end))
         self.qc_sub_fragments(fnd, sub_fragments)
 
         self.cuts_made += len(sub_fragments) - 1
-        sub_fragments.sort(key=lambda f: f.start)
+
         logging.warn(
             f"Contig:\n  {frgmnt.length:15,d}  {frgmnt}\ncut into:\n"
             + "".join(f"  {sub.length:15,d}  {sub}\n" for sub in sub_fragments)
@@ -131,7 +139,8 @@ class BuildAssembly(Assembly):
         self, fnd: FoundFragment, sub_fragments: list[Fragment]
     ) -> None:
         """
-        Check that sub fragments abut each other and do not overlap
+        Check that sub fragments abut each other and do not overlap, and that
+        no sequence from the cut fragment has been lost.
         """
         abut_count = 0
         overlap_count = 0
@@ -144,7 +153,15 @@ class BuildAssembly(Assembly):
                     abut_count += 1
                 if frag_a.overlaps(frag_b):
                     overlap_count += 1
+
+        sub_frags_length = sum(f.length for f in sub_fragments)
+
         msg = ""
+        if fnd.fragment.length != sub_frags_length:
+            msg += (
+                f"Sum of fragment lengths {sub_frags_length:_d} does not"
+                f" match orginal fragment length {fnd.fragment.length:_d}\n"
+            )
         if overlap_count != 0:
             msg += (
                 f"Expecting 0 but got {overlap_count} overlaps in new sub fragments\n"
