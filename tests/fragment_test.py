@@ -100,3 +100,17 @@ def test_stringify():
     assert str(f3) == "chr1:1-20000(.)"
     assert str(f4) == "chr1:1-20000(+) Painted"
     assert str(f5) == "chr1:1-20000(+) Painted X"
+
+
+def test_tuples():
+    f1 = Fragment("chr1", 1, 20_000, 1)
+    f2 = Fragment("chr2", 2, 30_000, -1)
+    f3 = Fragment("chr3", 3, 40_000, 1)
+    f4 = Fragment("chr4", 4, 50_000, -1)
+
+    assert f1.key_tuple == ("chr1", 1, 20_000)
+    assert f2.key_tuple == ("chr2", 2, 30_000)
+    assert f1.junction_tuple(f3) == ("chr1", 20_000, "chr3", 3)
+    assert f1.junction_tuple(f2) == ("chr1", 20_000, 30_000, "chr2")
+    assert f2.junction_tuple(f1) == (2, "chr2", "chr1", 1)
+    assert f2.junction_tuple(f4) == ("chr4", 50_000, "chr2", 2)

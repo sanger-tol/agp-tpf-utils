@@ -84,6 +84,12 @@ class Assembly:
             int(x) if i % 2 else x for i, x in enumerate(re.split(r"(\d+)", obj.name))
         )
 
+    def fragment_junction_set(self):
+        junctions = set()
+        for scffld in self.scaffolds:
+            junctions.update(scffld.fragment_junction_set())
+        return junctions
+
     def scaffolds_sorted_by_name(self):
         return sorted(self.scaffolds, key=self.name_natural_key)
 

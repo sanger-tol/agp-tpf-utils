@@ -64,7 +64,7 @@ from tola.assembly.scripts.asm_format import format_from_file_extn
         ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
         case_sensitive=False,
     ),
-    default="WARNING",
+    default="INFO",
     show_default=True,
     help="Diagnostic messages to show",
 )
@@ -85,8 +85,8 @@ def cli(assembly_file, pretext_file, output_file, clobber, log_level):
     out_assemblies = build_asm.assemblies_with_scaffolds_fused()
     for out_asm in out_assemblies:
         write_assembly(out_asm, output_file, clobber)
-        stats = AssemblyStats(build_asm.chr_namer.autosome_prefix, out_asm, input_asm)
-        stats.log_stats()
+    logging.info("")
+    build_asm.assembly_stats.log_stats()
 
 
 def write_assembly(out_asm, output_file, clobber):

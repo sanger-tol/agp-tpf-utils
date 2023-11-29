@@ -94,3 +94,22 @@ class Scaffold:
         if gap and self.rows:
             self.add_row(gap)
         self.rows.extend(othr.rows)
+
+    def fragment_junction_set(self):
+        junctions = set()
+        itr = self.fragments()
+
+        try:
+            prev = next(itr)
+        except StopIteration:
+            return junctions
+
+        while True:
+            try:
+                this = next(itr)
+                junctions.add(prev.junction_tuple(this))
+                prev = this
+            except StopIteration:
+                break
+
+        return junctions

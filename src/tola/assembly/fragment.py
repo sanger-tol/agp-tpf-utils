@@ -42,8 +42,34 @@ class Fragment:
         return self._end - self._start + 1
 
     @property
-    def key_tuple(self):
+    def key_tuple(self) -> tuple:
         return self._name, self._start, self._end
+
+    def junction_tuple(self, othr) -> tuple:
+        """
+        Encodes the positions of two adjacent Fragments in a Scaffold, with
+        reverse strand ends encoded by flipping the order of the name and
+        coordinate.
+        """
+        if self.strand == 1:
+            if othr.strand == 1:
+                #      fwd >>>              fwd >>>
+                return self.name, self.end, othr.name, othr.start
+            elif othr.strand == -1:
+                #      fwd >>>                          <<< rev
+                return self.name, self.end, othr.end, othr.name
+        elif self.strand == -1:
+            if othr.strand == 1:
+                #                  <<< rev  fwd >>>
+                return self.start, self.name, othr.name, othr.start
+            elif othr.strand == -1:
+                # For the rev-rev case, junction should match fwd-fwd
+                #      rev >>>              rev >>>
+                return othr.name, othr.end, self.name, self.start
+
+        msg = f"strand == 0 not supported:\n  {self}\n  {othr}"
+        raise ValueError(msg)
+
 
     STRAND_STR = ".", "+", "-"
 

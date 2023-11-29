@@ -14,7 +14,7 @@ class OverlapResult(Scaffold):
         self.start = start
         self.end = end
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         scffld_repr = super().__repr__()
         rows_start = "    rows=[\n"
         return scffld_repr.replace(
@@ -28,7 +28,7 @@ class OverlapResult(Scaffold):
             1,
         )
 
-    def __str__(self):
+    def __str__(self) -> str:
         """
         String representation of OverlapResult object useful during
         development.
@@ -52,19 +52,19 @@ class OverlapResult(Scaffold):
         return txt.getvalue()
 
     @property
-    def length(self):
+    def length(self) -> int:
         return self.end - self.start + 1
 
     @property
-    def start_overhang(self):
+    def start_overhang(self) -> int:
         return self.bait.start - self.start
 
     @property
-    def end_overhang(self):
+    def end_overhang(self) -> int:
         return self.end - self.bait.end
 
     @property
-    def start_row_bait_overlap(self):
+    def start_row_bait_overlap(self) -> int:
         """
         Length of the overlap between the bait and the first row.
         """
@@ -80,7 +80,7 @@ class OverlapResult(Scaffold):
             return end - start + 1
 
     @property
-    def end_row_bait_overlap(self):
+    def end_row_bait_overlap(self) -> int:
         """
         Length of the overlap between the bait and the last row.
         """
@@ -96,10 +96,10 @@ class OverlapResult(Scaffold):
             return end - start + 1
 
     @property
-    def length_error(self):
+    def length_error(self) -> int:
         return self.length - self.bait.length
 
-    def length_error_in_texels(self, bp_per_texel):
+    def length_error_in_texels(self, bp_per_texel) -> float:
         return abs(self.length_error) / bp_per_texel
 
     def fragment_start_if_trimmed(self, frag: Fragment) -> int:
@@ -115,7 +115,9 @@ class OverlapResult(Scaffold):
         # Start would not be changed
         return frag.start
 
-    def trim_fragment(self, trim: Fragment, keep_start=False, keep_end=False):
+    def trim_fragment(
+        self, trim: Fragment, keep_start=False, keep_end=False
+    ) -> Fragment:
         start = trim.start
         end = trim.end
 
@@ -162,28 +164,28 @@ class OverlapResult(Scaffold):
         """
         raise NotImplementedError
 
-    def to_scaffold(self):
+    def to_scaffold(self) -> Scaffold:
         scffld = Scaffold(self.name, self.rows)
         if self.bait.strand == -1:
             return scffld.reverse()
         else:
             return scffld
 
-    def discard_start(self):
+    def discard_start(self) -> None:
         discard = self.rows.pop(0)
         self.start += discard.length
         while self.rows and isinstance(self.rows[0], Gap):
             gap = self.rows.pop(0)
             self.start += gap.length
 
-    def discard_end(self):
+    def discard_end(self) -> None:
         discard = self.rows.pop(-1)
         self.end -= discard.length
         while self.rows and isinstance(self.rows[-1], Gap):
             gap = self.rows.pop(-1)
             self.end -= gap.length
 
-    def error_if_start_removed(self):
+    def error_if_start_removed(self) -> int:
         length_if_rem = self.length
         length_if_rem -= self.rows[0].length
         for r in self.rows[1:]:
@@ -193,7 +195,7 @@ class OverlapResult(Scaffold):
                 break
         return length_if_rem - self.bait.length
 
-    def error_if_end_removed(self):
+    def error_if_end_removed(self) -> int:
         length_if_rem = self.length
         length_if_rem -= self.rows[-1].length
         for r in self.rows[-2::-1]:  # Step backwards from second to last element
@@ -203,7 +205,7 @@ class OverlapResult(Scaffold):
                 break
         return length_if_rem - self.bait.length
 
-    def trim_large_overhangs(self, err_length):
+    def trim_large_overhangs(self, err_length: int) -> None:
         if len(self.rows) == 1 and self.bait.length > err_length:
             return
 

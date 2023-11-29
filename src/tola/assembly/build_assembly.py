@@ -3,6 +3,7 @@ import math
 
 from collections.abc import Iterator
 from tola.assembly.assembly import Assembly
+from tola.assembly.assembly_stats import AssemblyStats
 from tola.assembly.build_utils import (
     ChrNamer,
     FoundFragment,
@@ -38,7 +39,7 @@ class BuildAssembly(Assembly):
         self.found_fragments = {}
         self.fragments_found_more_than_once = {}
         self.chr_namer = ChrNamer()
-        self.cuts_made = 0
+        self.assembly_stats = AssemblyStats()
 
     @property
     def error_length(self) -> int:
@@ -55,6 +56,7 @@ class BuildAssembly(Assembly):
     ) -> None:
         if not self.bp_per_texel:
             self.bp_per_texel = prtxt_asm.bp_per_texel
+        self.assembly_stats.input_assembly = input_asm
         self.find_assembly_overlaps(prtxt_asm, input_asm)
         self.discard_overhanging_fragments()
         self.cut_remaining_overhangs()
@@ -128,7 +130,7 @@ class BuildAssembly(Assembly):
             sub_fragments.append(scffld.trim_fragment(frgmnt, keep_start, keep_end))
         self.qc_sub_fragments(fnd, sub_fragments)
 
-        self.cuts_made += len(sub_fragments) - 1
+        self.assembly_stats.cuts += len(sub_fragments) - 1
 
         logging.warn(
             f"Contig:\n  {frgmnt.length:15,d}  {frgmnt}\ncut into:\n"
@@ -244,8 +246,12 @@ class BuildAssembly(Assembly):
             new_asm.add_scaffold(scffld)
 
         asm_list = list(assemblies.values())
+        autosome_prefix = self.chr_namer.autosome_prefix
         for asm in asm_list:
-            asm.smart_sort_scaffolds(self.chr_namer.autosome_prefix)
+            asm.smart_sort_scaffolds(autosome_prefix)
+
+        self.assembly_stats.autosome_prefix = autosome_prefix
+        self.assembly_stats.make_stats(asm_list)
 
         return asm_list
 
