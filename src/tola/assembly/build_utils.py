@@ -162,14 +162,11 @@ class OverhangPremise:
     def __init__(self, scaffold: OverlapResult, fragment: Fragment, position: int):
         self.scaffold = scaffold
         self.fragment = fragment
-        if position == 1:
-            self.error_increase = scaffold.error_increase_if_start_removed()
-        elif position == -1:
-            self.error_increase = scaffold.error_increase_if_end_removed()
+        if position in (1, -1):
+            self.position = position
         else:
             msg = f"position must be '1' (start) or '-1' (end) not '{position}'"
             raise ValueError(msg)
-        self.position = position
 
     @property
     def bait_overlap(self) -> int:
@@ -179,16 +176,30 @@ class OverhangPremise:
             return self.scaffold.end_row_bait_overlap
 
     @property
-    def improves(self) -> bool:
-        if len(self.scaffold.rows) == 1:
-            return False
-        return True if self.error_increase < 0 else False
+    def error_if_applied(self) -> int:
+        if self.position == 1:
+            return self.scaffold.error_if_start_removed()
+        else:
+            return self.scaffold.error_if_end_removed()
 
     @property
-    def makes_worse(self) -> bool:
+    def length_error_delta_if_applied(self) -> int:
+        return abs(self.error_if_applied) - abs(self.scaffold.length_error)
+
+    def improves(self, err_length) -> bool:
         if len(self.scaffold.rows) == 1:
+            return False
+        if self.length_error_delta_if_applied < 0 and (
+            # Guard against removing fragments which would produce a large
+            # negative overhang - they should be cut instead.
+            self.error_if_applied > -5 * err_length
+        ):
             return True
-        return True if self.error_increase > 0 else False
+        else:
+            return False
+
+    def makes_worse(self, err_length) -> bool:
+        return not self.improves(err_length)
 
     def apply(self) -> None:
         if self.position == 1:
@@ -246,10 +257,12 @@ class OverhangResolver:
                 # Can only discard overhanging fragments present in more than
                 # one Scaffold, or we would be removing sequence data from
                 # the assembly.
-                best_to_worst = sorted(prem_list, key=lambda x: x.error_increase)
+                best_to_worst = sorted(
+                    prem_list, key=lambda x: x.length_error_delta_if_applied
+                )
                 bst = best_to_worst[0]
                 nxt = best_to_worst[1]
-                if bst.improves and nxt.makes_worse:
+                if bst.improves(err_length) and nxt.makes_worse(err_length):
                     bst.apply()  # Remove the overhanging fragment
                     fixes_made.append(bst)
 

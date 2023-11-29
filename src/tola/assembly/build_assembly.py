@@ -38,6 +38,7 @@ class BuildAssembly(Assembly):
         self.found_fragments = {}
         self.fragments_found_more_than_once = {}
         self.chr_namer = ChrNamer()
+        self.cuts_made = 0
 
     @property
     def error_length(self) -> int:
@@ -119,10 +120,11 @@ class BuildAssembly(Assembly):
 
         self.qc_sub_fragments(fnd, sub_fragments)
 
+        self.cuts_made += len(sub_fragments) - 1
         sub_fragments.sort(key=lambda f: f.start)
         logging.warn(
-            f"Fragment {frgmnt} ({frgmnt.length:,d} bp) cut into:\n"
-            + "".join(f" {sub.length:14,d}  {sub}\n" for sub in sub_fragments)
+            f"Contig:\n  {frgmnt.length:15,d}  {frgmnt}\ncut into:\n"
+            + "".join(f"  {sub.length:15,d}  {sub}\n" for sub in sub_fragments)
         )
 
     def qc_sub_fragments(

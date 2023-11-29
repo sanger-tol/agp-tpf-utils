@@ -95,6 +95,13 @@ class OverlapResult(Scaffold):
         else:
             return end - start + 1
 
+    @property
+    def length_error(self):
+        return self.length - self.bait.length
+
+    def length_error_in_texels(self, bp_per_texel):
+        return abs(self.length_error) / bp_per_texel
+
     def trim_fragment(self, trim: Fragment):
         start = trim.start
         end = trim.end
@@ -157,7 +164,7 @@ class OverlapResult(Scaffold):
             gap = self.rows.pop(-1)
             self.end -= gap.length
 
-    def error_increase_if_start_removed(self):
+    def error_if_start_removed(self):
         length_if_rem = self.length
         length_if_rem -= self.rows[0].length
         for r in self.rows[1:]:
@@ -165,9 +172,9 @@ class OverlapResult(Scaffold):
                 length_if_rem -= r.length
             else:
                 break
-        return self._error_delta(length_if_rem)
+        return length_if_rem - self.bait.length
 
-    def error_increase_if_end_removed(self):
+    def error_if_end_removed(self):
         length_if_rem = self.length
         length_if_rem -= self.rows[-1].length
         for r in self.rows[-2::-1]:  # Step backwards from second to last element
@@ -175,15 +182,7 @@ class OverlapResult(Scaffold):
                 length_if_rem -= r.length
             else:
                 break
-        return self._error_delta(length_if_rem)
-
-    def _error_delta(self, length_if_rem):
-        before = abs(self.length - self.bait.length)
-        after = abs(length_if_rem - self.bait.length)
-        return after - before  # More negative is better
-
-    def length_error_in_texels(self, bp_per_texel):
-        return abs(self.length - self.bait.length) / bp_per_texel
+        return length_if_rem - self.bait.length
 
     def trim_large_overhangs(self, err_length):
         if len(self.rows) == 1 and self.bait.length > err_length:
