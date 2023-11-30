@@ -26,7 +26,7 @@ def test_no_coord_changes():
 
     ba1 = BuildAssembly(ia1.name, bp_per_texel=100)
     ba1.remap_to_input_assembly(p1, ia1)
-    a2 = ba1.assemblies_with_scaffolds_fused().pop(0)
+    a2 = ba1.assemblies_with_scaffolds_fused()[None]
     assert str(ia1).replace("IndexedAssembly", "Assembly") == str(a2)
 
 
@@ -47,13 +47,13 @@ def shuffle_and_remap_assembly(asm, name):
     # print(p1)
     ba1 = BuildAssembly(name, default_gap=Gap(200, "scaffold"))
     ba1.remap_to_input_assembly(p1, asm)
-    m1 = ba1.assemblies_with_scaffolds_fused().pop(0)
+    m1 = ba1.assemblies_with_scaffolds_fused()[None]
     # print(m1)
 
     p2 = fuzz_coordinates(p1)
     ba2 = BuildAssembly(name, default_gap=Gap(200, "scaffold"))
     ba2.remap_to_input_assembly(p2, asm)
-    m2 = ba2.assemblies_with_scaffolds_fused().pop(0)
+    m2 = ba2.assemblies_with_scaffolds_fused()[None]
     print(ba2)
     ba2.log_multi_scaffolds()
     # print(m2)
