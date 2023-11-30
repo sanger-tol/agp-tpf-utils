@@ -12,40 +12,50 @@ from tola.assembly.parser import parse_agp, parse_tpf
 from tola.assembly.scripts.asm_format import format_from_file_extn
 
 
+def bd(txt):
+    return click.style(txt, bold=True)
+
+
+def it(txt):
+    return click.style(txt, italic=True)
+
+
+def ul(txt):
+    return click.style(txt, underline=True)
+
+
 @click.command(
     help=f"""
       Uses fragments in the assembly (AGP) produced by PretextView to find
       matching fragments in the assembly (TPF) which was fed into Pretext and
       output an assembly made from the input assembly fragments.
 
-      {click.style("Named Chromsomes", underline=True)}
+      {ul("Named Chromsomes")}
 
         Upper case letters followed by zero or more digits are assumed to be
-      chromosome names. {click.style("e.g.", italic=True)} 'X', 'W', 'B1'
+      chromosome names. {it("e.g.")} 'X', 'W', 'B1'
 
-      {click.style("Known Tags", underline=True)}
+      {ul("Known Tags")}
 
-        {click.style("Contaminant", bold=True)} tagged scaffolds are saved in
-      a separate 'Contaminants' file.
+        {bd("Contaminant")} tagged scaffolds are saved in a separate
+      'Contaminants' file.
 
-        {click.style("Haplotig", bold=True)} taggged scaffolds are saved in a
-      separate 'Haplotigs' file. The haplotig scaffolds receive names 'H_1'
-      to 'H_{click.style("n", italic=True)}', sorted and numbered from
-      longest to shortest.
+        {bd("Haplotig")} taggged scaffolds are saved in a separate 'Haplotigs'
+      file. The haplotig scaffolds receive names 'H_1' to 'H_{it("n")}',
+      sorted and numbered from longest to shortest.
 
-        {click.style("Unloc", bold=True)} tagged scaffolds receive names
-      '{click.style("CHR", italic=True)}_unloc_1' to
-      '{click.style("CHR", italic=True)}_unloc_{click.style("n", italic=True)}',
-      added to the end of their chromosome and sorted and numbered from
-      longest to shortest.
+        {bd("Unloc")} tagged scaffolds receive names '{it("CHR")}_unloc_1'
+      to '{it("CHR")}_unloc_{it("n")}', added to the end of their
+      chromosome and sorted and numbered from longest to
+      shortest.
 
-      {click.style("Haplotypes", underline=True)}
+      {ul("Haplotypes")}
 
         Any other tags are assumed to be the name of a haplotype, and their
       assemblies are placed in separate files. Unplaced scaffolds for each
       haplotype are identified by their names beginning with the
-      haplotype's name followed by an underscore.
-      {click.style("i.e.", italic=True)} 'HAP2_' for 'HAP2'
+      haplotype's name followed by an underscore. {it("i.e.")} 'HAP2_' for
+      'HAP2'
       """,
 )
 @click.option(
