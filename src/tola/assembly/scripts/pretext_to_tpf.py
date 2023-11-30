@@ -80,6 +80,7 @@ from tola.assembly.scripts.asm_format import format_from_file_extn
     "--write-log/--no-write-log",
     "-w/-W",
     default=False,
+    show_default=True,
     help="Write messages into a '.log' file alongside the output file",
 )
 def cli(
@@ -106,12 +107,15 @@ def cli(
     build_asm.remap_to_input_assembly(prtxt_asm, input_asm)
 
     out_assemblies = build_asm.assemblies_with_scaffolds_fused()
-    for out_asm in out_assemblies:
-        build_asm.assembly_stats.log_assembly_chromosomes(out_asm)
+    stats = build_asm.assembly_stats
+    for asm_key, out_asm in out_assemblies.items():
+        stats.log_assembly_chromosomes(asm_key, out_asm)
     logging.info("")
-    build_asm.assembly_stats.log_curation_stats()
-    for out_asm in out_assemblies:
+    stats.log_curation_stats()
+    for out_asm in out_assemblies.values():
         write_assembly(out_asm, output_file, clobber)
+    if output_file:
+        write_chr_csv_files(output_file, stats, out_assemblies, clobber)
     if logfile:
         click.echo(f"Log saved to file '{logfile}'", err=True)
 
@@ -128,6 +132,7 @@ def setup_logging(log_level, output_file, write_log, clobber):
         conf["filemode"] = "w" if clobber else "x"
     logging.basicConfig(**conf)
     return logfile
+
 
 def write_assembly(out_asm, output_file, clobber):
     if output_file:
@@ -154,6 +159,19 @@ def write_assembly(out_asm, output_file, clobber):
     if out_fmt != "STR":
         op = "Overwrote" if clobber else "Created"
         click.echo(f"{op} file '{output_file}'", err=True)
+
+
+def write_chr_csv_files(output_file, stats, out_assemblies, clobber):
+    for asm_key, asm in out_assemblies.items():
+        if chr_names := stats.chromosome_names(asm_key, asm):
+            csv_file = output_file.parent / (
+                f"chrs_{asm_key}.csv" if asm_key else "chrs.csv"
+            )
+            with csv_file.open("w" if clobber else "x") as csv_fh:
+                for cn in chr_names:
+                    csv_fh.write(cn + "\n")
+            op = "Overwrote" if clobber else "Created"
+            click.echo(f"{op} file '{csv_file}'")
 
 
 def report_overlaps(pairs):

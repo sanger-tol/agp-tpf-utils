@@ -262,10 +262,9 @@ class BuildAssembly(Assembly):
         for asm in asm_list:
             asm.smart_sort_scaffolds(autosome_prefix)
 
-        self.assembly_stats.autosome_prefix = autosome_prefix
-        self.assembly_stats.make_stats(asm_list)
+        self.assembly_stats.make_stats(assemblies)
 
-        return asm_list
+        return assemblies
 
     def scaffolds_fused_by_name(self) -> Iterator[Scaffold]:
         gap = self.default_gap

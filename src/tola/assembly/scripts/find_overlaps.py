@@ -23,7 +23,7 @@ def cli(files_and_specs):
     files = []
     specs = []
     for ele in files_and_specs:
-        if m := re.search(r"([-\w]+):(\d+)-(\d+)", ele):
+        if m := re.search(r"([-\w]+):([\d_]+)-([\d_]+)", ele):
             name, start, end = m.groups()
             frag = Fragment(name, start, end, 1)
             specs.append(frag)
