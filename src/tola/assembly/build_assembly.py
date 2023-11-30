@@ -33,6 +33,7 @@ class BuildAssembly(Assembly):
         scaffolds=None,
         default_gap=None,
         bp_per_texel=None,
+        autosome_prefix=None,
     ):
         super().__init__(name, header, scaffolds, bp_per_texel)
         self.default_gap = default_gap
@@ -40,6 +41,17 @@ class BuildAssembly(Assembly):
         self.fragments_found_more_than_once = {}
         self.chr_namer = ChrNamer()
         self.assembly_stats = AssemblyStats()
+        if autosome_prefix:
+            self.autosome_prefix = autosome_prefix
+
+    @property
+    def autosome_prefix(self):
+        return self.chr_namer.autosome_prefix
+
+    @autosome_prefix.setter
+    def autosome_prefix(self, prefix: str):
+        self.chr_namer.autosome_prefix = prefix
+        self.assembly_stats.autosome_prefix = prefix
 
     @property
     def error_length(self) -> int:

@@ -14,8 +14,8 @@ from tola.assembly.scripts.asm_format import format_from_file_extn
 
 @click.command(
     help="""Uses fragments in the assembly (AGP) produced by PretextView to
-      find matching fragments in the assembly (TPF) fed into Pretext and
-      output an assembly made from the input assembly fragments.""",
+      find matching fragments in the assembly (TPF) which was fed into Pretext
+      and output an assembly made from the input assembly fragments.""",
 )
 @click.option(
     "--assembly",
@@ -27,7 +27,7 @@ from tola.assembly.scripts.asm_format import format_from_file_extn
         readable=True,
     ),
     required=True,
-    help="Assembly file from before curation, which is usually a TPF",
+    help="Assembly file from before curation, which is usually a TPF.",
 )
 @click.option(
     "--pretext",
@@ -39,7 +39,7 @@ from tola.assembly.scripts.asm_format import format_from_file_extn
         readable=True,
     ),
     required=True,
-    help="Assembly file from Pretext, which is usually an AGP",
+    help="Assembly file from Pretext, which is usually an AGP.",
 )
 @click.option(
     "--output",
@@ -49,13 +49,21 @@ from tola.assembly.scripts.asm_format import format_from_file_extn
         path_type=pathlib.Path,
         dir_okay=False,
     ),
-    help="Output file, usually a TPF",
+    help="""Output file, usually a TPF.
+      If not given, prints to STDOUT in 'STR' format.""",
+)
+@click.option(
+    "--autosome-prefix",
+    "-c",
+    default="RL_",
+    show_default=True,
+    help="Prefix for naming autosomal chromosomes.",
 )
 @click.option(
     "--clobber/--no-clobber",
     default=False,
     show_default=True,
-    help="Overwrite an existing output file",
+    help="Overwrite an existing output file.",
 )
 @click.option(
     "--log-level",
@@ -66,28 +74,60 @@ from tola.assembly.scripts.asm_format import format_from_file_extn
     ),
     default="INFO",
     show_default=True,
-    help="Diagnostic messages to show",
+    help="Diagnostic messages to show.",
 )
-def cli(assembly_file, pretext_file, output_file, clobber, log_level):
-    logging.basicConfig(
-        level=getattr(logging, log_level),
-        format="%(message)s",  # Leaves message unchanged
-    )
+@click.option(
+    "--write-log/--no-write-log",
+    "-w/-W",
+    default=False,
+    help="Write messages into a '.log' file alongside the output file",
+)
+def cli(
+    assembly_file,
+    pretext_file,
+    output_file,
+    autosome_prefix,
+    clobber,
+    log_level,
+    write_log,
+):
+    logfile = setup_logging(log_level, output_file, write_log, clobber)
 
     input_asm = IndexedAssembly.new_from_assembly(
         parse_assembly_file(assembly_file, "TPF")
     )
     prtxt_asm = parse_assembly_file(pretext_file, "AGP")
     out_name = output_file.stem if output_file else "stdout"
-    build_asm = BuildAssembly(out_name, default_gap=Gap(200, "scaffold"))
+    build_asm = BuildAssembly(
+        out_name,
+        default_gap=Gap(200, "scaffold"),
+        autosome_prefix=autosome_prefix,
+    )
     build_asm.remap_to_input_assembly(prtxt_asm, input_asm)
 
     out_assemblies = build_asm.assemblies_with_scaffolds_fused()
     for out_asm in out_assemblies:
-        write_assembly(out_asm, output_file, clobber)
+        build_asm.assembly_stats.log_assembly_chromosomes(out_asm)
     logging.info("")
-    build_asm.assembly_stats.log_stats()
+    build_asm.assembly_stats.log_curation_stats()
+    for out_asm in out_assemblies:
+        write_assembly(out_asm, output_file, clobber)
+    if logfile:
+        click.echo(f"Log saved to file '{logfile}'", err=True)
 
+
+def setup_logging(log_level, output_file, write_log, clobber):
+    conf = {
+        "level": getattr(logging, log_level),
+        "format": "%(message)s",  # Leaves message unchanged
+    }
+    logfile = None
+    if output_file and write_log:
+        logfile = output_file.with_suffix(".log")
+        conf["filename"] = logfile
+        conf["filemode"] = "w" if clobber else "x"
+    logging.basicConfig(**conf)
+    return logfile
 
 def write_assembly(out_asm, output_file, clobber):
     if output_file:
@@ -112,7 +152,8 @@ def write_assembly(out_asm, output_file, clobber):
         out_fh.write(str(out_asm))
 
     if out_fmt != "STR":
-        logging.warn(f"Wrote assembly to: {output_file}")
+        op = "Overwrote" if clobber else "Created"
+        click.echo(f"{op} file '{output_file}'", err=True)
 
 
 def report_overlaps(pairs):

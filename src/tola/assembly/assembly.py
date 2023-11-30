@@ -95,11 +95,7 @@ class Assembly:
 
     def smart_sort_scaffolds(self, autosome_prefix: str):
         def smart_sort_key(scaffold: Scaffold):
-            rank = 1
-            if scaffold.name.startswith(autosome_prefix):
-                rank = 0
-            elif scaffold.name == scaffold.rows[0].name:
-                rank = 2
+            rank = scaffold.rank(autosome_prefix)
             return rank, self.name_natural_key(scaffold)
 
         self.scaffolds.sort(key=smart_sort_key)

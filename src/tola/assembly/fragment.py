@@ -60,7 +60,7 @@ class Fragment:
                 return self.name, self.end, othr.end, othr.name
         elif self.strand == -1:
             if othr.strand == 1:
-                #                  <<< rev  fwd >>>
+                #                    <<< rev  fwd >>>
                 return self.start, self.name, othr.name, othr.start
             elif othr.strand == -1:
                 # For the rev-rev case, junction should match fwd-fwd

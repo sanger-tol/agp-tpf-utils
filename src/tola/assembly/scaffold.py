@@ -113,3 +113,11 @@ class Scaffold:
                 break
 
         return junctions
+
+    def rank(self, autosome_prefix):
+        rank = (1, "Named")
+        if self.name.startswith(autosome_prefix):
+            rank = (0, "Autosomes")
+        elif self.name.startswith("H_") or self.name == self.rows[0].name:
+            rank = (2, "Unplaced")
+        return rank
