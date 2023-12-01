@@ -1,0 +1,156 @@
+Pretext resolution = 7,621 bp per texel
+
+Contig:
+        1,785,386  SCAFFOLD_1:12090670-13876055(+)
+cut into:
+          132,715  SCAFFOLD_1:12090670-12223384(+) Cut Haplotig
+        1,652,671  SCAFFOLD_1:12223385-13876055(+) Cut
+
+Contig:
+        2,187,678  SCAFFOLD_22:4414065-6601742(+)
+cut into:
+          257,341  SCAFFOLD_22:4414065-4671405(+) Cut
+        1,930,337  SCAFFOLD_22:4671406-6601742(+) Cut
+
+Contig:
+          844,728  SCAFFOLD_2:3291619-4136346(+)
+cut into:
+           84,291  SCAFFOLD_2:3291619-3375909(+) Cut Haplotig
+          434,372  SCAFFOLD_2:3375910-3810281(+) Cut
+          326,065  SCAFFOLD_2:3810282-4136346(+) Cut
+
+Contig:
+           55,407  SCAFFOLD_3:16379720-16435126(+)
+cut into:
+           12,114  SCAFFOLD_3:16379720-16391833(+) Cut
+           43,293  SCAFFOLD_3:16391834-16435126(+) Cut
+
+Contig:
+        1,424,997  SCAFFOLD_17:976531-2401527(+)
+cut into:
+          174,175  SCAFFOLD_17:976531-1150705(+) Cut
+        1,250,822  SCAFFOLD_17:1150706-2401527(+) Cut
+
+Contig:
+          651,951  SCAFFOLD_1:25460673-26112623(+)
+cut into:
+          517,830  SCAFFOLD_1:25460673-25978502(+) Cut
+          134,121  SCAFFOLD_1:25978503-26112623(+) Cut Haplotig
+
+Contig:
+        1,946,126  SCAFFOLD_2:7448084-9394209(+)
+cut into:
+          195,342  SCAFFOLD_2:7448084-7643425(+) Cut Haplotig
+        1,750,784  SCAFFOLD_2:7643426-9394209(+) Cut
+
+Contig:
+        1,091,555  SCAFFOLD_2:1-1091555(+)
+cut into:
+          800,159  SCAFFOLD_2:1-800159(+) Cut Haplotig
+          291,396  SCAFFOLD_2:800160-1091555(+) Cut
+
+Contig:
+        1,139,063  SCAFFOLD_2:1091756-2230818(+)
+cut into:
+          310,428  SCAFFOLD_2:1091756-1402183(+) Cut Haplotig
+          828,635  SCAFFOLD_2:1402184-2230818(+) Cut
+
+Contig:
+        1,854,753  SCAFFOLD_3:19470606-21325358(+)
+cut into:
+          723,889  SCAFFOLD_3:19470606-20194494(+) Cut
+        1,130,864  SCAFFOLD_3:20194495-21325358(+) Cut Haplotig
+
+Contig:
+          549,631  SCAFFOLD_42:1-549631(+)
+cut into:
+          304,822  SCAFFOLD_42:1-304822(+) Cut
+          244,809  SCAFFOLD_42:304823-549631(+) Cut Haplotig
+
+Contig:
+        2,198,910  SCAFFOLD_29:1-2198910(+)
+cut into:
+        1,409,804  SCAFFOLD_29:1-1409804(+) Cut
+          789,106  SCAFFOLD_29:1409805-2198910(+) Cut Haplotig
+
+Contig:
+        1,392,000  SCAFFOLD_11:2119978-3511977(+)
+cut into:
+          592,943  SCAFFOLD_11:2119978-2712920(+) Cut Haplotig
+          799,057  SCAFFOLD_11:2712921-3511977(+) Cut
+
+Contig:
+          207,700  SCAFFOLD_12:13577815-13785514(+)
+cut into:
+            9,651  SCAFFOLD_12:13577815-13587465(+) Cut Haplotig
+          198,049  SCAFFOLD_12:13587466-13785514(+) Cut
+
+Contig:
+          706,207  SCAFFOLD_13:16523972-17230178(+)
+cut into:
+          576,574  SCAFFOLD_13:16523972-17100545(+) Cut
+          129,633  SCAFFOLD_13:17100546-17230178(+) Cut Haplotig
+
+Contig:
+        2,124,835  SCAFFOLD_13:8043981-10168815(+)
+cut into:
+          407,225  SCAFFOLD_13:8043981-8451205(+) Cut Haplotig
+        1,717,610  SCAFFOLD_13:8451206-10168815(+) Cut
+
+Contig:
+        1,127,000  SCAFFOLD_15:10551336-11678335(+)
+cut into:
+        1,047,163  SCAFFOLD_15:10551336-11598498(+) Cut
+           79,837  SCAFFOLD_15:11598499-11678335(+) Cut Haplotig
+
+Contig:
+        2,875,005  SCAFFOLD_15:3754798-6629802(+)
+cut into:
+        2,615,994  SCAFFOLD_15:3754798-6370791(+) Cut
+          259,011  SCAFFOLD_15:6370792-6629802(+) Cut Haplotig
+
+Contig:
+          495,410  SCAFFOLD_16:14591249-15086658(+)
+cut into:
+          162,163  SCAFFOLD_16:14591249-14753411(+) Cut
+          333,247  SCAFFOLD_16:14753412-15086658(+) Cut Haplotig
+
+Contig:
+          951,024  SCAFFOLD_24:5844751-6795774(+)
+cut into:
+          548,903  SCAFFOLD_24:5844751-6393653(+) Cut
+          402,121  SCAFFOLD_24:6393654-6795774(+) Cut Haplotig
+
+
+eaAstIrre1-pretext-to-tpf
+        476,510,020  bp sequence (minus gaps)
+  Autosomes:
+    n = 22
+         38,696,204  RL_2
+                ...  ...
+         12,132,721  RL_19
+        466,482,296  bp total
+  Unplaced:
+    n = 164
+            482,541  SCAFFOLD_47
+                ...  ...
+              1,000  SCAFFOLD_273
+         10,027,724  bp total
+
+eaAstIrre1-pretext-to-tpf_Haplotigs
+         20,013,884  bp sequence (minus gaps)
+    n = 44
+          3,717,954  H_1
+                ...  ...
+              9,651  H_44
+         20,013,884  bp total
+
+eaAstIrre1-pretext-to-tpf_Contaminants
+          2,742,977  bp sequence (minus gaps)
+    n = 34
+            280,776  SCAFFOLD_64
+                ...  ...
+             19,788  SCAFFOLD_218
+          2,742,977  bp total
+
+Curation made 21 cuts in contigs, 70 breaks at gaps and 97 joins

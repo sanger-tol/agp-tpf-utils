@@ -1,0 +1,84 @@
+Pretext resolution = 20,103 bp per texel
+
+Contig:
+           58,761  scaffold_1:52583018-52641778(+)
+cut into:
+           27,672  scaffold_1:52583018-52610689(+) Cut
+           31,089  scaffold_1:52610690-52641778(+) Cut
+
+Contig:
+          453,813  scaffold_1:85779503-86233315(+)
+cut into:
+          263,199  scaffold_1:85779503-86042701(+) Cut
+          190,614  scaffold_1:86042702-86233315(+) Cut
+
+Contig:
+          292,409  scaffold_2:23952677-24245085(+)
+cut into:
+           70,928  scaffold_2:23952677-24023604(+) Cut Haplotig
+          221,481  scaffold_2:24023605-24245085(+) Cut
+
+Contig:
+          935,799  scaffold_2:22821286-23757084(+)
+cut into:
+          136,837  scaffold_2:22821286-22958122(+) Cut Haplotig
+          798,962  scaffold_2:22958123-23757084(+) Cut
+
+Contig:
+          571,754  scaffold_3:55036166-55607919(+)
+cut into:
+          107,556  scaffold_3:55036166-55143721(+) Cut
+          464,198  scaffold_3:55143722-55607919(+) Cut
+
+Contig:
+          422,104  scaffold_3:55608120-56030223(+)
+cut into:
+           78,395  scaffold_3:55608120-55686514(+) Cut
+          343,709  scaffold_3:55686515-56030223(+) Cut
+
+Contig:
+          920,802  scaffold_4:4369569-5290370(+)
+cut into:
+           33,084  scaffold_4:4369569-4402652(+) Cut
+          887,718  scaffold_4:4402653-5290370(+) Cut
+
+Contig:
+          429,449  scaffold_5:42746124-43175572(+)
+cut into:
+          335,537  scaffold_5:42746124-43081660(+) Cut
+           93,912  scaffold_5:43081661-43175572(+) Cut Haplotig
+
+Contig:
+           56,608  scaffold_6:9524020-9580627(+)
+cut into:
+           25,112  scaffold_6:9524020-9549131(+) Cut
+           31,496  scaffold_6:9549132-9580627(+) Cut
+
+
+ngHelPoly1_1-pretext-to-tpf
+        655,943,875  bp sequence (minus gaps)
+  Autosomes:
+    n = 5
+        112,354,969  RL_2
+                ...  ...
+        100,850,726  RL_5
+        536,714,629  bp total
+  Named:
+    n = 1
+         98,169,434  X
+  Unplaced:
+    n = 1208
+            190,492  scaffold_58
+                ...  ...
+              1,000  scaffold_1564
+         21,059,812  bp total
+
+ngHelPoly1_1-pretext-to-tpf_Haplotigs
+          2,164,462  bp sequence (minus gaps)
+    n = 24
+            263,000  H_1
+                ...  ...
+             30,757  H_24
+          2,164,462  bp total
+
+Curation made 9 cuts in contigs, 210 breaks at gaps and 468 joins

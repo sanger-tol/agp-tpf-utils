@@ -1,0 +1,29 @@
+Pretext resolution = 11,890 bp per texel
+
+
+idSyrVitr1-pretext-to-tpf
+        388,720,741  bp sequence (minus gaps)
+  Autosomes:
+    n = 3
+        148,767,433  RL_1
+                ...  ...
+        110,494,704  RL_2
+        370,132,823  bp total
+  Named:
+    n = 2
+          8,853,854  X
+            888,747  Y
+          9,742,601  bp total
+  Unplaced:
+    n = 394
+            124,136  scaffold_59
+                ...  ...
+              1,000  scaffold_492
+          8,845,317  bp total
+
+idSyrVitr1-pretext-to-tpf_Haplotigs
+            812,954  bp sequence (minus gaps)
+    n = 1
+            812,954  H_1
+
+Curation made 0 cuts in contigs, 33 breaks at gaps and 124 joins

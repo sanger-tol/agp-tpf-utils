@@ -1,0 +1,19 @@
+Pretext resolution = 8,667 bp per texel
+
+
+iyExeIsch1-pretext-to-tpf
+        283,906,128  bp sequence (minus gaps)
+  Autosomes:
+    n = 12
+         30,489,920  RL_1
+                ...  ...
+         16,885,640  RL_10
+        280,543,463  bp total
+  Unplaced:
+    n = 72
+            201,186  scaffold_31
+                ...  ...
+              1,000  scaffold_136
+          3,362,665  bp total
+
+Curation made 0 cuts in contigs, 29 breaks at gaps and 81 joins

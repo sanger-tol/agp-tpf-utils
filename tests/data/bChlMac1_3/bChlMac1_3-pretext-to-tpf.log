@@ -1,0 +1,50 @@
+Pretext resolution = 36,397 bp per texel
+
+Contig:
+        8,514,457  HAP2_SCAFFOLD_241:11889669-20404125(+)
+cut into:
+           48,708  HAP2_SCAFFOLD_241:11889669-11938376(+) Cut
+        8,465,749  HAP2_SCAFFOLD_241:11938377-20404125(+) Cut
+
+
+bChlMac1_3-pretext-to-tpf_HAP1
+      1,273,945,109  bp sequence (minus gaps)
+  Autosomes:
+    n = 36
+        215,692,358  RL_1
+                ...  ...
+            292,585  RL_33
+      1,086,170,135  bp total
+  Named:
+    n = 2
+         54,806,811  W
+         84,787,122  Z
+        139,593,933  bp total
+  Unplaced:
+    n = 288
+          1,701,676  HAP1_SCAFFOLD_241
+                ...  ...
+             24,798  HAP1_SCAFFOLD_108
+         48,181,041  bp total
+
+bChlMac1_3-pretext-to-tpf_HAP2
+      1,106,806,515  bp sequence (minus gaps)
+  Autosomes:
+    n = 36
+        214,587,655  RL_1
+                ...  ...
+            188,044  RL_36
+      1,053,881,404  bp total
+  Unplaced:
+    n = 306
+          1,802,791  HAP2_SCAFFOLD_258
+                ...  ...
+             13,916  HAP2_SCAFFOLD_112
+         52,925,111  bp total
+
+bChlMac1_3-pretext-to-tpf_Haplotigs
+          4,560,100  bp sequence (minus gaps)
+    n = 1
+          4,560,100  H_1
+
+Curation made 1 cut in a contig, 15 breaks at gaps and 29 joins
