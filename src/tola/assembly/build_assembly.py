@@ -91,7 +91,7 @@ class BuildAssembly(Assembly):
                         self.add_scaffold(found)
                         self.store_fragments_found(found)
                 else:
-                    logging.warn(f"No overlaps found for: {prtxt_frag}")
+                    logging.warning(f"No overlaps found for: {prtxt_frag}")
             chr_namer.rename_unlocs_by_size()
 
     def discard_overhanging_fragments(self) -> None:
@@ -119,7 +119,7 @@ class BuildAssembly(Assembly):
     def cut_remaining_overhangs(self) -> None:
         multi = self.fragments_found_more_than_once
 
-        for fk, fnd in multi.items():
+        for fnd in multi.values():
             self.cut_fragments(fnd)
 
         self.fragments_found_more_than_once = {}
@@ -144,7 +144,7 @@ class BuildAssembly(Assembly):
 
         self.assembly_stats.cuts += len(sub_fragments) - 1
 
-        logging.warn(
+        logging.warning(
             f"Contig:\n  {frgmnt.length:15,d}  {frgmnt}\ncut into:\n"
             + "".join(f"  {sub.length:15,d}  {sub}\n" for sub in sub_fragments)
         )
@@ -191,7 +191,7 @@ class BuildAssembly(Assembly):
 
         for fnd in multi.values():
             ff = fnd.fragment
-            logging.warn(
+            logging.warning(
                 f"\nFragment {ff} ({ff.length}) found in:\n"
                 + "\n".join(
                     (

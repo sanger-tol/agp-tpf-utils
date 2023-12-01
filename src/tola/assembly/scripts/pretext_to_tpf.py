@@ -54,8 +54,8 @@ def ul(txt):
         Any other tags are assumed to be the name of a haplotype, and their
       assemblies are placed in separate files. Unplaced scaffolds for each
       haplotype are identified by their names beginning with the
-      haplotype's name followed by an underscore. {it("i.e.")} 'HAP2_' for
-      'HAP2'
+      haplotype's name followed by an underscore. {it("i.e.")} 'Hap2_' for
+      'Hap2'
       """,
 )
 @click.option(
@@ -164,7 +164,10 @@ def cli(
 def setup_logging(log_level, output_file, write_log, clobber):
     conf = {
         "level": getattr(logging, log_level),
-        "format": "%(message)s",  # Leaves message unchanged
+        # Leave messages unchanged:
+        "format": "%(message)s",
+        # Change config if called a second time (e.g. during testing):
+        "force": True,
     }
     logfile = None
     if output_file and write_log:
@@ -219,7 +222,7 @@ def report_overlaps(pairs):
     for pr in pairs:
         f1, s1 = pr[0]
         f2, s2 = pr[1]
-        logging.warn(f"\nDuplicated component:\n{s1.name} {f1}\n{s2.name} {f2}")
+        logging.warning(f"\nDuplicated component:\n{s1.name} {f1}\n{s2.name} {f2}")
 
 
 def parse_assembly_file(path, default_format=None):
