@@ -100,9 +100,14 @@ class AssemblyStats:
                 )
                 # Show longest scaffold
                 self.log_scaffold_length(*scaffolds[0])
+
+                # Show the middle scaffold if there are only three
+                if len(scaffolds) == 3:
+                    self.log_scaffold_length(*scaffolds[1])
                 # Omit the "..." line if there are only one or two scaffolds
-                if len(scaffolds) > 2:
+                elif len(scaffolds) > 2:
                     logging.info("                ...  ...")
+
                 # Show shortest scaffold
                 if len(scaffolds) > 1:
                     self.log_scaffold_length(*scaffolds[-1])

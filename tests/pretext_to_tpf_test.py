@@ -45,7 +45,7 @@ def run_assembly(data_dir, specimen):
         assert result.exit_code == 0
         for spec_path in specimen_dir.iterdir():
             spec_file = spec_path.name
-            if spec_file in (input_tpf, pretext_agp):
+            if spec_file in (input_tpf, pretext_agp) or spec_file.startswith("."):
                 continue
             test_path = tmp_path / spec_file
             print(f"Specimen dir file: {spec_file}")

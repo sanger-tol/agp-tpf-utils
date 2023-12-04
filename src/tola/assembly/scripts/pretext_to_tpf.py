@@ -148,15 +148,15 @@ def cli(
     build_asm.remap_to_input_assembly(prtxt_asm, input_asm)
 
     out_assemblies = build_asm.assemblies_with_scaffolds_fused()
+    for out_asm in out_assemblies.values():
+        write_assembly(out_asm, output_file, clobber)
     stats = build_asm.assembly_stats
+    if output_file:
+        write_chr_csv_files(output_file, stats, out_assemblies, clobber)
     for asm_key, out_asm in out_assemblies.items():
         stats.log_assembly_chromosomes(asm_key, out_asm)
     logging.info("")
     stats.log_curation_stats()
-    for out_asm in out_assemblies.values():
-        write_assembly(out_asm, output_file, clobber)
-    if output_file:
-        write_chr_csv_files(output_file, stats, out_assemblies, clobber)
     if logfile:
         click.echo(f"Log saved to file '{logfile}'", err=True)
 
@@ -174,7 +174,11 @@ def setup_logging(log_level, output_file, write_log, clobber):
         logfile = output_file.with_suffix(".log")
         conf["filename"] = logfile
         conf["filemode"] = "w" if clobber else "x"
-    logging.basicConfig(**conf)
+    try:
+        logging.basicConfig(**conf)
+    except FileExistsError:
+        click.echo(f"Error: log file '{logfile}' already exists", err=True)
+        sys.exit(1)
     return logfile
 
 
@@ -183,11 +187,7 @@ def write_assembly(out_asm, output_file, clobber):
         out_fmt = format_from_file_extn(output_file, "TPF")
         if out_asm.name != output_file.stem:
             output_file = output_file.with_stem(out_asm.name)
-        try:
-            out_fh = output_file.open("w" if clobber else "x")
-        except FileExistsError:
-            click.echo(f"Error: output file '{output_file}' already exists", err=True)
-            sys.exit(1)
+        out_fh = get_output_filehandle(output_file, clobber)
     else:
         out_fmt = "STR"
         out_fh = sys.stdout
@@ -211,18 +211,20 @@ def write_chr_csv_files(output_file, stats, out_assemblies, clobber):
             csv_file = output_file.parent / (
                 f"chrs_{asm_key}.csv" if asm_key else "chrs.csv"
             )
-            with csv_file.open("w" if clobber else "x") as csv_fh:
+            with get_output_filehandle(csv_file, clobber) as csv_fh:
                 for cn in chr_names:
                     csv_fh.write(cn + "\n")
             op = "Overwrote" if clobber else "Created"
-            click.echo(f"{op} file '{csv_file}'")
+            click.echo(f"{op} file '{csv_file}'", err=True)
 
 
-def report_overlaps(pairs):
-    for pr in pairs:
-        f1, s1 = pr[0]
-        f2, s2 = pr[1]
-        logging.warning(f"\nDuplicated component:\n{s1.name} {f1}\n{s2.name} {f2}")
+def get_output_filehandle(path, clobber):
+    try:
+        out_fh = path.open("w" if clobber else "x")
+    except FileExistsError:
+        click.echo(f"Error: output file '{path}' already exists", err=True)
+        sys.exit(1)
+    return out_fh
 
 
 def parse_assembly_file(path, default_format=None):
