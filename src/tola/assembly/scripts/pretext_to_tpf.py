@@ -102,6 +102,7 @@ def ul(txt):
 )
 @click.option(
     "--clobber/--no-clobber",
+    "-f",
     default=False,
     show_default=True,
     help="Overwrite an existing output file.",
@@ -207,13 +208,13 @@ def write_assembly(out_asm, output_file, clobber):
 
 def write_chr_csv_files(output_file, stats, out_assemblies, clobber):
     for asm_key, asm in out_assemblies.items():
-        if chr_names := stats.chromosome_names(asm_key, asm):
+        if chr_names := stats.chromosome_names(asm):
             csv_file = output_file.parent / (
                 f"chrs_{asm_key}.csv" if asm_key else "chrs.csv"
             )
             with get_output_filehandle(csv_file, clobber) as csv_fh:
-                for cn in chr_names:
-                    csv_fh.write(cn + "\n")
+                for cn_list in chr_names:
+                    csv_fh.write(",".join(cn_list) + "\n")
             op = "Overwrote" if clobber else "Created"
             click.echo(f"{op} file '{csv_file}'", err=True)
 

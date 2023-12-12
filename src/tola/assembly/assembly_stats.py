@@ -35,12 +35,16 @@ class AssemblyStats:
             f" {break_plural} and {self.joins} {join_plural}"
         )
 
-    def build_assembly_scaffold_lengths(self, asm: Assembly):
+    def ranked_scaffolds(self, asm: Assembly):
         autosome_prefix = self.autosome_prefix
         ranked_scaffolds = {}
         for scffld in asm.scaffolds:
             rank = scffld.rank(autosome_prefix)
             ranked_scaffolds.setdefault(rank, []).append(scffld)
+        return ranked_scaffolds
+
+    def build_assembly_scaffold_lengths(self, asm: Assembly):
+        ranked_scaffolds = self.ranked_scaffolds(asm)
 
         ranked_names_lengths = {}
         for rank, scaffolds in ranked_scaffolds.items():
@@ -61,12 +65,20 @@ class AssemblyStats:
             asm_key, self.build_assembly_scaffold_lengths(asm)
         )
 
-    def chromosome_names(self, asm_key: str | None, asm: Assembly):
+    def chromosome_names(self, asm: Assembly):
         chr_names = []
-        for rank, name_length in self.get_assembly_scaffold_lengths(asm_key, asm).items():
+        for rank, scaffolds in self.ranked_scaffolds(asm).items():
             if rank[0] in (0, 1):
-                for name in name_length:
-                    chr_names.append(name)
+                current_chr = None
+                current_chr_list = None
+                for scffld in scaffolds:
+                    name = scffld.name
+                    if current_chr and name.startswith(current_chr):
+                        current_chr_list.append(name)
+                    else:
+                        current_chr = name
+                        current_chr_list = [name]
+                        chr_names.append(current_chr_list)
         return chr_names if chr_names else None
 
     def log_assembly_chromosomes(self, asm_key: str | None, asm: Assembly):
