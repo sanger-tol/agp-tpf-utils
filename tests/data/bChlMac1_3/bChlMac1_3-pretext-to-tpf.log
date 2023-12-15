@@ -13,7 +13,7 @@ bChlMac1_3-pretext-to-tpf_HAP1
     n = 36
         215,692,358  RL_1
                 ...  ...
-            292,585  RL_33
+            292,585  RL_65
       1,086,170,135  bp total
   Named:
     n = 2
@@ -31,9 +31,9 @@ bChlMac1_3-pretext-to-tpf_HAP2
       1,106,806,515  bp sequence (minus gaps)
   Autosomes:
     n = 36
-        214,587,655  RL_1
+        214,587,655  RL_2
                 ...  ...
-            188,044  RL_36
+            188,044  RL_72
       1,053,881,404  bp total
   Unplaced:
     n = 306

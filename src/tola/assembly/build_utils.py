@@ -16,13 +16,14 @@ class ChrNamer:
 
     def __init__(self, autosome_prefix="RL_"):
         self.autosome_prefix = autosome_prefix
-        self.hap_chr_name_n = {}
+        self.chr_name_n = 0
         self.current_chr_name = None
         self.current_haplotype = None
         self.haplotig_n = 0
         self.haplotig_scaffolds = []
         self.unloc_n = 0
         self.unloc_scaffolds = []
+        self.haplotype_set = set()
 
     def make_chr_name(self, scaffold: Scaffold) -> None:
         """
@@ -60,7 +61,7 @@ class ChrNamer:
 
         if not chr_name:
             if is_painted:
-                chr_name = self.autosome_name(haplotype)
+                chr_name = self.autosome_name()
             else:
                 # Unpainted scaffolds keep the name they have in the input
                 # assembly
@@ -72,11 +73,13 @@ class ChrNamer:
                 # Pretext Assembly.)
                 if m := re.match(r"([^_]+)_", chr_name):
                     prefix = m.group(1)
-                    if self.hap_chr_name_n.get(prefix):
+                    if prefix in self.haplotype_set:
                         haplotype = prefix
 
         self.current_chr_name = chr_name
         self.current_haplotype = haplotype
+        if haplotype:
+            self.haplotype_set.add(haplotype)
         self.unloc_n = 0
         self.unloc_scaffolds = []
 
@@ -95,14 +98,12 @@ class ChrNamer:
         scaffold.name = name
         scaffold.haplotype = self.current_haplotype
 
-    def autosome_name(self, haplotype: str) -> str:
+    def autosome_name(self) -> str:
         """
         Name the next autosome in the haplotype
         """
-        chr_n = self.hap_chr_name_n.get(haplotype, 0)
-        chr_n += 1
-        self.hap_chr_name_n[haplotype] = chr_n
-        return self.autosome_prefix + str(chr_n)
+        self.chr_name_n += 1
+        return self.autosome_prefix + str(self.chr_name_n)
 
     def haplotig_name(self) -> str:
         self.haplotig_n += 1
