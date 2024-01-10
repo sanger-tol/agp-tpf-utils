@@ -44,8 +44,8 @@ def test_simple():
     assert o1.start_row_bait_overlap == 3
     assert o1.end_row_bait_overlap == 6
     assert o1.length_error == -5
-    assert o1.error_if_start_removed() == -12
-    assert o1.error_if_end_removed() == -13
+    assert o1.overhang_if_start_removed() == -5
+    assert o1.overhang_if_end_removed() == -15
     assert o1.length_error_in_texels(10) == 5 / 10
 
 
@@ -60,8 +60,8 @@ def test_properties():
     assert o1.start_row_bait_overlap == 9000
     assert o1.end_row_bait_overlap == 10_000
     assert o1.length_error == 500
-    assert o1.error_if_start_removed() == -9700
-    assert o1.error_if_end_removed() == -9700
+    assert o1.overhang_if_start_removed() == -9200
+    assert o1.overhang_if_end_removed() == -10700
     assert o1.length_error_in_texels(750) == 2 / 3
 
 
@@ -93,7 +93,7 @@ def test_trim_overhangs():
     o1.rows[0] = Fragment(name="frag_x", start=1, end=80_000, strand=1)
     o1.start -= 70_000
     assert o1.start_overhang == 71_000
-    assert o1.error_if_start_removed() == -9700
+    assert o1.overhang_if_start_removed() == -9200
     assert o1.start_row_bait_overlap == 9000
 
     o1.trim_large_overhangs(20_000)

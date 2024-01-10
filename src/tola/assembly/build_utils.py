@@ -2,7 +2,9 @@
 Utility objects used by BuildAssembly
 """
 
+import logging
 import re
+import textwrap
 
 from tola.assembly.fragment import Fragment
 from tola.assembly.overlap_result import OverlapResult
@@ -158,42 +160,28 @@ class OverhangPremise:
     Fragment is present in more than one OverlapResult.
     """
 
-    __slots__ = "scaffold", "fragment", "position", "error_increase"
+    __slots__ = "scaffold", "fragment"
 
-    def __init__(self, scaffold: OverlapResult, fragment: Fragment, position: int):
+    def __init__(self, scaffold: OverlapResult, fragment: Fragment):
         self.scaffold = scaffold
         self.fragment = fragment
-        if position in (1, -1):
-            self.position = position
-        else:
-            msg = f"position must be '1' (start) or '-1' (end) not '{position}'"
-            raise ValueError(msg)
 
-    @property
-    def bait_overlap(self) -> int:
-        if self.position == 1:
-            return self.scaffold.start_row_bait_overlap
-        else:
-            return self.scaffold.end_row_bait_overlap
-
-    @property
-    def error_if_applied(self) -> int:
-        if self.position == 1:
-            return self.scaffold.error_if_start_removed()
-        else:
-            return self.scaffold.error_if_end_removed()
-
-    @property
-    def length_error_delta_if_applied(self) -> int:
-        return abs(self.error_if_applied) - abs(self.scaffold.length_error)
+    def __str__(self):
+        return (
+            f"{self.__class__.__name__}\n"
+            f"  bait overlap: {self.bait_overlap:12_d}\n  if applied:\n"
+            f"      overhang: {self.overhang_if_applied:12_d}\n"
+            f"   error delta: {self.overhang_error_delta_if_applied:12_d}\n\n"
+            + textwrap.indent(f"{self.scaffold}\n", "  ")
+        )
 
     def improves(self, err_length) -> bool:
         if len(self.scaffold.rows) == 1:
             return False
-        if self.length_error_delta_if_applied < 0 and (
+        if self.overhang_error_delta_if_applied < 0 and (
             # Guard against removing fragments which would produce a large
             # negative overhang - they should be cut instead.
-            self.error_if_applied > -5 * err_length
+            self.overhang_if_applied > -3 * err_length
         ):
             return True
         else:
@@ -202,11 +190,43 @@ class OverhangPremise:
     def makes_worse(self, err_length) -> bool:
         return not self.improves(err_length)
 
+
+class StartOverhangPremise(OverhangPremise):
+    @property
+    def bait_overlap(self) -> int:
+        return self.scaffold.start_row_bait_overlap
+
+    @property
+    def overhang_if_applied(self) -> int:
+        return self.scaffold.overhang_if_start_removed()
+
+    @property
+    def overhang_error_delta_if_applied(self) -> int:
+        return abs(self.scaffold.overhang_if_start_removed()) - abs(
+            self.scaffold.start_overhang
+        )
+
     def apply(self) -> None:
-        if self.position == 1:
-            self.scaffold.discard_start()
-        else:
-            self.scaffold.discard_end()
+        self.scaffold.discard_start()
+
+
+class EndOverhangPremise(OverhangPremise):
+    @property
+    def bait_overlap(self) -> int:
+        return self.scaffold.end_row_bait_overlap
+
+    @property
+    def overhang_if_applied(self) -> int:
+        return self.scaffold.overhang_if_end_removed()
+
+    @property
+    def overhang_error_delta_if_applied(self) -> int:
+        return abs(self.scaffold.overhang_if_end_removed()) - abs(
+            self.scaffold.end_overhang
+        )
+
+    def apply(self) -> None:
+        self.scaffold.discard_end()
 
 
 class OverhangResolver:
@@ -223,9 +243,9 @@ class OverhangResolver:
 
     def add_overhang_premise(self, fragment: Fragment, scffld: OverlapResult) -> None:
         if scffld.rows[0] is fragment:
-            premise = OverhangPremise(scffld, fragment, 1)
+            premise = StartOverhangPremise(scffld, fragment)
         elif scffld.rows[-1] is fragment:
-            premise = OverhangPremise(scffld, fragment, -1)
+            premise = EndOverhangPremise(scffld, fragment)
         else:
             return
 
@@ -239,12 +259,16 @@ class OverhangResolver:
         for prem_list in self.premises_by_fragment_key.values():
             prem_count = len(prem_list)
 
+            logging.debug(
+                f"\n{prem_count} OverhangPremises for {prem_list[0].fragment}:\n"
+                + textwrap.indent("".join(f"\n{prem}" for prem in prem_list), "  ")
+            )
+
             if prem_count == 2:
                 # To prevent cuts being made which result in Fragments smaller
                 # than a Pretext pixel, remove Fragment from the OverlapResult
                 # scaffold with the shortest overlap to the bait Fragment.
-                frst = prem_list[0]
-                scnd = prem_list[1]
+                frst, scnd = prem_list
                 if frst.bait_overlap < err_length and scnd.bait_overlap < err_length:
                     if frst.bait_overlap < scnd.bait_overlap:
                         frst.apply()
@@ -259,7 +283,7 @@ class OverhangResolver:
                 # one Scaffold, or we would be removing sequence data from
                 # the assembly.
                 best_to_worst = sorted(
-                    prem_list, key=lambda x: x.length_error_delta_if_applied
+                    prem_list, key=lambda x: x.overhang_error_delta_if_applied
                 )
                 bst = best_to_worst[0]
                 nxt = best_to_worst[1]

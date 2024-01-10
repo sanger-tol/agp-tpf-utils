@@ -185,25 +185,25 @@ class OverlapResult(Scaffold):
             gap = self.rows.pop(-1)
             self.end -= gap.length
 
-    def error_if_start_removed(self) -> int:
-        length_if_rem = self.length
-        length_if_rem -= self.rows[0].length
+    def overhang_if_start_removed(self) -> int:
+        start = self.start
+        start += self.rows[0].length
         for r in self.rows[1:]:
             if isinstance(r, Gap):
-                length_if_rem -= r.length
+                start += r.length
             else:
                 break
-        return length_if_rem - self.bait.length
+        return self.bait.start - start
 
-    def error_if_end_removed(self) -> int:
-        length_if_rem = self.length
-        length_if_rem -= self.rows[-1].length
+    def overhang_if_end_removed(self) -> int:
+        end = self.end
+        end -= self.rows[-1].length
         for r in self.rows[-2::-1]:  # Step backwards from second to last element
             if isinstance(r, Gap):
-                length_if_rem -= r.length
+                end -= r.length
             else:
                 break
-        return length_if_rem - self.bait.length
+        return end - self.bait.end
 
     def trim_large_overhangs(self, err_length: int) -> None:
         if len(self.rows) == 1 and self.bait.length > err_length:

@@ -1,0 +1,54 @@
+Pretext resolution = 2,326 bp per texel
+
+Contig:
+        3,034,203  SCAFFOLD_1:22307438-25341640(+)
+cut into:
+          223,325  SCAFFOLD_1:22307438-22530762(+) Cut
+           23,261  SCAFFOLD_1:22530763-22554023(+) Cut Haplotig
+        2,787,617  SCAFFOLD_1:22554024-25341640(+) Cut
+
+Contig:
+        2,342,136  SCAFFOLD_1:25341841-27683976(+)
+cut into:
+           31,436  SCAFFOLD_1:25341841-25373276(+) Cut Haplotig
+        2,310,700  SCAFFOLD_1:25373277-27683976(+) Cut
+
+Contig:
+        5,440,615  SCAFFOLD_2:5308687-10749301(+)
+cut into:
+          460,082  SCAFFOLD_2:5308687-5768768(+) Cut
+        4,980,533  SCAFFOLD_2:5768769-10749301(+) Cut
+
+Contig:
+        8,650,171  SCAFFOLD_2:10749502-19399672(+)
+cut into:
+        2,907,127  SCAFFOLD_2:10749502-13656628(+) Cut
+        5,743,044  SCAFFOLD_2:13656629-19399672(+) Cut
+
+Contig:
+       12,161,825  SCAFFOLD_3:6221335-18383159(+)
+cut into:
+          191,768  SCAFFOLD_3:6221335-6413102(+) Cut
+       11,970,057  SCAFFOLD_3:6413103-18383159(+) Cut
+
+
+nxCaeSini1_1-pretext-to-tpf
+        152,385,837  bp sequence (minus gaps)
+  Autosomes:
+    n = 6
+         34,667,637  RL_1
+                ...  ...
+         19,642,777  RL_6
+        152,370,145  bp total
+  Unplaced:
+    n = 1
+             15,692  SCAFFOLD_15
+
+nxCaeSini1_1-pretext-to-tpf_Haplotigs
+             54,697  bp sequence (minus gaps)
+    n = 2
+             31,436  H_1
+             23,261  H_2
+             54,697  bp total
+
+Curation made 6 cuts in contigs, 3 breaks at gaps and 14 joins

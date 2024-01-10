@@ -9,6 +9,10 @@ Straightforward example with no named chromosomes and no cuts.
 
 Slightly more complex example with 7 haplotigs, an X chromosome, but no cuts.
 
+### [nxCaeSini1_1](nxCaeSini1_1)
+
+Cuts and inversions.
+
 ### [idSyrVitr1](idSyrVitr1)
 
 Both X and Y chromosomes, and one haplotig.

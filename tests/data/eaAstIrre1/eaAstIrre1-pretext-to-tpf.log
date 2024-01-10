@@ -20,12 +20,6 @@ cut into:
           326,065  SCAFFOLD_2:3810282-4136346(+) Cut
 
 Contig:
-           55,407  SCAFFOLD_3:16379720-16435126(+)
-cut into:
-           12,114  SCAFFOLD_3:16379720-16391833(+) Cut
-           43,293  SCAFFOLD_3:16391834-16435126(+) Cut
-
-Contig:
         1,424,997  SCAFFOLD_17:976531-2401527(+)
 cut into:
           174,175  SCAFFOLD_17:976531-1150705(+) Cut
@@ -80,10 +74,10 @@ cut into:
           799,057  SCAFFOLD_11:2712921-3511977(+) Cut
 
 Contig:
-          207,700  SCAFFOLD_12:13577815-13785514(+)
+          193,270  SCAFFOLD_12:13384345-13577614(+)
 cut into:
-            9,651  SCAFFOLD_12:13577815-13587465(+) Cut Haplotig
-          198,049  SCAFFOLD_12:13587466-13785514(+) Cut
+           43,089  SCAFFOLD_12:13384345-13427433(+) Cut
+          150,181  SCAFFOLD_12:13427434-13577614(+) Cut Haplotig
 
 Contig:
           706,207  SCAFFOLD_13:16523972-17230178(+)
@@ -123,13 +117,13 @@ cut into:
 
 
 eaAstIrre1-pretext-to-tpf
-        476,510,020  bp sequence (minus gaps)
+        476,369,490  bp sequence (minus gaps)
   Autosomes:
     n = 22
          38,696,204  RL_2
                 ...  ...
          12,132,721  RL_19
-        466,482,296  bp total
+        466,341,766  bp total
   Unplaced:
     n = 164
             482,541  SCAFFOLD_47
@@ -138,12 +132,12 @@ eaAstIrre1-pretext-to-tpf
          10,027,724  bp total
 
 eaAstIrre1-pretext-to-tpf_Haplotigs
-         20,013,884  bp sequence (minus gaps)
+         20,154,414  bp sequence (minus gaps)
     n = 44
           3,717,954  H_1
                 ...  ...
-              9,651  H_44
-         20,013,884  bp total
+             79,837  H_44
+         20,154,414  bp total
 
 eaAstIrre1-pretext-to-tpf_Contaminants
           2,742,977  bp sequence (minus gaps)
@@ -153,4 +147,4 @@ eaAstIrre1-pretext-to-tpf_Contaminants
              19,788  SCAFFOLD_218
           2,742,977  bp total
 
-Curation made 21 cuts in contigs, 70 breaks at gaps and 97 joins
+Curation made 20 cuts in contigs, 71 breaks at gaps and 97 joins

@@ -7,7 +7,6 @@ from tola.assembly.assembly_stats import AssemblyStats
 from tola.assembly.build_utils import (
     ChrNamer,
     FoundFragment,
-    OverhangPremise,
     OverhangResolver,
 )
 from tola.assembly.fragment import Fragment

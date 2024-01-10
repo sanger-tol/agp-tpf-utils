@@ -12,6 +12,7 @@ def test_example_data():
     for specimen in (
         "iyExeIsch1",
         "idDilFebr1",
+        "nxCaeSini1_1",
         "idSyrVitr1",
         "ngHelPoly1_1",
         "eaAstIrre1",

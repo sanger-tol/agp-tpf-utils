@@ -1,12 +1,6 @@
 Pretext resolution = 20,103 bp per texel
 
 Contig:
-           58,761  scaffold_1:52583018-52641778(+)
-cut into:
-           27,672  scaffold_1:52583018-52610689(+) Cut
-           31,089  scaffold_1:52610690-52641778(+) Cut
-
-Contig:
           453,813  scaffold_1:85779503-86233315(+)
 cut into:
           263,199  scaffold_1:85779503-86042701(+) Cut
@@ -25,6 +19,12 @@ cut into:
           798,962  scaffold_2:22958123-23757084(+) Cut
 
 Contig:
+          422,678  scaffold_3:9560043-9982720(+)
+cut into:
+           69,503  scaffold_3:9560043-9629545(+) Cut
+          353,175  scaffold_3:9629546-9982720(+) Cut
+
+Contig:
           571,754  scaffold_3:55036166-55607919(+)
 cut into:
           107,556  scaffold_3:55036166-55143721(+) Cut
@@ -37,22 +37,22 @@ cut into:
           343,709  scaffold_3:55686515-56030223(+) Cut
 
 Contig:
-          920,802  scaffold_4:4369569-5290370(+)
+        1,202,136  scaffold_4:2293832-3495967(+)
 cut into:
-           33,084  scaffold_4:4369569-4402652(+) Cut
-          887,718  scaffold_4:4402653-5290370(+) Cut
+          480,443  scaffold_4:2293832-2774274(+) Cut
+          721,693  scaffold_4:2774275-3495967(+) Cut
+
+Contig:
+          175,772  scaffold_4:50479264-50655035(+)
+cut into:
+           80,875  scaffold_4:50479264-50560138(+) Cut
+           94,897  scaffold_4:50560139-50655035(+) Cut
 
 Contig:
           429,449  scaffold_5:42746124-43175572(+)
 cut into:
           335,537  scaffold_5:42746124-43081660(+) Cut
            93,912  scaffold_5:43081661-43175572(+) Cut Haplotig
-
-Contig:
-           56,608  scaffold_6:9524020-9580627(+)
-cut into:
-           25,112  scaffold_6:9524020-9549131(+) Cut
-           31,496  scaffold_6:9549132-9580627(+) Cut
 
 
 ngHelPoly1_1-pretext-to-tpf
