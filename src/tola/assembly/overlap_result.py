@@ -215,5 +215,9 @@ class OverlapResult(Scaffold):
         ):
             self.discard_start()
 
+            # Return from function if we removed the only row
+            if not self.rows:
+                return
+
         if self.end_overhang > err_length and self.end_row_bait_overlap < err_length:
             self.discard_end()

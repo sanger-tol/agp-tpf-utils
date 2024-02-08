@@ -1,0 +1,226 @@
+Pretext resolution = 13,644 bp per texel
+
+Contig:
+        2,892,093  HAP1_SCAFFOLD_2:1-2892093(+)
+cut into:
+          613,986  HAP1_SCAFFOLD_2:1-613986(+) Cut
+        2,278,107  HAP1_SCAFFOLD_2:613987-2892093(+) Cut
+
+Contig:
+       10,426,329  HAP1_SCAFFOLD_2:2892294-13318622(+)
+cut into:
+          218,574  HAP1_SCAFFOLD_2:2892294-3110867(+) Cut
+          109,153  HAP1_SCAFFOLD_2:3110868-3220020(+) Cut
+       10,098,602  HAP1_SCAFFOLD_2:3220021-13318622(+) Cut HAP1
+
+Contig:
+        2,684,000  HAP2_SCAFFOLD_1:10307431-12991430(+)
+cut into:
+        2,313,412  HAP2_SCAFFOLD_1:10307431-12620842(+) Cut
+          370,588  HAP2_SCAFFOLD_1:12620843-12991430(+) Cut
+
+Contig:
+       12,676,000  HAP1_SCAFFOLD_4:1-12676000(+)
+cut into:
+        5,716,900  HAP1_SCAFFOLD_4:1-5716900(+) Cut
+        5,607,747  HAP1_SCAFFOLD_4:5716901-11324647(+) Cut HAP2
+        1,351,353  HAP1_SCAFFOLD_4:11324648-12676000(+) Cut
+
+Contig:
+        9,347,000  HAP1_SCAFFOLD_5:3245824-12592823(+)
+cut into:
+        2,512,009  HAP1_SCAFFOLD_5:3245824-5757832(+) Cut
+        6,834,991  HAP1_SCAFFOLD_5:5757833-12592823(+) Cut HAP1
+
+Contig:
+       10,396,008  HAP1_SCAFFOLD_8:1158583-11554590(+)
+cut into:
+        3,535,006  HAP1_SCAFFOLD_8:1158583-4693588(+) Cut
+        6,861,002  HAP1_SCAFFOLD_8:4693589-11554590(+) Cut HAP1
+
+Contig:
+        8,113,000  HAP1_SCAFFOLD_6:1-8113000(+)
+cut into:
+        3,397,394  HAP1_SCAFFOLD_6:1-3397394(+) Cut
+        4,715,606  HAP1_SCAFFOLD_6:3397395-8113000(+) Cut HAP2
+
+Contig:
+        4,331,534  HAP1_SCAFFOLD_9:1628708-5960241(+)
+cut into:
+        2,751,066  HAP1_SCAFFOLD_9:1628708-4379773(+) Cut HAP1
+        1,580,468  HAP1_SCAFFOLD_9:4379774-5960241(+) Cut
+
+Contig:
+        6,215,927  HAP1_SCAFFOLD_14:4434201-10650127(+)
+cut into:
+        3,506,697  HAP1_SCAFFOLD_14:4434201-7940897(+) Cut HAP2
+        2,709,230  HAP1_SCAFFOLD_14:7940898-10650127(+) Cut HAP1
+
+Contig:
+        5,508,190  HAP1_SCAFFOLD_15:1-5508190(+)
+cut into:
+        3,301,885  HAP1_SCAFFOLD_15:1-3301885(+) Cut
+        2,206,305  HAP1_SCAFFOLD_15:3301886-5508190(+) Cut
+
+Contig:
+        3,239,000  HAP1_SCAFFOLD_18:6564126-9803125(+)
+cut into:
+          667,276  HAP1_SCAFFOLD_18:6564126-7231401(+) Cut
+        1,855,605  HAP1_SCAFFOLD_18:7231402-9087006(+) Cut
+          716,119  HAP1_SCAFFOLD_18:9087007-9803125(+) Cut
+
+Contig:
+        1,527,674  HAP2_SCAFFOLD_22:1-1527674(+)
+cut into:
+          109,153  HAP2_SCAFFOLD_22:1-109153(+) Cut
+        1,418,521  HAP2_SCAFFOLD_22:109154-1527674(+) Cut
+
+Contig:
+        5,782,342  HAP1_SCAFFOLD_18:781584-6563925(+)
+cut into:
+        4,307,686  HAP1_SCAFFOLD_18:781584-5089269(+) Cut HAP1
+        1,474,656  HAP1_SCAFFOLD_18:5089270-6563925(+) Cut
+
+Contig:
+        3,572,657  HAP1_SCAFFOLD_20:1-3572657(+)
+cut into:
+          409,324  HAP1_SCAFFOLD_20:1-409324(+) Cut
+        3,163,333  HAP1_SCAFFOLD_20:409325-3572657(+) Cut
+
+Contig:
+        8,988,108  HAP1_SCAFFOLD_21:368910-9357017(+)
+cut into:
+        1,418,475  HAP1_SCAFFOLD_21:368910-1787384(+) Cut
+        5,566,814  HAP1_SCAFFOLD_21:1787385-7354198(+) Cut HAP1
+        2,002,819  HAP1_SCAFFOLD_21:7354199-9357017(+) Cut
+
+Contig:
+          560,463  HAP1_SCAFFOLD_59:1-560463(+)
+cut into:
+          150,085  HAP1_SCAFFOLD_59:1-150085(+) Cut
+          410,378  HAP1_SCAFFOLD_59:150086-560463(+) Cut
+
+Contig:
+        7,028,080  HAP1_SCAFFOLD_23:2217201-9245280(+)
+cut into:
+        3,131,308  HAP1_SCAFFOLD_23:2217201-5348508(+) Cut
+          436,613  HAP1_SCAFFOLD_23:5348509-5785121(+) Cut
+        3,460,159  HAP1_SCAFFOLD_23:5785122-9245280(+) Cut HAP1
+
+Contig:
+        2,217,000  HAP1_SCAFFOLD_23:1-2217000(+)
+cut into:
+          518,477  HAP1_SCAFFOLD_23:1-518477(+) Cut
+        1,698,523  HAP1_SCAFFOLD_23:518478-2217000(+) Cut
+
+Contig:
+        1,503,577  HAP2_SCAFFOLD_15:7474012-8977588(+)
+cut into:
+          821,634  HAP2_SCAFFOLD_15:7474012-8295645(+) Cut
+          681,943  HAP2_SCAFFOLD_15:8295646-8977588(+) Cut
+
+Contig:
+        3,482,153  HAP1_SCAFFOLD_26:1-3482153(+)
+cut into:
+        3,233,664  HAP1_SCAFFOLD_26:1-3233664(+) Cut
+          248,489  HAP1_SCAFFOLD_26:3233665-3482153(+) Cut
+
+Contig:
+        4,894,166  HAP1_SCAFFOLD_27:3880890-8775055(+)
+cut into:
+        4,564,842  HAP1_SCAFFOLD_27:3880890-8445731(+) Cut
+          329,324  HAP1_SCAFFOLD_27:8445732-8775055(+) Cut
+
+Contig:
+        5,621,000  HAP1_SCAFFOLD_20:3769186-9390185(+)
+cut into:
+        5,399,686  HAP1_SCAFFOLD_20:3769186-9168871(+) Cut HAP1
+          221,314  HAP1_SCAFFOLD_20:9168872-9390185(+) Cut
+
+Contig:
+        4,433,732  HAP1_SCAFFOLD_41:1-4433732(+)
+cut into:
+        3,984,092  HAP1_SCAFFOLD_41:1-3984092(+) Cut HAP1
+          449,640  HAP1_SCAFFOLD_41:3984093-4433732(+) Cut
+
+Contig:
+        7,962,338  HAP1_SCAFFOLD_31:1-7962338(+)
+cut into:
+        5,280,287  HAP1_SCAFFOLD_31:1-5280287(+) Cut HAP2
+        2,682,051  HAP1_SCAFFOLD_31:5280288-7962338(+) Cut
+
+Contig:
+        5,487,000  HAP1_SCAFFOLD_33:1798778-7285777(+)
+cut into:
+        1,148,360  HAP1_SCAFFOLD_33:1798778-2947137(+) Cut
+        4,338,640  HAP1_SCAFFOLD_33:2947138-7285777(+) Cut
+
+Contig:
+        1,179,445  HAP2_SCAFFOLD_43:1743924-2923368(+)
+cut into:
+        1,121,349  HAP2_SCAFFOLD_43:1743924-2865272(+) Cut HAP1
+           58,096  HAP2_SCAFFOLD_43:2865273-2923368(+) Cut
+
+Contig:
+        3,925,000  HAP1_SCAFFOLD_35:2989018-6914017(+)
+cut into:
+        1,349,823  HAP1_SCAFFOLD_35:2989018-4338840(+) Cut HAP1
+        1,050,600  HAP1_SCAFFOLD_35:4338841-5389440(+) Cut
+        1,524,577  HAP1_SCAFFOLD_35:5389441-6914017(+) Cut
+
+Contig:
+          891,196  HAP1_SCAFFOLD_48:1-891196(+)
+cut into:
+          136,441  HAP1_SCAFFOLD_48:1-136441(+) Cut
+          272,883  HAP1_SCAFFOLD_48:136442-409324(+) Cut
+           54,577  HAP1_SCAFFOLD_48:409325-463901(+) Cut
+          427,295  HAP1_SCAFFOLD_48:463902-891196(+) Cut
+
+Contig:
+        1,831,845  HAP1_SCAFFOLD_40:3594408-5426252(+)
+cut into:
+        1,522,150  HAP1_SCAFFOLD_40:3594408-5116557(+) Cut
+          309,695  HAP1_SCAFFOLD_40:5116558-5426252(+) Cut Haplotig
+
+
+ilIthSala1_1-pretext-to-tpf_HAP1
+        504,003,295  bp sequence (minus gaps)
+  Autosomes:
+    n = 38
+         14,311,964  RL_59
+                ...  ...
+          5,759,299  RL_73
+        374,425,016  bp total
+  Named:
+    n = 2
+         14,678,243  W
+         22,375,193  Z
+         37,053,436  bp total
+  Unplaced:
+    n = 791
+            651,870  HAP1_SCAFFOLD_54
+                ...  ...
+             16,408  HAP1_SCAFFOLD_864
+         92,470,266  bp total
+
+ilIthSala1_1-pretext-to-tpf_HAP2
+        389,828,879  bp sequence (minus gaps)
+  Autosomes:
+    n = 38
+         13,185,411  RL_2
+                ...  ...
+          5,064,735  RL_64
+        347,504,210  bp total
+  Unplaced:
+    n = 1041
+            543,105  HAP2_SCAFFOLD_55
+                ...  ...
+              5,267  HAP2_SCAFFOLD_1115
+         42,324,669  bp total
+
+ilIthSala1_1-pretext-to-tpf_Haplotigs
+            309,695  bp sequence (minus gaps)
+    n = 1
+            309,695  H_1
+
+Curation made 37 cuts in contigs, 87 breaks at gaps and 185 joins

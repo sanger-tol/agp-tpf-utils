@@ -17,6 +17,7 @@ def test_example_data():
         "ngHelPoly1_1",
         "eaAstIrre1",
         "bChlMac1_3",
+        "ilIthSala1_1",
     ):
         data_dir = pathlib.Path(__file__).parent / "data"
         run_assembly(data_dir, specimen)
