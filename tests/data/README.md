@@ -28,3 +28,8 @@ Has 44 haplotigs, 34 contaminants and a large number of cuts.
 ### [bChlMac1_3](bChlMac1_3/)
 
 Has haplotypes tagged with `HAP1` and `HAP2`.
+
+### [ilIthSala1_1](ilIthSala1_1)
+
+Two haplotypes `HAP1` and `HAP2` with 38 autosomes, plus `W` and `Z` sex
+chromosomes.
