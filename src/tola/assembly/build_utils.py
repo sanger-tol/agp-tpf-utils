@@ -48,6 +48,8 @@ class ChrNamer:
                     )
                     raise ValueError(msg)
                 chr_name = cn
+                # Keep chromosome numbering in sync with Pretext scaffolds:
+                self.chr_name_n += 1
             elif tag not in ("Contaminant", "Cut", "Haplotig", "Unloc"):
                 # Any tag that doesn't look like a chromosome name is assumed
                 # to be a haplotype, and we only expect to find one within

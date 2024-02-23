@@ -187,9 +187,9 @@ ilIthSala1_1-pretext-to-tpf_HAP1
         504,003,295  bp sequence (minus gaps)
   Autosomes:
     n = 38
-         14,311,964  RL_59
+         14,311,964  RL_61
                 ...  ...
-          5,759,299  RL_73
+          5,759,299  RL_75
         374,425,016  bp total
   Named:
     n = 2
@@ -207,9 +207,9 @@ ilIthSala1_1-pretext-to-tpf_HAP2
         389,828,879  bp sequence (minus gaps)
   Autosomes:
     n = 38
-         13,185,411  RL_2
+         13,185,411  RL_4
                 ...  ...
-          5,064,735  RL_64
+          5,064,735  RL_66
         347,504,210  bp total
   Unplaced:
     n = 1041
