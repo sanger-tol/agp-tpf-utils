@@ -1,30 +1,23 @@
 import difflib
 import io
 import pathlib
+import pytest
 import tempfile
 
 from click.testing import CliRunner
 from tola.assembly.scripts.pretext_to_tpf import cli
 
 
-def test_example_data():
-    # Examples in order of increasing complexity
-    for specimen in (
-        "iyExeIsch1",
-        "idDilFebr1",
-        "nxCaeSini1_1",
-        "idSyrVitr1",
-        "ngHelPoly1_1",
-        "eaAstIrre1",
-        "bChlMac1_3",
-        "ilIthSala1_1",
-    ):
-        data_dir = pathlib.Path(__file__).parent / "data"
-        run_assembly(data_dir, specimen)
+def list_example_assemblies():
+    data_dir = pathlib.Path(__file__).parent / "data"
+    for xd in data_dir.iterdir():
+        if xd.is_dir():
+            yield xd
 
 
-def run_assembly(data_dir, specimen):
-    specimen_dir = data_dir / specimen
+@pytest.mark.parametrize("specimen_dir", list_example_assemblies())
+def test_assembly(specimen_dir):
+    specimen = specimen_dir.name
     input_tpf = f"{specimen}-input.tpf"
     pretext_agp = f"{specimen}-pretext.agp"
     assert (specimen_dir / input_tpf).exists()
