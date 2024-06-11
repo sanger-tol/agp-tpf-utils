@@ -108,7 +108,7 @@ class AssemblyStats:
             else:
                 # Print a summary of largest ... smallest scaffolds
                 scaffolds = sorted(
-                    list(name_length.items()), key=lambda nl: nl[1], reverse=True
+                    name_length.items(), key=lambda nl: nl[1], reverse=True
                 )
                 # Show longest scaffold
                 self.log_scaffold_length(*scaffolds[0])
@@ -124,9 +124,9 @@ class AssemblyStats:
                 if len(scaffolds) > 1:
                     self.log_scaffold_length(*scaffolds[-1])
 
-            # Don't show total if there's only one item, or we would show the
-            # same number twice.
-            if len(scaffolds) > 1 and len(name_length) > 1:
+            # Only show total if there's more than one item, or we would show
+            # the same number twice.
+            if len(name_length) > 1:
                 total = sum(name_length.values())
                 logging.info(f"    {total:15,d}  bp total")
 
