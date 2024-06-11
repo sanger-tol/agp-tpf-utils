@@ -50,7 +50,7 @@ class ChrNamer:
                 chr_name = cn
                 # Keep chromosome numbering in sync with Pretext scaffolds:
                 self.chr_name_n += 1
-            elif tag not in ("Contaminant", "Cut", "Haplotig", "Unloc"):
+            elif tag not in ("Contaminant", "Cut", "Haplotig", "Target", "Unloc"):
                 # Any tag that doesn't look like a chromosome name is assumed
                 # to be a haplotype, and we only expect to find one within
                 # each Pretext Scaffold
@@ -91,6 +91,8 @@ class ChrNamer:
         name = self.current_chr_name
         if "Contaminant" in fragment.tags:
             scaffold.tag = "Contaminant"
+        elif "Target" in fragment.tags:
+            scaffold.tag = "Target"
         elif "Haplotig" in fragment.tags:
             name = self.haplotig_name()
             scaffold.tag = "Haplotig"

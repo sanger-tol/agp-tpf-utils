@@ -1,0 +1,25 @@
+Pretext resolution = 6,826 bp per texel
+
+
+csSphGirg1_1-pretext-to-tpf_Targets
+        411,723,743  bp sequence (minus gaps)
+  Autosomes:
+    n = 20
+         35,515,324  RL_1
+                ...  ...
+          1,588,691  RL_21
+        411,723,743  bp total
+
+csSphGirg1_1-pretext-to-tpf
+         35,520,668  bp sequence (minus gaps)
+  Autosomes:
+    n = 1
+         20,107,216  RL_11
+  Unplaced:
+    n = 639
+            269,705  SCAFFOLD_62
+                ...  ...
+              1,000  SCAFFOLD_5395
+         15,413,452  bp total
+
+Curation made 0 cuts in contigs, 3 breaks at gaps and 4 joins

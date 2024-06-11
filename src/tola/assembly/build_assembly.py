@@ -1,4 +1,3 @@
-import click
 import logging
 import math
 
@@ -181,7 +180,7 @@ class BuildAssembly(Assembly):
                 f"Expecting 0 but got {overlap_count} overlaps in new sub fragments\n"
             )
         if abut_count != lgth - 1:
-            msg += f"Expecting {lgth - 1} abutting sub fragments but got {abut_count}\n"
+            msg += f"Expecting {lgth - 1} abutting sub fragment junctions but got {abut_count}\n"
         if msg:
             msg += "\n" + "\n\n".join(str(s) for s in fnd.scaffolds)
             raise ValueError(msg)

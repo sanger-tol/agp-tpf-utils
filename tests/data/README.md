@@ -33,3 +33,8 @@ Has haplotypes tagged with `HAP1` and `HAP2`.
 
 Two haplotypes `HAP1` and `HAP2` with 38 autosomes, plus `W` and `Z` sex
 chromosomes.
+
+### [csSphGirg1_1](csSphGirg1_1)
+
+Implementation of `Target` tag.
+

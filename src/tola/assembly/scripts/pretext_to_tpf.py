@@ -3,7 +3,6 @@ import logging
 import pathlib
 import sys
 
-from tola.assembly.assembly_stats import AssemblyStats
 from tola.assembly.build_assembly import BuildAssembly
 from tola.assembly.format import format_agp, format_tpf
 from tola.assembly.gap import Gap

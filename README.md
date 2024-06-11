@@ -2,7 +2,7 @@
 # Utilities for Tree of Life AGP and TPF Assembly Files
 
 Code for working with AGP and TPF files as used within the Tree of Life
-project, where the combination of long read sequencing and HiC data is used
+project, where the combination of long read sequencing and Hi-C data is used
 to produce whole genome assemblies. It is not therefore intended to cover the
 full range of AGP and TPF syntax.
 
@@ -62,7 +62,8 @@ contain:
 - `Haplotig` for haplotype-specific contigs.
 - Haplotypes:
   - `Hap1`, `Hap2`…
-- `Painted` where fragment has HiC contacts.
+- `Painted` where fragment has Hi-C contacts.
+- `Target`
 - `Unloc` are fragments attached to chromosomes but unlocalised within them.
 - Sex Chromosomes:
   - `U`

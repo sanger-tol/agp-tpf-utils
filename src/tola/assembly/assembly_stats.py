@@ -1,7 +1,6 @@
 import logging
 
 from tola.assembly.assembly import Assembly
-from tola.assembly.indexed_assembly import IndexedAssembly
 from tola.assembly.scaffold import Scaffold
 
 
@@ -108,7 +107,7 @@ class AssemblyStats:
             else:
                 # Print a summary of largest ... smallest scaffolds
                 scaffolds = sorted(
-                    list(name_length.items()), key=lambda nl: nl[1], reverse=True
+                    name_length.items(), key=lambda nl: nl[1], reverse=True
                 )
                 # Show longest scaffold
                 self.log_scaffold_length(*scaffolds[0])
