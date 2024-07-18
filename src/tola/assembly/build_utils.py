@@ -38,16 +38,15 @@ class ChrNamer:
         for tag in scaffold.fragment_tags():
             if tag == "Painted":
                 is_painted = True
-            elif m := re.match(r"[A-Z]\d*$", tag):
+            elif re.fullmatch(r"([A-Z]\d*|[IVX_]+)", tag):
                 # This tag looks like a chromosome name
-                cn = m.group(0)
-                if chr_name and cn != chr_name:
+                if chr_name and tag != chr_name:
                     msg = (
                         f"Found more than one chr_name name: '{chr_name}'"
-                        f" and '{cn}' in scaffold:\n\n{scaffold}"
+                        f" and '{tag}' in scaffold:\n\n{scaffold}"
                     )
                     raise ValueError(msg)
-                chr_name = cn
+                chr_name = tag
                 # Keep chromosome numbering in sync with Pretext scaffolds:
                 self.chr_name_n += 1
             elif tag not in ("Contaminant", "Cut", "Haplotig", "Unloc"):
