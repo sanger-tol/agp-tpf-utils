@@ -6,8 +6,6 @@ on:
       - 'main'
     tags:
       - 'v*'
-    paths:
-      - 'docker/**'
 
 env:
   REGISTRY: ghcr.io
@@ -52,7 +50,7 @@ jobs:
         id: build-and-push
         with:
           # relative path to the place where source code with Dockerfile is located
-          context: ./docker
+          context: .
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           push: true

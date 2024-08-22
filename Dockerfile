@@ -9,6 +9,4 @@ WORKDIR /myworkdir
 COPY src /myworkdir/src/
 COPY README.md /myworkdir/src/
 COPY pyproject.toml /myworkdir/
-
-# Set up the virtual environment and install dependencies
 RUN pip install --editable .
