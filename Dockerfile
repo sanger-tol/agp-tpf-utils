@@ -1,4 +1,6 @@
 FROM python:3.12.5
+LABEL maintainer=yy5@sanger.ac.uk
+LABEL org.opencontainers.image.licenses="MIT"
 
 # Create the working directory
 WORKDIR /myworkdir
@@ -17,7 +19,4 @@ RUN python3 -m venv --prompt asm-utils venv && \
     pip install --editable .
 
 # Activate virtual environment by default
-ENV PATH="/myworkdir/venv/bin:$PATH"
-
-# This step is optional and for debugging purposes
-RUN python --version && pip --version
+ENV PATH="/myworkdir/venv/bin:$PATH"    
