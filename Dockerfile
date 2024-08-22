@@ -9,4 +9,6 @@ WORKDIR /myworkdir
 COPY src /myworkdir/src/
 COPY README.md /myworkdir/src/
 COPY pyproject.toml /myworkdir/
+
+# build
 RUN pip install --editable .
