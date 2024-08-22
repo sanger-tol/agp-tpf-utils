@@ -12,7 +12,7 @@ on:
 env:
   REGISTRY: ghcr.io
   ORGANISATION: sanger-tol
-  IMAGE_NAME: software-tracker
+  IMAGE_NAME: agp-tpf-utils
 
 permissions:
   contents: write
