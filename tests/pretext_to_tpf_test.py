@@ -1,9 +1,9 @@
 import difflib
 import io
 import pathlib
-import pytest
 import tempfile
 
+import pytest
 from click.testing import CliRunner
 from tola.assembly.scripts.pretext_to_tpf import cli
 

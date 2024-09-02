@@ -1,5 +1,4 @@
 import pytest
-
 from tola.assembly.fragment import Fragment
 from tola.assembly.gap import Gap
 from tola.assembly.overlap_result import OverlapResult

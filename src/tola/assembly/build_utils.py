@@ -179,14 +179,11 @@ class OverhangPremise:
     def improves(self, err_length) -> bool:
         if len(self.scaffold.rows) == 1:
             return False
-        if self.overhang_error_delta_if_applied < 0 and (
+        return self.overhang_error_delta_if_applied < 0 and (
             # Guard against removing fragments which would produce a large
             # negative overhang - they should be cut instead.
             self.overhang_if_applied > -3 * err_length
-        ):
-            return True
-        else:
-            return False
+        )
 
     def makes_worse(self, err_length) -> bool:
         return not self.improves(err_length)

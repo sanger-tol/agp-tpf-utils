@@ -1,10 +1,10 @@
-import click
 import pathlib
 import re
 import sys
 
-from tola.assembly.parser import parse_agp, parse_tpf
+import click
 from tola.assembly.format import format_agp, format_tpf
+from tola.assembly.parser import parse_agp, parse_tpf
 
 
 @click.command(

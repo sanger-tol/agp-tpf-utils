@@ -1,6 +1,6 @@
-import pytest
 import random
 
+import pytest
 from tola.assembly.assembly import Assembly
 from tola.assembly.fragment import Fragment
 from tola.assembly.gap import Gap

@@ -21,3 +21,32 @@ find-overlaps = "tola.assembly.scripts.find_overlaps:cli"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.ruff.lint]
+select = [
+    "A",
+    "ARG",
+    "B",
+    "BLE",
+    "C4",
+    "COM",
+    "DTZ",
+    "E",
+    "EM",
+    "F",
+    "I",
+    "ISC",
+    "LOG",
+    "N",
+    "PYI",
+    "S",
+    "SIM",
+    "U"
+]
+ignore = [
+    "COM812",
+    "C901"
+]
+
+[tool.ruff.lint.per-file-ignores]
+"{test_*,*_test,conftest}.py" = ["S101"]

@@ -1,7 +1,7 @@
 import io
 
-from tola.assembly.gap import Gap
 from tola.assembly.fragment import Fragment
+from tola.assembly.gap import Gap
 from tola.assembly.scaffold import Scaffold
 
 

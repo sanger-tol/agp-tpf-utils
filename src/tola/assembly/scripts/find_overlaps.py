@@ -1,8 +1,8 @@
-import click
 import pathlib
 import re
 import sys
 
+import click
 from tola.assembly.fragment import Fragment
 from tola.assembly.indexed_assembly import IndexedAssembly
 from tola.assembly.parser import parse_agp, parse_tpf

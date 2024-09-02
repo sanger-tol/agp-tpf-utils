@@ -1,8 +1,7 @@
-import click
 import logging
 import math
-
 from collections.abc import Iterator
+
 from tola.assembly.assembly import Assembly
 from tola.assembly.assembly_stats import AssemblyStats
 from tola.assembly.build_utils import (
@@ -137,8 +136,8 @@ class BuildAssembly(Assembly):
         sub_fragments = []
         last_i = len(ordered_scaffolds) - 1
         for i, scffld in enumerate(ordered_scaffolds):
-            keep_start = True if i == 0 else False
-            keep_end = True if i == last_i else False
+            keep_start = i == 0
+            keep_end = i == last_i
             sub_fragments.append(scffld.trim_fragment(frgmnt, keep_start, keep_end))
         self.qc_sub_fragments(fnd, sub_fragments)
 
@@ -196,7 +195,7 @@ class BuildAssembly(Assembly):
                 + "\n".join(
                     (
                         f"{scffld.start_overhang:9d} {scffld.end_overhang:9d}"
-                        + f"  {scffld.bait} ({scffld.bait.length})"
+                        f"  {scffld.bait} ({scffld.bait.length})"
                     )
                     for scffld in fnd.scaffolds
                 )
@@ -226,7 +225,7 @@ class BuildAssembly(Assembly):
                 if not found_frags.get(frag.key_tuple):
                     if not new_scffld:
                         new_scffld = Scaffold(scffld.name)
-                    if last_added_i is not None and not last_added_i == i - 1:
+                    if last_added_i is not None and last_added_i != i - 1:
                         # Last added row was not the previous row in the
                         # scaffold
                         prev_row = scffld.rows[i - 1]
