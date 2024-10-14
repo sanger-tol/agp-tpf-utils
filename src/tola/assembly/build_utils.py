@@ -66,7 +66,7 @@ class ChrNamer:
                     raise ValueError(msg)
                 else:
                     # The first occurance of a haplotype tag sets its case.
-                    # i.e.  "Hap1" will be used if it occurs before "HAP1".
+                    # i.e.  "Hap1" will be used if it is seen before "HAP1".
                     haplotype = self.haplotype_lc_dict.setdefault(tag.lower(), tag)
 
         if not chr_name:
@@ -77,11 +77,11 @@ class ChrNamer:
                 # assembly
                 chr_name = scaffold.rows[0].name
 
-                # Does its name begin with the name of a haplotype?
-                # (This will fail if unplaced contigs from a haplotype appear
-                # before the first Scaffold assigned to that haplotype in the
-                # Pretext Assembly.)
-                if m := re.match(r"([^_]+)_", chr_name):
+                # If we don't have a haplotype from a tag, does its name begin
+                # with the name of a haplotype?  (This will fail if unplaced
+                # contigs from a haplotype appear before the first Scaffold
+                # assigned to that haplotype in the Pretext Assembly.)
+                if not haplotype and (m := re.match(r"([^_]+)_", chr_name)):
                     lc_prefix = m.group(1).lower()
                     haplotype = self.haplotype_lc_dict.get(lc_prefix)
 
