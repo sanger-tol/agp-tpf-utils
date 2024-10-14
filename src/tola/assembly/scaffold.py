@@ -16,11 +16,7 @@ class Scaffold:
 
     def __repr__(self):
         txt = io.StringIO()
-        txt.write(
-            f"{self.__class__.__name__}(\n"
-            + f"    name='{self.name}',\n"
-            + "    rows=[\n",
-        )
+        txt.write(f"{self.__class__.__name__}(\n    name='{self.name}',\n    rows=[\n")
         for row in self.rows:
             txt.write(f"        {row!r},\n")
         txt.write("    ],\n)")

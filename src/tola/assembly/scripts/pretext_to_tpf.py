@@ -3,6 +3,7 @@ import pathlib
 import sys
 
 import click
+
 from tola.assembly.assembly_stats import AssemblyStats
 from tola.assembly.build_assembly import BuildAssembly
 from tola.assembly.format import format_agp, format_tpf

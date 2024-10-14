@@ -6,6 +6,8 @@ import logging
 import re
 import textwrap
 
+import click
+
 from tola.assembly.fragment import Fragment
 from tola.assembly.overlap_result import OverlapResult
 from tola.assembly.scaffold import Scaffold
@@ -25,7 +27,9 @@ class ChrNamer:
         self.haplotig_scaffolds = []
         self.unloc_n = 0
         self.unloc_scaffolds = []
-        self.haplotype_set = set()
+
+        # Halplotype names stored under their lower case names
+        self.haplotype_lc_dict = {}
 
     def make_chr_name(self, scaffold: Scaffold) -> None:
         """
@@ -35,6 +39,7 @@ class ChrNamer:
         chr_name = None
         haplotype = None
         is_painted = False  # Has HiC contacts
+
         for tag in scaffold.fragment_tags():
             if tag == "Painted":
                 is_painted = True
@@ -60,7 +65,9 @@ class ChrNamer:
                     )
                     raise ValueError(msg)
                 else:
-                    haplotype = tag
+                    # The first occurance of a haplotype tag sets its case.
+                    # i.e.  "Hap1" will be used if it occurs before "HAP1".
+                    haplotype = self.haplotype_lc_dict.setdefault(tag.lower(), tag)
 
         if not chr_name:
             if is_painted:
@@ -75,14 +82,11 @@ class ChrNamer:
                 # before the first Scaffold assigned to that haplotype in the
                 # Pretext Assembly.)
                 if m := re.match(r"([^_]+)_", chr_name):
-                    prefix = m.group(1)
-                    if prefix in self.haplotype_set:
-                        haplotype = prefix
+                    lc_prefix = m.group(1).lower()
+                    haplotype = self.haplotype_lc_dict.get(lc_prefix)
 
         self.current_chr_name = chr_name
         self.current_haplotype = haplotype
-        if haplotype:
-            self.haplotype_set.add(haplotype)
         self.unloc_n = 0
         self.unloc_scaffolds = []
 
