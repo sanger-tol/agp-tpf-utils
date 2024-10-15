@@ -25,6 +25,7 @@ class ChrNamer:
         self.current_haplotype = None
         self.haplotig_n = 0
         self.haplotig_scaffolds = []
+        self.target_tags = False
         self.unloc_n = 0
         self.unloc_scaffolds = []
 
@@ -35,7 +36,6 @@ class ChrNamer:
         "Contaminant",
         "Cut",
         "Haplotig",
-        "Target",
         "Unloc",
     }
 
@@ -51,6 +51,8 @@ class ChrNamer:
         for tag in scaffold.fragment_tags():
             if tag == "Painted":
                 is_painted = True
+            elif tag == "Target":
+                self.target_tags = True
             elif re.fullmatch(r"([A-Z]\d*|[IVX_]+)", tag):
                 # This tag looks like a chromosome name
                 if chr_name and tag != chr_name:
@@ -98,7 +100,9 @@ class ChrNamer:
         self.unloc_n = 0
         self.unloc_scaffolds = []
 
-    def label_scaffold(self, scaffold: Scaffold, fragment: Fragment) -> None:
+    def label_scaffold(
+        self, scaffold: Scaffold, fragment: Fragment, scaffold_tags: set[str]
+    ) -> None:
         name = self.current_chr_name
         if "Contaminant" in fragment.tags:
             scaffold.tag = "Contaminant"
@@ -109,6 +113,8 @@ class ChrNamer:
         elif "Unloc" in fragment.tags:
             name = self.unloc_name()
             self.unloc_scaffolds.append(scaffold)
+        elif self.target_tags and "Target" not in scaffold_tags:
+            scaffold.tag = "Contaminant"
 
         scaffold.name = name
         scaffold.haplotype = self.current_haplotype

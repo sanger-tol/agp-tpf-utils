@@ -84,7 +84,9 @@ class BuildAssembly(Assembly):
             chr_namer.make_chr_name(prtxt_scffld)
             for prtxt_frag in prtxt_scffld.fragments():
                 if found := input_asm.find_overlaps(prtxt_frag):
-                    chr_namer.label_scaffold(found, prtxt_frag)
+                    chr_namer.label_scaffold(
+                        found, prtxt_frag, prtxt_scffld.fragment_tags()
+                    )
                     found.trim_large_overhangs(err_length)
                     if found.rows:
                         self.add_scaffold(found)
