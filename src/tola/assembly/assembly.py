@@ -78,10 +78,21 @@ class Assembly:
     def gaps_length(self):
         return sum(s.gaps_length for s in self.scaffolds)
 
+    NEMATODE_CHR_INT = {
+        "I": 1,
+        "II": 2,
+        "III": 3,
+        "IV": 4,
+        # "V" is not included because it is a sex chromosome in the UV system
+        #  in plants, and will sort in the correct order within nematode
+        #  chromosomes anyway.
+    }
+
     @staticmethod
     def name_natural_key(obj):
         return tuple(
-            int(x) if i % 2 else x for i, x in enumerate(re.split(r"(\d+)", obj.name))
+            (Assembly.NEMATODE_CHR_INT.get(x) or int(x)) if i % 2 else x
+            for i, x in enumerate(re.split(r"(I+V?|\d+)", obj.name))
         )
 
     def fragment_junction_set(self):

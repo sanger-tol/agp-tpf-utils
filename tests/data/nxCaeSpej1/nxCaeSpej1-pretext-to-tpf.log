@@ -1,0 +1,31 @@
+Pretext resolution = 1,686 bp per texel
+
+Contig:
+        7,129,039  SCAFFOLD_3:2508389-9637427(+)
+cut into:
+        4,602,507  SCAFFOLD_3:2508389-7110895(+) Cut V
+           10,115  SCAFFOLD_3:7110896-7121010(+) Cut Haplotig
+        2,516,417  SCAFFOLD_3:7121011-9637427(+) Cut
+
+
+nxCaeSpej1-pretext-to-tpf
+         55,157,430  bp sequence (minus gaps)
+  Named:
+    n = 6
+          7,367,313  I_II
+         10,007,913  II_I
+          8,500,470  III
+          8,760,981  IV
+          9,627,112  V
+         10,893,641  X
+         55,157,430  bp total
+
+nxCaeSpej1-pretext-to-tpf_Haplotigs
+             81,747  bp sequence (minus gaps)
+    n = 4
+             31,487  H_1
+                ...  ...
+             10,115  H_4
+             81,747  bp total
+
+Curation made 2 cuts in contigs, 0 breaks at gaps and 2 joins

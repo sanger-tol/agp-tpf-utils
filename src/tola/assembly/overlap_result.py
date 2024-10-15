@@ -21,9 +21,8 @@ class OverlapResult(Scaffold):
             rows_start,
             (
                 f"    bait={self.bait!r},\n"
-                + f"    start={self.start},\n"
-                + f"    end={self.end},\n"
-                + rows_start
+                f"    start={self.start},\n"
+                f"    end={self.end},\n" + rows_start
             ),
             1,
         )

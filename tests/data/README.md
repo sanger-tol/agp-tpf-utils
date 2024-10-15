@@ -35,3 +35,7 @@ haplotypes.
 
 Two haplotypes `HAP1` and `HAP2` with 38 autosomes, plus `W` and `Z` sex
 chromosomes.
+
+### [nxCaeSpej1](nxCaeSpej1)
+
+Nematode with example of roman numeral chromosome naming.

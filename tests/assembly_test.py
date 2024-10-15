@@ -7,20 +7,39 @@ from .utils import strip_leading_spaces
 
 
 def test_natural_sort():
-    s1 = Scaffold(name="chr12.34x")
-    assert Assembly.name_natural_key(s1) == ("chr", 12, ".", 34, "x")
+    s1 = Scaffold(name="chr12.34x2")
+    assert Assembly.name_natural_key(s1) == ("chr", 12, ".", 34, "x", 2, "")
+
+    s2 = Scaffold(name="I_II_III_IV_V")
+    assert Assembly.name_natural_key(s2) == ("", 1, "_", 2, "_", 3, "_", 4, "_V")
 
     a1 = Assembly(
         name="test",
         scaffolds=[
+            Scaffold(name="VIII"),
+            Scaffold(name="VI"),
+            Scaffold(name="V"),
+            Scaffold(name="I_II"),
+            Scaffold(name="IV"),
+            Scaffold(name="III"),
+            Scaffold(name="II_I"),
+            Scaffold(name="I"),
+            Scaffold(name="chr22"),
             Scaffold(name="chr2"),
             Scaffold(name="chr1"),
-            Scaffold(name="chr22"),
             Scaffold(name="chr10"),
         ],
     )
     scfflds_sorted = a1.scaffolds_sorted_by_name()
-    assert list(s.name for s in scfflds_sorted) == [
+    assert [s.name for s in scfflds_sorted] == [
+        "I",
+        "I_II",
+        "II_I",
+        "III",
+        "IV",
+        "V",
+        "VI",
+        "VIII",
         "chr1",
         "chr2",
         "chr10",
@@ -63,7 +82,7 @@ def test_smart_sort():
         ],
     )
     a1.smart_sort_scaffolds(autosome_prefix="R")
-    assert list(s.name for s in a1.scaffolds) == [
+    assert [s.name for s in a1.scaffolds] == [
         "R1",
         "R2",
         "R10",

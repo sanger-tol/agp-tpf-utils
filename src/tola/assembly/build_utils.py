@@ -31,6 +31,14 @@ class ChrNamer:
         # Halplotype names stored under their lower case names
         self.haplotype_lc_dict = {}
 
+    OTHER_KNOWN_TAGS = {
+        "Contaminant",
+        "Cut",
+        "Haplotig",
+        "Target",
+        "Unloc",
+    }
+
     def make_chr_name(self, scaffold: Scaffold) -> None:
         """
         Using the tags in the Scaffold from Pretext, work out what the
@@ -54,7 +62,7 @@ class ChrNamer:
                 chr_name = tag
                 # Keep chromosome numbering in sync with Pretext scaffolds:
                 self.chr_name_n += 1
-            elif tag not in ("Contaminant", "Cut", "Haplotig", "Unloc"):
+            elif tag not in self.OTHER_KNOWN_TAGS:
                 # Any tag that doesn't look like a chromosome name is assumed
                 # to be a haplotype, and we only expect to find one within
                 # each Pretext Scaffold
