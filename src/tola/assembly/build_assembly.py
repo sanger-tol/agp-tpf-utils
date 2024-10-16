@@ -33,12 +33,13 @@ class BuildAssembly(Assembly):
         default_gap=None,
         bp_per_texel=None,
         autosome_prefix=None,
+        sync_chr_n=True,
     ):
         super().__init__(name, header, scaffolds, bp_per_texel)
         self.default_gap = default_gap
         self.found_fragments = {}
         self.fragments_found_more_than_once = {}
-        self.chr_namer = ChrNamer()
+        self.chr_namer = ChrNamer(sync_chr_n=sync_chr_n)
         self.assembly_stats = AssemblyStats()
         if autosome_prefix:
             self.autosome_prefix = autosome_prefix
