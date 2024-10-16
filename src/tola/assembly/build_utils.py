@@ -18,13 +18,14 @@ class ChrNamer:
     Tracks naming of chromosomes as Pretext assembly is processed
     """
 
-    def __init__(self, autosome_prefix="RL_"):
+    def __init__(self, autosome_prefix="RL_", sync_chr_n=True):
         self.autosome_prefix = autosome_prefix
         self.chr_name_n = 0
         self.current_chr_name = None
         self.current_haplotype = None
         self.haplotig_n = 0
         self.haplotig_scaffolds = []
+        self.sync_chr_n = sync_chr_n
         self.target_tags = False
         self.unloc_n = 0
         self.unloc_scaffolds = []
@@ -62,8 +63,9 @@ class ChrNamer:
                     )
                     raise ValueError(msg)
                 chr_name = tag
-                # Keep chromosome numbering in sync with Pretext scaffolds:
-                self.chr_name_n += 1
+                if self.sync_chr_n:
+                    # Keep chromosome numbering in sync with Pretext scaffolds:
+                    self.chr_name_n += 1
             elif tag not in self.OTHER_KNOWN_TAGS:
                 # Any tag that doesn't look like a chromosome name is assumed
                 # to be a haplotype, and we only expect to find one within

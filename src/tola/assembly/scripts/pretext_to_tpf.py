@@ -113,6 +113,14 @@ def ul(txt):
     help="Prefix for naming autosomal chromosomes.",
 )
 @click.option(
+    "--sync-chr/--no-sync-chr",
+    "sync_chr_n",
+    default=True,
+    show_default=True,
+    help="""Keep autosome numbers in sync with PretextView numbers. Disable
+    for sequentially numbered chromosomes within haplotypes.""",
+)
+@click.option(
     "--clobber/--no-clobber",
     "-f",
     default=True,
@@ -142,6 +150,7 @@ def cli(
     pretext_file,
     output_file,
     autosome_prefix,
+    sync_chr_n,
     clobber,
     log_level,
     write_log,
@@ -164,6 +173,7 @@ def cli(
         out_name,
         default_gap=Gap(200, "scaffold"),
         autosome_prefix=autosome_prefix,
+        sync_chr_n=sync_chr_n,
     )
     build_asm.remap_to_input_assembly(prtxt_asm, input_asm)
 
