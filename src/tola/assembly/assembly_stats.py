@@ -44,10 +44,10 @@ class AssemblyStats:
                     # with the total set of breaks to avoid counting
                     # junctions in scaffolds which have been moved between
                     # haplotypes.
-                    "manual_breaks": len(total_breaks & (input_asm_set - junc_set)),
-                    # Joins are anything new in this assembly compared to all
-                    # the input.
-                    "manual_joins": len(total_joins & (junc_set - input_set)),
+                    "manual_breaks": len((input_asm_set - junc_set) & total_breaks),
+                    # Joins are anything new in this assembly compared to the
+                    # input which is also in the total set of joins.
+                    "manual_joins": len((junc_set - input_asm_set) & total_joins),
                 }
 
     def log_curation_stats(self):
