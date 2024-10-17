@@ -3,6 +3,7 @@ import pathlib
 import sys
 
 import click
+import yaml
 
 from tola.assembly.assembly_stats import AssemblyStats
 from tola.assembly.build_assembly import BuildAssembly
@@ -164,6 +165,7 @@ def cli(
     stats = build_asm.assembly_stats
     if output_file:
         write_chr_csv_files(output_file, stats, out_assemblies, clobber)
+        write_info_yaml(output_file, stats, out_assemblies, clobber)
     for asm_key, out_asm in out_assemblies.items():
         stats.log_assembly_chromosomes(asm_key, out_asm)
     logging.info("")
@@ -227,6 +229,26 @@ def write_chr_csv_files(output_file, stats, out_assemblies, clobber):
                     csv_fh.write(",".join(cn_list) + "\n")
             op = "Overwrote" if clobber else "Created"
             click.echo(f"{op} file '{csv_file}'", err=True)
+
+
+def write_info_yaml(output_file, stats, out_assemblies, clobber):
+    asm_stats = stats.per_assembly_stats
+    info = {"assemblies": asm_stats}
+    if len(asm_stats) > 1:
+        info["manual_breaks"] = stats.breaks
+        info["manual_joins"] = stats.joins
+
+    haplotig_count = 0
+    if h_asm := out_assemblies.get("Haplotig"):
+        haplotig_count = len(h_asm.scaffolds)
+    info["manual_haplotig_removals"] = haplotig_count
+
+    yaml_file = output_file.with_name(output_file.stem + "_info.yaml")
+    with get_output_filehandle(yaml_file, clobber) as yaml_fh:
+        yaml_fh.write(yaml.safe_dump(info, sort_keys=False))
+
+    op = "Overwrote" if clobber else "Created"
+    click.echo(f"{op} file '{yaml_file}'", err=True)
 
 
 def get_output_filehandle(path, clobber):

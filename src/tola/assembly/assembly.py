@@ -98,8 +98,22 @@ class Assembly:
     def fragment_junction_set(self):
         junctions = set()
         for scffld in self.scaffolds:
-            junctions.update(scffld.fragment_junction_set())
+            junctions |= scffld.fragment_junction_set()
         return junctions
+
+    def fragment_junctions_by_asm_prefix(self):
+        prefix_junctions = {}
+        for scffld in self.scaffolds:
+            try:
+                first = next(scffld.fragments())
+            except StopIteration:
+                continue
+            m = re.match(r"([A-Za-z]+\d+)_", first.name)
+            asm_name = m.group(1).lower() if m else None
+            prefix_junctions.setdefault(asm_name, set()).update(
+                scffld.fragment_junction_set()
+            )
+        return prefix_junctions
 
     def scaffolds_sorted_by_name(self):
         return sorted(self.scaffolds, key=self.name_natural_key)

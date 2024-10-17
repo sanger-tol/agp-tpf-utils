@@ -1,7 +1,6 @@
 import logging
 
 from tola.assembly.assembly import Assembly
-from tola.assembly.indexed_assembly import IndexedAssembly
 from tola.assembly.scaffold import Scaffold
 
 
@@ -12,19 +11,44 @@ class AssemblyStats:
         self.cuts = 0
         self.breaks = 0
         self.joins = 0
+        self.per_assembly_stats = {}
         self.assembly_scaffold_lengths = {}
 
     def make_stats(self, output_assemblies: dict[str | None, Assembly]) -> None:
-        input_set = self.input_assembly.fragment_junction_set()
+        input_junction_sets = self.input_assembly.fragment_junctions_by_asm_prefix()
+        input_set = set()
+        for junc_set in input_junction_sets.values():
+            input_set |= junc_set
+
+        output_junction_sets = {}
         output_set = set()
-        for asm in output_assemblies.values():
-            output_set |= asm.fragment_junction_set()
+        for name, asm in output_assemblies.items():
+            junc_set = asm.fragment_junction_set()
+            output_set |= junc_set
+            output_junction_sets[name] = junc_set
 
         # Breaks are junctions in the input that are not in the output
-        self.breaks = len(input_set - output_set)
+        total_breaks = input_set - output_set
+        self.breaks = len(total_breaks)
 
         # Joins are junctions in the output that were not in the input
-        self.joins = len(output_set - input_set)
+        total_joins = output_set - input_set
+        self.joins = len(total_joins)
+
+        for name, junc_set in output_junction_sets.items():
+            junc_key = name.lower() if name else None
+            if input_asm_set := input_junction_sets.get(junc_key):
+                self.per_assembly_stats[name or "Primary"] = {
+                    # Breaks are junctions which were in the input, but are
+                    # not in this assembly.  This set is then intersected
+                    # with the total set of breaks to avoid counting
+                    # junctions in scaffolds which have been moved between
+                    # haplotypes.
+                    "manual_breaks": len(total_breaks & (input_asm_set - junc_set)),
+                    # Joins are anything new in this assembly compared to all
+                    # the input.
+                    "manual_joins": len(total_joins & (junc_set - input_set)),
+                }
 
     def log_curation_stats(self):
         cut_plural = "cut in a contig" if self.cuts == 1 else "cuts in contigs"

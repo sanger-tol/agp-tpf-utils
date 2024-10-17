@@ -1,0 +1,10 @@
+assemblies:
+  Hap1:
+    manual_breaks: 6
+    manual_joins: 14
+  Hap2:
+    manual_breaks: 9
+    manual_joins: 15
+manual_breaks: 15
+manual_joins: 29
+manual_haplotig_removals: 1

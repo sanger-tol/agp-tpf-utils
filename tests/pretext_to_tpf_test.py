@@ -5,6 +5,7 @@ import tempfile
 
 import pytest
 from click.testing import CliRunner
+
 from tola.assembly.scripts.pretext_to_tpf import cli
 
 
@@ -62,7 +63,3 @@ def diff_files(specimen, spec_path, test_path):
     if ctx_str:
         print(ctx_str)
     assert ctx_str == ""
-
-
-if __name__ == "__main__":
-    test_example_data()
