@@ -10,6 +10,7 @@ requires-python = ">=3.10"
 dependencies = [
     "click",
     "pytest",
+    "pyyaml",
     "ruff",
     'importlib-metadata; python_version>="3.10"',
 ]
