@@ -70,7 +70,6 @@ class Fragment:
         msg = f"strand == 0 not supported:\n  {self}\n  {othr}"
         raise ValueError(msg)
 
-
     STRAND_STR = ".", "+", "-"
 
     @property
@@ -107,27 +106,36 @@ class Fragment:
     def overlaps(self, othr):
         if self.name != othr.name:
             return False
-        if self.end >= othr.start and self.start <= othr.end:
-            return True
-        return False
+        return bool(self.end >= othr.start and self.start <= othr.end)
 
     def overlap_length(self, othr):
         if self.name != othr.name:
             return None
 
-        start = max(self.start, othr.start)
-        end = min(self.end, othr.end)
-        if end < start:
+        ovr_end = max(self.start, othr.start)
+        ovr_start = min(self.end, othr.end)
+        if ovr_start < ovr_end:
             return None
         else:
-            return end - start + 1
+            return ovr_start - ovr_end + 1
 
     def abuts(self, othr):
         if self.name != othr.name:
             return False
-        if self.end + 1 == othr.start or othr.end + 1 == self.start:
-            return True
-        return False
+        return bool(self.end + 1 == othr.start or othr.end + 1 == self.start)
+
+    def gap_between(self, othr):
+        """ Returns `None` if no gap, zero if Fragments abut, and the length
+            of the gap otherwise. """
+        if self.name != othr.name:
+            return None
+
+        gap_end = max(self.start, othr.start)
+        gap_start = min(self.end, othr.end)
+        if gap_start < gap_end:
+            return gap_end - gap_start - 1
+        else:
+            return None
 
     def reverse(self):
         return self.__class__(

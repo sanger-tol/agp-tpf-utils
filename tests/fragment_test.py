@@ -72,9 +72,23 @@ def test_overlap_length():
     assert f2.overlap_length(f1) == 3
     assert f2.overlap_length(f3) is None
 
+
+def test_gap_between():
+    f1 = Fragment("chr20", 1, 102, 1)
+    f2 = Fragment("chr20", 100, 120, 1)
+    f3 = Fragment("chr20", 123, 140, 1)
+    f4 = Fragment("chr20", 141, 150, -1)
+
+    assert f1.gap_between(f2) is None
+    assert f2.gap_between(f1) is None
+    assert f2.gap_between(f3) == 2
+    assert f3.gap_between(f4) == 0
+
+
 def test_reverse():
     f1 = Fragment("chr20", 1, 102, 1, ("Painted", "Haplotig"))
     assert f1.reverse() == Fragment("chr20", 1, 102, -1, ("Painted", "Haplotig"))
+
 
 def test_abuts():
     f1 = Fragment("chr1", 1, 100, 1)
