@@ -160,19 +160,16 @@ class BuildAssembly(Assembly):
         """
         abut_count = 0
         overlap_count = 0
-        lgth = len(sub_fragments)
         pairs_with_gaps = []
-        for i in range(0, lgth):
-            frag_a = sub_fragments[i]
-            for j in range(i + 1, lgth):
-                frag_b = sub_fragments[j]
-                if frag_a.abuts(frag_b):
-                    abut_count += 1
-                if frag_a.overlaps(frag_b):
-                    overlap_count += 1
-                if g := frag_a.gap_between(frag_b):
-                    pairs_with_gaps.append((frag_a, frag_b))
-
+        srtd_frags = sorted(sub_fragments, key=lambda frag: (frag.start, frag.end))
+        for i, frag_a in enumerate(srtd_frags[:-1]):
+            frag_b = srtd_frags[i + 1]
+            if frag_a.abuts(frag_b):
+                abut_count += 1
+            if frag_a.overlaps(frag_b):
+                overlap_count += 1
+            if g := frag_a.gap_between(frag_b):
+                pairs_with_gaps.append((frag_a, frag_b, g))
 
         sub_frags_length = sum(f.length for f in sub_fragments)
 
@@ -186,8 +183,16 @@ class BuildAssembly(Assembly):
             msg += (
                 f"Expecting 0 but got {overlap_count} overlaps in new sub fragments\n"
             )
+        lgth = len(sub_fragments)
         if abut_count != lgth - 1:
             msg += f"Expecting {lgth - 1} abutting sub fragments but got {abut_count}\n"
+        for frag_a, frag_b, g in pairs_with_gaps:
+            pixels = g / self.bp_per_texel
+            msg += (
+                f"Gap of length {g} ({pixels:.1f} pixels)"
+                f" between:\n  {frag_a}\nand:\n  {frag_b}\n"
+            )
+
         if msg:
             msg += "\n" + "\n\n".join(str(s) for s in fnd.scaffolds)
             raise ValueError(msg)
