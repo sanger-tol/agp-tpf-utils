@@ -151,6 +151,14 @@ def cli(
         parse_assembly_file(assembly_file, "TPF")
     )
     prtxt_asm = parse_assembly_file(pretext_file, "AGP")
+
+    # Trap "-a" and "-p" arguments being switched
+    if not prtxt_asm.bp_per_texel:
+        exit(
+            f"No bp_per_texel value in the PretextView AGP file '{pretext_file}'\n"
+            "(Are the -a, --assembly and -p, --pretext arguments the right way around?)"
+        )
+
     out_name = output_file.stem if output_file else "stdout"
     build_asm = BuildAssembly(
         out_name,
