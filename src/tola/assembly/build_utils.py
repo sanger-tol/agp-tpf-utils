@@ -101,7 +101,11 @@ class ChrNamer:
         self.unloc_scaffolds = []
 
     def label_scaffold(
-        self, scaffold: Scaffold, fragment: Fragment, scaffold_tags: set[str]
+        self,
+        scaffold: Scaffold,
+        fragment: Fragment,
+        scaffold_tags: set[str],
+        from_scffld_name: str,
     ) -> None:
         name = self.current_chr_name
         if "Contaminant" in fragment.tags:
@@ -111,6 +115,9 @@ class ChrNamer:
             scaffold.tag = "Haplotig"
             self.haplotig_scaffolds.append(scaffold)
         elif "Unloc" in fragment.tags:
+            if "Painted" not in scaffold_tags:
+                msg = f"Unloc in unpainted scaffold {from_scffld_name!r}: {fragment}"
+                raise ValueError(msg)
             name = self.unloc_name()
             self.unloc_scaffolds.append(scaffold)
         elif self.target_tags and "Target" not in scaffold_tags:

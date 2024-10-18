@@ -2,12 +2,29 @@ import math
 import random
 import sys
 
+import pytest
+
 from tola.assembly.assembly import Assembly
 from tola.assembly.build_assembly import BuildAssembly
+from tola.assembly.build_utils import ChrNamer
 from tola.assembly.fragment import Fragment
 from tola.assembly.gap import Gap
 from tola.assembly.indexed_assembly import IndexedAssembly
 from tola.assembly.scaffold import Scaffold
+
+
+def test_unpainted_unloc():
+    namer = ChrNamer()
+    with pytest.raises(
+        ValueError,
+        match=r"Unloc in unpainted scaffold 'Scaffold_7': Bad_Unloc:1-100\(-\) Unloc",
+    ):
+        namer.label_scaffold(
+            Scaffold("TEST"),
+            Fragment("Bad_Unloc", 1, 100, -1, ("Unloc",)),
+            (),  # No "Painted" tag in scaffold tags
+            "Scaffold_7",
+        )
 
 
 def test_no_coord_changes():
@@ -99,7 +116,9 @@ def shuffled_assembly(asm, name):
 def fuzz_coordinates(asm):
     assembly_length = sum(x.length for x in asm.scaffolds)
     bp_per_texel = assembly_length / 2**15
-    print(f"Assembly '{asm.name}' = {assembly_length} bp == {bp_per_texel} bp per texel")
+    print(
+        f"Assembly '{asm.name}' = {assembly_length} bp == {bp_per_texel} bp per texel"
+    )
     new = Assembly(asm.name)
     new.bp_per_texel = bp_per_texel
     for scffld in asm.scaffolds:

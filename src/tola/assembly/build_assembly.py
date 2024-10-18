@@ -82,10 +82,11 @@ class BuildAssembly(Assembly):
         err_length = self.error_length
         for prtxt_scffld in prtxt_asm.scaffolds:
             chr_namer.make_chr_name(prtxt_scffld)
+            prtxt_scffld_tags = prtxt_scffld.fragment_tags()
             for prtxt_frag in prtxt_scffld.fragments():
                 if found := input_asm.find_overlaps(prtxt_frag):
                     chr_namer.label_scaffold(
-                        found, prtxt_frag, prtxt_scffld.fragment_tags()
+                        found, prtxt_frag, prtxt_scffld_tags, prtxt_scffld.name
                     )
                     found.trim_large_overhangs(err_length)
                     if found.rows:
