@@ -161,6 +161,7 @@ class BuildAssembly(Assembly):
         abut_count = 0
         overlap_count = 0
         lgth = len(sub_fragments)
+        pairs_with_gaps = []
         for i in range(0, lgth):
             frag_a = sub_fragments[i]
             for j in range(i + 1, lgth):
@@ -169,6 +170,9 @@ class BuildAssembly(Assembly):
                     abut_count += 1
                 if frag_a.overlaps(frag_b):
                     overlap_count += 1
+                if g := frag_a.gap_between(frag_b):
+                    pairs_with_gaps.append((frag_a, frag_b))
+
 
         sub_frags_length = sum(f.length for f in sub_fragments)
 

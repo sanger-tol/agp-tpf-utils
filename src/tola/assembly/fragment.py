@@ -112,12 +112,12 @@ class Fragment:
         if self.name != othr.name:
             return None
 
-        ovr_end = max(self.start, othr.start)
-        ovr_start = min(self.end, othr.end)
-        if ovr_start < ovr_end:
+        ovr_start = max(self.start, othr.start)
+        ovr_end = min(self.end, othr.end)
+        if ovr_start > ovr_end:
             return None
         else:
-            return ovr_start - ovr_end + 1
+            return ovr_end - ovr_start + 1
 
     def abuts(self, othr):
         if self.name != othr.name:
@@ -130,8 +130,8 @@ class Fragment:
         if self.name != othr.name:
             return None
 
-        gap_end = max(self.start, othr.start)
         gap_start = min(self.end, othr.end)
+        gap_end = max(self.start, othr.start)
         if gap_start < gap_end:
             return gap_end - gap_start - 1
         else:
