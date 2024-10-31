@@ -4,6 +4,7 @@ import io
 import logging
 import re
 import sys
+from functools import cached_property
 from pathlib import Path
 
 from tola.assembly.assembly import Assembly
@@ -18,9 +19,17 @@ class IndexUsageError(Exception):
     """Unexpected usage of FastaIndex"""
 
 
-class FastaIndex:
-    __slots__ = "fasta_file", "fai_file", "agp_file", "index", "assembly"
+IUPAC_COMPLEMENT = bytes.maketrans(
+    b"ACGTRYMKSWHBVDNacgtrymkswhbvdn",
+    b"TGCAYRKMSWDVBHNtgcayrkmswdvbhn",
+)
 
+
+def reverse_complement(seq: bytes):
+    return seq[::-1].translate(IUPAC_COMPLEMENT)
+
+
+class FastaIndex:
     def __init__(self, fasta_file: Path | str):
         if not isinstance(fasta_file, Path):
             fasta_file = Path(fasta_file)
@@ -110,6 +119,39 @@ class FastaIndex:
         self.write_index()
         self.write_assembly()
 
+    @cached_property
+    def fasta_fileandle(self):
+        return self.fasta_file.open("rb")
+
+    def get_sequence(self, frag: Fragment):
+        fh = self.fasta_fileandle
+        info = self.index.get(frag.name)
+        if not info:
+            msg = f"No sequence in index named '{frag.name}'"
+            raise ValueError(msg)
+        rpl = info.residues_per_line
+        mll = info.max_line_length
+        line_end_bytes = mll - rpl
+        seq = io.BytesIO()
+
+        lines_to_seek = mll * ((frag.start - 1) // rpl)
+        line_offset = (frag.start - 1) % rpl
+        fh.seek(info.file_offset + lines_to_seek + line_offset)
+        head = 0
+        if line_offset:
+            ### Wrong if frag.length < head
+            head = rpl - line_offset
+            seq.write(fh.read(head))
+            fh.seek(line_end_bytes, 1)
+        remainder = frag.length - head
+        whole_lines = remainder // rpl
+        for _ in range(whole_lines):
+            seq.write(fh.read(rpl))
+            fh.seek(line_end_bytes, 1)
+        if tail := remainder % rpl:
+            seq.write(fh.read(tail))
+        yield seq
+
 
 class FastaInfo:
     __slots__ = (
@@ -157,15 +199,8 @@ class FastaInfo:
         )
         return f"{name}\t{numbers}\n"
 
-    def regions(self):
-        s = io.StringIO()
-        for start, end in self.seq_regions:
-            s.write(f"{end - start + 1:14,d}  {self.name}:{start}-{end}\n")
 
-        return s.getvalue()
-
-
-def index_fasta_file(file: Path, buffer_size: int = 10_000_000):
+def index_fasta_file(file: Path, buffer_size: int = 250_000):
     name = None
     seq_length = None
     file_offset = None
@@ -235,9 +270,8 @@ def index_fasta_file(file: Path, buffer_size: int = 10_000_000):
 
         seq_length += len(seq_bytes)
 
-    # Opening the file in bytes mode means that Windows ("\r\n") or UNIX
-    # ("\n") line endings are preserved.  It is also about 10% faster than
-    # decoding to UTF-8.
+    # Reading the file in bytes mode is about 10% faster than text mode, which
+    # has the overhead of decoding to UTF-8.
     with file.open("rb") as fh:
         for line in fh:
             # ord(">") == 62
@@ -287,12 +321,11 @@ def index_fasta_file(file: Path, buffer_size: int = 10_000_000):
         return idx_dict, asm
     else:
         msg = f"No data in FASTA file '{file.absolute()}'"
+        raise ValueError(msg)
 
 
 if __name__ == "__main__":
     for file in sys.argv[1:]:
         idx_dict, asm = index_fasta_file(Path(file))
         for name, info in idx_dict.items():
-            # sys.stdout.write("\n")
             sys.stdout.write(info.fai_row(name))
-            # sys.stdout.write(fst.regions())
