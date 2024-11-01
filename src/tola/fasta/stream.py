@@ -29,7 +29,7 @@ class FastaStream:
         line_length = self.line_length
         want = line_length
 
-        out.write(f">{scaffold.name}\n".encode().lower())
+        out.write(f">{scaffold.name}\n".encode())
         for row in scaffold.rows:
             itr = (
                 self.gap_seq(row)

@@ -29,12 +29,12 @@ RAND-007	91	102	5	W	RAND-007	91	102	+
 RAND-007	103	103	6	U	1	scaffold	yes	proximity_ligation
 RAND-007	104	109	7	W	RAND-007	104	109	+
 RAND-007	110	110	8	U	1	scaffold	yes	proximity_ligation
-RAND-007	111	243	9	W	RAND-007	111	243	+
+RAND-007	111	240	9	W	RAND-007	111	240	+
 RAND-008	1	62	1	W	RAND-008	1	62	+
 RAND-008	63	63	2	U	1	scaffold	yes	proximity_ligation
 RAND-008	64	74	3	W	RAND-008	64	74	+
 RAND-008	75	75	4	U	1	scaffold	yes	proximity_ligation
-RAND-008	76	366	5	W	RAND-008	76	366	+
+RAND-008	76	360	5	W	RAND-008	76	360	+
 RAND-009	1	46	1	W	RAND-009	1	46	+
 RAND-009	47	47	2	U	1	scaffold	yes	proximity_ligation
 RAND-009	48	99	3	W	RAND-009	48	99	+

@@ -29,14 +29,68 @@ def reverse_complement(seq: bytes):
     return seq[::-1].translate(IUPAC_COMPLEMENT)
 
 
+def revcomp_bytes_io(seq: io.BytesIO):
+    return io.BytesIO(reverse_complement(seq.getvalue()))
+
+
+class FastaInfo:
+    __slots__ = (
+        "length",
+        "file_offset",
+        "residues_per_line",
+        "max_line_length",
+    )
+
+    def __init__(
+        self,
+        length,
+        file_offset,
+        residues_per_line,
+        max_line_length,
+    ):
+        self.length = int(length)
+        self.file_offset = int(file_offset)
+        self.residues_per_line = int(residues_per_line)
+        self.max_line_length = int(max_line_length)
+
+    def __eq__(self, othr):
+        for attr in self.__slots__:
+            if getattr(self, attr) != getattr(othr, attr):
+                return False
+        return True
+
+    def __repr__(self):
+        return (
+            "FastaInfo("
+            + (", ".join(f"{attr}={getattr(self, attr)!r}" for attr in self.__slots__))
+            + ")"
+        )
+
+    def fai_row(self, name):
+        """Returns a row for a Fasta Index (.fai) file."""
+        numbers = "\t".join(
+            str(x)
+            for x in (
+                self.length,
+                self.file_offset,
+                self.residues_per_line,
+                self.max_line_length,
+            )
+        )
+        return f"{name}\t{numbers}\n"
+
+
 class FastaIndex:
-    def __init__(self, fasta_file: Path | str):
-        if not isinstance(fasta_file, Path):
-            fasta_file = Path(fasta_file)
+    def __init__(
+        self,
+        fasta_file: Path,
+        buffer_size: int = 250_000,
+    ):
         if not fasta_file.exists():
             missing = str(fasta_file)
             raise FileNotFoundError(missing)
         self.fasta_file = fasta_file
+        self.buffer_size = buffer_size
         self.fai_file = Path(str(fasta_file) + ".fai")
         self.agp_file = Path(str(fasta_file) + ".agp")
         self.index = None
@@ -113,7 +167,7 @@ class FastaIndex:
             format_agp(asm, agp_fh)
 
     def run_indexing(self):
-        idx_dict, assembly = index_fasta_file(self.fasta_file)
+        idx_dict, assembly = index_fasta_file(self.fasta_file, self.buffer_size)
         self.index = idx_dict
         self.assembly = assembly
         self.write_index()
@@ -124,80 +178,70 @@ class FastaIndex:
         return self.fasta_file.open("rb")
 
     def get_sequence(self, frag: Fragment):
-        fh = self.fasta_fileandle
         info = self.index.get(frag.name)
         if not info:
             msg = f"No sequence in index named '{frag.name}'"
             raise ValueError(msg)
+
+        if frag.strand == -1:
+            return self.rev_chunks(info, frag.start, frag.end)
+        else:
+            return self.fwd_chunks(info, frag.start, frag.end)
+
+    def fwd_chunks(self, info: FastaInfo, start, end):
+        max_length = self.buffer_size
+        chunk_count = 1 + ((end - start) // max_length)
+        for i in range(chunk_count):
+            offset = i * max_length
+            chunk_start = start + offset
+            chunk_end = min(end, chunk_start + max_length - 1)
+            yield self.sequence_bytes(info, chunk_start, chunk_end)
+
+    def rev_chunks(self, info: FastaInfo, start, end):
+        max_length = self.buffer_size
+        chunk_count = (end - start) // max_length
+        for i in range(chunk_count, -1, -1):
+            offset = i * max_length
+            chunk_start = start + offset
+            chunk_end = min(end, chunk_start + max_length - 1)
+            yield revcomp_bytes_io(self.sequence_bytes(info, chunk_start, chunk_end))
+
+    def sequence_bytes(self, info: FastaInfo, start, end):
+        start -= 1  # Switch to Python coordinates
         rpl = info.residues_per_line
         mll = info.max_line_length
         line_end_bytes = mll - rpl
+
+        frst_line = start // rpl
+        last_line = (end - 1) // rpl
+
+        frst_offset = start % rpl
+        last_offset = end % rpl
+
+        # Seek to the first residue
+        fh = self.fasta_fileandle
+        fh.seek(info.file_offset + frst_offset + mll * frst_line)
+
         seq = io.BytesIO()
-
-        lines_to_seek = mll * ((frag.start - 1) // rpl)
-        line_offset = (frag.start - 1) % rpl
-        fh.seek(info.file_offset + lines_to_seek + line_offset)
-        head = 0
-        if line_offset:
-            ### Wrong if frag.length < head
-            head = rpl - line_offset
-            seq.write(fh.read(head))
+        if frst_line == last_line:
+            # Sequence fragment is all on one line of the FASTA file
+            seq.write(fh.read(end - start))
+            return seq
+        else:
+            # Read sequence to the end of the first line
+            seq.write(fh.read(rpl - frst_offset))
             fh.seek(line_end_bytes, 1)
-        remainder = frag.length - head
-        whole_lines = remainder // rpl
-        for _ in range(whole_lines):
-            seq.write(fh.read(rpl))
-            fh.seek(line_end_bytes, 1)
-        if tail := remainder % rpl:
-            seq.write(fh.read(tail))
-        yield seq
 
+            # Read all the whole lines
+            last_whole_line = last_line if last_offset == 0 else last_line - 1
+            for _ in range(last_whole_line - frst_line):
+                seq.write(fh.read(rpl))
+                fh.seek(line_end_bytes, 1)
 
-class FastaInfo:
-    __slots__ = (
-        "length",
-        "file_offset",
-        "residues_per_line",
-        "max_line_length",
-    )
-
-    def __init__(
-        self,
-        length,
-        file_offset,
-        residues_per_line,
-        max_line_length,
-    ):
-        self.length = int(length)
-        self.file_offset = int(file_offset)
-        self.residues_per_line = int(residues_per_line)
-        self.max_line_length = int(max_line_length)
-
-    def __eq__(self, othr):
-        for attr in self.__slots__:
-            if getattr(self, attr) != getattr(othr, attr):
-                return False
-        return True
-
-    def __repr__(self):
-        return (
-            "FastaInfo("
-            + (", ".join(f"{attr}={getattr(self, attr)!r}" for attr in self.__slots__))
-            + ")"
-        )
-
-    def fai_row(self, name):
-        """Returns a row for a Fasta Index (.fai) file."""
-        numbers = "\t".join(
-            str(x)
-            for x in (
-                self.length,
-                self.file_offset,
-                self.residues_per_line,
-                self.max_line_length,
-            )
-        )
-        return f"{name}\t{numbers}\n"
+            # Read any sequence on the last line
+            if last_offset:
+                seq.write(fh.read(last_offset))
+            return seq
 
 
 def index_fasta_file(file: Path, buffer_size: int = 250_000):
