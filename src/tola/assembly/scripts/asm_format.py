@@ -3,6 +3,7 @@ import re
 import sys
 
 import click
+
 from tola.assembly.format import format_agp, format_tpf
 from tola.assembly.parser import parse_agp, parse_tpf
 
@@ -124,9 +125,8 @@ def process_fh(in_fh, in_fmt, asm_name, out_fh, out_fmt, qc_overlaps):
         msg = f"Unknown input format: '{in_fmt}'"
         raise ValueError(msg)
 
-    if qc_overlaps:
-        if pairs := asm.find_overlapping_fragments():
-            report_overlaps(asm_name, pairs)
+    if qc_overlaps and (pairs := asm.find_overlapping_fragments()):
+        report_overlaps(asm_name, pairs)
 
     if out_fmt == "AGP":
         format_agp(asm, out_fh)
@@ -153,8 +153,9 @@ def format_from_file_extn(pth, default=None):
     """
     Guess the file format from the extension, or return the supplied default
     """
-    if m := re.match(r"\.(agp|tpf)\w*$", pth.suffix, flags=re.IGNORECASE):
-        return m.group(1).upper()
+    if m := re.match(r"\.(agp|tpf|fa(?:sta)?)\w*$", pth.suffix, flags=re.IGNORECASE):
+        uc_fmt = m.group(1).upper()
+        return "FASTA" if uc_fmt.startswith("FA") else uc_fmt
     else:
         return default
 

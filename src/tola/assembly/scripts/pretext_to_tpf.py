@@ -5,13 +5,14 @@ import sys
 import click
 import yaml
 
-from tola.assembly.assembly_stats import AssemblyStats
 from tola.assembly.build_assembly import BuildAssembly
 from tola.assembly.format import format_agp, format_tpf
 from tola.assembly.gap import Gap
 from tola.assembly.indexed_assembly import IndexedAssembly
 from tola.assembly.parser import parse_agp, parse_tpf
 from tola.assembly.scripts.asm_format import format_from_file_extn
+from tola.fasta.index import FastaIndex
+from tola.fasta.stream import FastaStream
 
 
 def bd(txt):
@@ -114,7 +115,7 @@ def ul(txt):
 @click.option(
     "--clobber/--no-clobber",
     "-f",
-    default=False,
+    default=True,
     show_default=True,
     help="Overwrite an existing output file.",
 )
@@ -147,10 +148,9 @@ def cli(
 ):
     logfile = setup_logging(log_level, output_file, write_log, clobber)
 
-    input_asm = IndexedAssembly.new_from_assembly(
-        parse_assembly_file(assembly_file, "TPF")
-    )
-    prtxt_asm = parse_assembly_file(pretext_file, "AGP")
+    asm, fai = parse_assembly_file(assembly_file, "TPF")
+    input_asm = IndexedAssembly.new_from_assembly(asm)
+    prtxt_asm, _ = parse_assembly_file(pretext_file, "AGP")
 
     # Trap "-a" and "-p" arguments being switched
     if not prtxt_asm.bp_per_texel:
@@ -169,7 +169,7 @@ def cli(
 
     out_assemblies = build_asm.assemblies_with_scaffolds_fused()
     for out_asm in out_assemblies.values():
-        write_assembly(out_asm, output_file, clobber)
+        write_assembly(fai, out_asm, output_file, clobber)
     stats = build_asm.assembly_stats
     if output_file:
         write_chr_csv_files(output_file, stats, out_assemblies, clobber)
@@ -203,12 +203,13 @@ def setup_logging(log_level, output_file, write_log, clobber):
     return logfile
 
 
-def write_assembly(out_asm, output_file, clobber):
+def write_assembly(fai, out_asm, output_file, clobber):
     if output_file:
         out_fmt = format_from_file_extn(output_file, "TPF")
+        mode = "b" if out_fmt == "FASTA" else ""
         if out_asm.name != output_file.stem:
             output_file = output_file.with_stem(out_asm.name)
-        out_fh = get_output_filehandle(output_file, clobber)
+        out_fh = get_output_filehandle(output_file, clobber, mode)
     else:
         out_fmt = "STR"
         out_fh = sys.stdout
@@ -217,13 +218,18 @@ def write_assembly(out_asm, output_file, clobber):
         format_tpf(out_asm, out_fh)
     elif out_fmt == "AGP":
         format_agp(out_asm, out_fh)
+    elif out_fmt == "FASTA":
+        stream = FastaStream(out_fh, fai)
+        stream.write_assembly(out_asm)
+
+        # Save a .agp file alongside the .fa / .fasta
+        output_agp = output_file.with_suffix(".agp")
+        agp_fh = get_output_filehandle(output_agp, clobber)
+        format_agp(out_asm, agp_fh)
+
     elif out_fmt == "STR":
         out_fh.write("\n")
         out_fh.write(str(out_asm))
-
-    if out_fmt != "STR":
-        op = "Overwrote" if clobber else "Created"
-        click.echo(f"{op} file '{output_file}'", err=True)
 
 
 def write_chr_csv_files(output_file, stats, out_assemblies, clobber):
@@ -235,8 +241,6 @@ def write_chr_csv_files(output_file, stats, out_assemblies, clobber):
             with get_output_filehandle(csv_file, clobber) as csv_fh:
                 for cn_list in chr_names:
                     csv_fh.write(",".join(cn_list) + "\n")
-            op = "Overwrote" if clobber else "Created"
-            click.echo(f"{op} file '{csv_file}'", err=True)
 
 
 def write_info_yaml(output_file, stats, out_assemblies, clobber):
@@ -259,22 +263,27 @@ def write_info_yaml(output_file, stats, out_assemblies, clobber):
     click.echo(f"{op} file '{yaml_file}'", err=True)
 
 
-def get_output_filehandle(path, clobber):
+def get_output_filehandle(path, clobber, mode=""):
+    op = "Overwrote" if path.exists() else "Created"
     try:
-        out_fh = path.open("w" if clobber else "x")
+        out_fh = path.open("w" + mode if clobber else "x" + mode)
     except FileExistsError:
         click.echo(f"Error: output file '{path}' already exists", err=True)
         sys.exit(1)
+    click.echo(f"{op} file '{path}'", err=True)
     return out_fh
 
 
 def parse_assembly_file(path, default_format=None):
     fmt = format_from_file_extn(path, default_format)
-    path_fh = path.open("r")
     if fmt == "AGP":
-        return parse_agp(path_fh, path.stem)
+        return parse_agp(path.open(), path.stem), None
     elif fmt == "TPF":
-        return parse_tpf(path_fh, path.stem)
+        return parse_tpf(path.open(), path.stem), None
+    elif fmt == "FASTA":
+        fai = FastaIndex(path)
+        fai.auto_load()
+        return fai.assembly, fai
     else:
         msg = f"Unknown assembly file format '{fmt}'"
         raise ValueError(msg)
