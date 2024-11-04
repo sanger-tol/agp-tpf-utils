@@ -1,4 +1,4 @@
-from io import BufferedIOBase, BytesIO
+from io import BufferedIOBase
 
 from tola.assembly.assembly import Assembly
 from tola.assembly.gap import Gap
@@ -32,9 +32,9 @@ class FastaStream:
         out.write(f">{scaffold.name}\n".encode())
         for row in scaffold.rows:
             itr = (
-                self.gap_seq(row)
+                fai.get_gap_iter(row, self.gap_character)
                 if isinstance(row, Gap)
-                else fai.get_sequence(row)
+                else fai.get_sequence_iter(row)
             )
             for chunk in itr:
                 chunk.seek(0)
@@ -50,6 +50,3 @@ class FastaStream:
 
         if want != line_length:
             out.write(b"\n")
-
-    def gap_seq(self, gap: Gap):
-        yield BytesIO(self.gap_character * gap.length)

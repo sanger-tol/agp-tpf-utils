@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 
-import io
 import logging
 import re
 import sys
 from functools import cached_property
+from io import BytesIO
 from pathlib import Path
 
 from tola.assembly.assembly import Assembly
@@ -13,24 +13,11 @@ from tola.assembly.fragment import Fragment
 from tola.assembly.gap import Gap
 from tola.assembly.parser import parse_agp
 from tola.assembly.scaffold import Scaffold
+from tola.fasta.simple import FastaSeq, revcomp_bytes_io
 
 
 class IndexUsageError(Exception):
     """Unexpected usage of FastaIndex"""
-
-
-IUPAC_COMPLEMENT = bytes.maketrans(
-    b"ACGTRYMKSWHBVDNacgtrymkswhbvdn",
-    b"TGCAYRKMSWDVBHNtgcayrkmswdvbhn",
-)
-
-
-def reverse_complement(seq: bytes):
-    return seq[::-1].translate(IUPAC_COMPLEMENT)
-
-
-def revcomp_bytes_io(seq: io.BytesIO):
-    return io.BytesIO(reverse_complement(seq.getvalue()))
 
 
 class FastaInfo:
@@ -137,7 +124,7 @@ class FastaIndex:
                     residues_per_line,
                     max_line_length,
                 )
-            self.index = idx_dict
+        self.index = idx_dict
 
     def write_index(self):
         idx_dict = self.index
@@ -177,11 +164,33 @@ class FastaIndex:
     def fasta_fileandle(self):
         return self.fasta_file.open("rb")
 
-    def get_sequence(self, frag: Fragment):
-        info = self.index.get(frag.name)
+    def get_info(self, name):
+        info = self.index.get(name)
         if not info:
-            msg = f"No sequence in index named '{frag.name}'"
+            msg = f"No sequence in index named '{name}'"
             raise ValueError(msg)
+        return info
+
+    def get_gap_iter(self, gap: Gap, gap_character=b"N"):
+        """
+        Returns an iterator of `BytesIO` objects for gap characters for the Gap.
+        Keeps memory usage below `buffer_size` for large gaps.
+        """
+        max_length = self.buffer_size
+        length = gap.length
+        chunk_count = 1 + (length // max_length)
+        for i in range(chunk_count):
+            chunk_start = i * max_length
+            chunk_end = min(length, chunk_start + max_length)
+            yield BytesIO(gap_character * (chunk_end - chunk_start))
+
+    def get_sequence_iter(self, frag: Fragment):
+        """
+        Returns an iterator of `BytesIO` objects for sequence characters of
+        the `Fragment`, keeping memory usage by the sequence data below
+        `buffer_size`.
+        """
+        info = self.get_info(frag.name)
 
         if frag.strand == -1:
             return self.rev_chunks(info, frag.start, frag.end)
@@ -200,13 +209,25 @@ class FastaIndex:
     def rev_chunks(self, info: FastaInfo, start, end):
         max_length = self.buffer_size
         chunk_count = (end - start) // max_length
+
+        # Loop backwards from last chunk to the first, yeilding the
+        # reverse-complement of each chunk.
         for i in range(chunk_count, -1, -1):
             offset = i * max_length
             chunk_start = start + offset
             chunk_end = min(end, chunk_start + max_length - 1)
             yield revcomp_bytes_io(self.sequence_bytes(info, chunk_start, chunk_end))
 
-    def sequence_bytes(self, info: FastaInfo, start, end):
+    def all_fasta_seq(self):
+        for name in self.index:
+            yield self.get_fasta_seq(name)
+
+    def get_fasta_seq(self, name) -> FastaSeq:
+        info = self.get_info(name)
+        seq_bytes = self.sequence_bytes(info, 1, info.length).getvalue()
+        return FastaSeq(name, seq_bytes)
+
+    def sequence_bytes(self, info: FastaInfo, start, end) -> BytesIO:
         start -= 1  # Switch to Python coordinates
         rpl = info.residues_per_line
         mll = info.max_line_length
@@ -222,7 +243,7 @@ class FastaIndex:
         fh = self.fasta_fileandle
         fh.seek(info.file_offset + frst_offset + mll * frst_line)
 
-        seq = io.BytesIO()
+        seq = BytesIO()
         if frst_line == last_line:
             # Sequence fragment is all on one line of the FASTA file
             seq.write(fh.read(end - start))
@@ -253,7 +274,7 @@ def index_fasta_file(file: Path, buffer_size: int = 250_000):
     region_end = None
     seq_regions = None
     line_end_bytes = None
-    seq_buffer = io.BytesIO()
+    seq_buffer = BytesIO()
 
     idx_dict = {}
     asm = Assembly(
@@ -329,7 +350,7 @@ def index_fasta_file(file: Path, buffer_size: int = 250_000):
                 # character and taking the first element of the array.
                 # (This also allows space characters following the ">"
                 # character of the header.)
-                name = line[1:].split()[0].decode("utf8")
+                name = line[1:].split()[0].decode()
                 if not name:
                     msg = f"Failed to parse sequence name from line:\n{line}"
                     raise ValueError(msg)

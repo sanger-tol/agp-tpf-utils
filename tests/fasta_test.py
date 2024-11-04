@@ -5,7 +5,8 @@ import pytest
 
 # from tola.assembly.fragment import Fragment
 # from tola.assembly.scaffold import Scaffold
-from tola.fasta.index import FastaIndex, index_fasta_file, reverse_complement
+from tola.fasta.index import FastaIndex, index_fasta_file
+from tola.fasta.simple import FastaSeq, reverse_complement
 from tola.fasta.stream import FastaStream
 
 
@@ -27,22 +28,43 @@ def test_fai(fasta_file):
     assert str(asm) == str(idx.assembly)
 
 
-def test_stream_fetch():
+def test_simple_fasta_bytes():
+    name = "test"
+    desc = "A test sequence"
+    seq = b"n" * 60
+    ref_str = f">{name} {desc}\n{seq.decode()}\n"
+
+    fst = FastaSeq(name, seq, desc)
+    assert str(fst) == ref_str
+    assert fst.fasta_bytes() == ref_str.encode()
+
+
+@pytest.mark.parametrize("buf_size", [5, 7, 100, 200])
+def test_stream_fetch(buf_size):
     fasta_file = pathlib.Path(__file__).parent / "fasta/test.fa"
-    fai = FastaIndex(fasta_file, buffer_size=7)
+    ref_fai = FastaIndex(fasta_file)
+    ref_fai.load_index()
+
+    # Check we have the first and last sequence
+    assert ref_fai.index.get('RAND-001')
+    assert ref_fai.index.get('RAND-100')
+
+    ref_io = io.BytesIO()
+    for seq in ref_fai.all_fasta_seq():
+        ref_io.write(seq.fasta_bytes())
+    ref_bytes = ref_io.getvalue()
+
+    fai = FastaIndex(fasta_file, buffer_size=buf_size)
     fai.load_index()
     fai.load_assembly()
+
     out = io.BytesIO()
     fst = FastaStream(out, fai, gap_character=b"n")
     fst.write_assembly(fai.assembly)
+    fst_bytes = out.getvalue()
 
-    print(out.getvalue().decode(), end="")
-
-    ref_bytes = fasta_file.read_bytes().replace(b"\r", b"").replace(b"\n", b"")
-    fst_bytes = out.getvalue().replace(b"\n", b"")
-
-    assert len(ref_bytes) == len(fst_bytes)
-    assert ref_bytes == fst_bytes
+    # Decode bytes to string so that pytest diff works
+    assert ref_bytes.decode() == fst_bytes.decode()
 
 
 def test_revcomp():
