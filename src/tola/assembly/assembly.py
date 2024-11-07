@@ -118,10 +118,9 @@ class Assembly:
     def scaffolds_sorted_by_name(self):
         return sorted(self.scaffolds, key=self.name_natural_key)
 
-    def smart_sort_scaffolds(self, autosome_prefix: str):
+    def smart_sort_scaffolds(self):
         def smart_sort_key(scaffold: Scaffold):
-            rank = scaffold.rank(autosome_prefix)
-            return rank, self.name_natural_key(scaffold)
+            return scaffold.rank, self.name_natural_key(scaffold)
 
         self.scaffolds.sort(key=smart_sort_key)
 

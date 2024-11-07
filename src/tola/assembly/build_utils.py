@@ -22,6 +22,7 @@ class ChrNamer:
         self.autosome_prefix = autosome_prefix
         self.chr_name_n = 0
         self.current_chr_name = None
+        self.current_rank = None
         self.current_haplotype = None
         self.haplotig_n = 0
         self.haplotig_scaffolds = []
@@ -48,6 +49,7 @@ class ChrNamer:
         chr_name = None
         haplotype = None
         is_painted = False  # Has HiC contacts
+        rank = None
 
         for tag in scaffold.fragment_tags():
             if tag == "Painted":
@@ -63,9 +65,9 @@ class ChrNamer:
                     )
                     raise ValueError(msg)
                 chr_name = tag
-                if self.sync_chr_n:
-                    # Keep chromosome numbering in sync with Pretext scaffolds:
-                    self.chr_name_n += 1
+                # Keep chromosome numbering in sync with Pretext scaffolds:
+                self.chr_name_n += 1
+                rank = 2
             elif tag not in self.OTHER_KNOWN_TAGS:
                 # Any tag that doesn't look like a chromosome name is assumed
                 # to be a haplotype, and we only expect to find one within
@@ -83,11 +85,14 @@ class ChrNamer:
 
         if not chr_name:
             if is_painted:
-                chr_name = self.autosome_name()
+                chr_name = scaffold.name
+                if not rank:
+                    rank = 1  # Rank for autosomes
             else:
                 # Unpainted scaffolds keep the name they have in the input
                 # assembly
                 chr_name = scaffold.rows[0].name
+                rank = 3
 
                 # If we don't have a haplotype from a tag, does its name begin
                 # with the name of a haplotype?  (This will fail if unplaced
@@ -98,6 +103,7 @@ class ChrNamer:
                     haplotype = self.haplotype_lc_dict.get(lc_prefix)
 
         self.current_chr_name = chr_name
+        self.current_rank = rank
         self.current_haplotype = haplotype
         self.unloc_n = 0
         self.unloc_scaffolds = []
@@ -126,6 +132,7 @@ class ChrNamer:
             scaffold.tag = "Contaminant"
 
         scaffold.name = name
+        scaffold.rank = self.current_rank
         scaffold.haplotype = self.current_haplotype
 
     def autosome_name(self) -> str:

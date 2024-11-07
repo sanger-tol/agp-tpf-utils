@@ -5,7 +5,7 @@ from tola.assembly.gap import Gap
 
 
 class Scaffold:
-    def __init__(self, name, rows=None, tag=None, haplotype=None):
+    def __init__(self, name, rows=None, tag=None, haplotype=None, rank=0):
         self.name = str(name)
         if rows:
             self.rows = [*rows]
@@ -13,6 +13,7 @@ class Scaffold:
             self.rows = []
         self.tag = tag
         self.haplotype = haplotype
+        self.rank = rank
 
     def __repr__(self):
         txt = io.StringIO()
@@ -109,11 +110,3 @@ class Scaffold:
                 break
 
         return junctions
-
-    def rank(self, autosome_prefix):
-        rank = (1, "Named")
-        if self.name.startswith(autosome_prefix):
-            rank = (0, "Autosomes")
-        elif self.name.startswith("H_") or self.name == self.rows[0].name:
-            rank = (2, "Unplaced")
-        return rank

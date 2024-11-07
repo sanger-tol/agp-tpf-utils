@@ -60,10 +60,9 @@ class AssemblyStats:
         )
 
     def ranked_scaffolds(self, asm: Assembly):
-        autosome_prefix = self.autosome_prefix
         ranked_scaffolds = {}
         for scffld in asm.scaffolds:
-            rank = scffld.rank(autosome_prefix)
+            rank = scffld.rank
             ranked_scaffolds.setdefault(rank, []).append(scffld)
         return ranked_scaffolds
 
@@ -72,10 +71,9 @@ class AssemblyStats:
 
         ranked_names_lengths = {}
         for rank, scaffolds in ranked_scaffolds.items():
-            rank_i, rank_name = rank
             # If this isn't the Unplaced rank, merge in any Unlocs before
             # storing lengths
-            if rank_i != 2:
+            if rank != 3:
                 scaffolds = self.merge_unlocs(scaffolds)
             name_length = {}
             for scffld in scaffolds:
@@ -92,7 +90,7 @@ class AssemblyStats:
     def chromosome_names(self, asm: Assembly):
         chr_names = []
         for rank, scaffolds in self.ranked_scaffolds(asm).items():
-            if rank[0] in (0, 1):
+            if rank in (1, 2):
                 current_chr = None
                 current_chr_list = None
                 for scffld in scaffolds:
@@ -111,21 +109,22 @@ class AssemblyStats:
         logging.info(f"\n{asm.name}")
         logging.info(f"    {asm.fragments_length:15,d}  bp sequence (minus gaps)")
         is_main = False
+        rank_label = {
+            1: "Autosomes",
+            2: "Named",
+            3: "Unplaced",
+        }
         for rank, name_length in ranked_names_lengths.items():
-            # rank_i is used in logic below so that code doesn't have to be
-            # changed if we rename a rank
-            rank_i, rank_name = rank
-
             # Does this assembly have autosomes or named chromosomes?
-            if rank_i in (0, 1):
+            if rank in (1, 2):
                 is_main = True
 
             # Only show rank headings for main assemblies
             if is_main:
-                logging.info(f"  {rank_name}:")
+                logging.info(f"  {rank_label[rank]}:")
             logging.info(f"    n = {len(name_length)}")
 
-            if rank_i == 1:
+            if rank == 2:
                 # Show all the named scaffolds
                 for name, length in name_length.items():
                     self.log_scaffold_length(name, length)

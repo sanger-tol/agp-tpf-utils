@@ -270,9 +270,8 @@ class BuildAssembly(Assembly):
             new_asm.add_scaffold(scffld)
 
         asm_list = list(assemblies.values())
-        autosome_prefix = self.chr_namer.autosome_prefix
         for asm in asm_list:
-            asm.smart_sort_scaffolds(autosome_prefix)
+            asm.smart_sort_scaffolds()
 
         self.assembly_stats.make_stats(assemblies)
 
@@ -292,6 +291,7 @@ class BuildAssembly(Assembly):
                     scffld.name,
                     tag=scffld.tag,
                     haplotype=scffld.haplotype,
+                    rank=scffld.rank,
                 ),
             )
             if isinstance(scffld, OverlapResult):

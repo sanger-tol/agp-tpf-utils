@@ -31,10 +31,8 @@ def test_no_coord_changes():
     ia1 = make_random_assembly(seed="Random assembly")
 
     p1 = Assembly("pretext")
-    out_n = 0
-    for scf in ia1.scaffolds:
-        out_n += 1
-        ns = Scaffold(f"New_{out_n}")
+    for out_n, scf in enumerate(ia1.scaffolds):
+        ns = Scaffold(f"New_{out_n + 1}")
         ns.add_row(
             # Make a fragment which is the length of the input Scaffold to
             # test trivial remapping
