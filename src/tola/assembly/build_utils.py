@@ -6,27 +6,23 @@ import logging
 import re
 import textwrap
 
-import click
-
 from tola.assembly.fragment import Fragment
 from tola.assembly.overlap_result import OverlapResult
 from tola.assembly.scaffold import Scaffold
 
 
-class ChrNamer:
+class ScaffoldNamer:
     """
     Tracks naming of chromosomes as Pretext assembly is processed
     """
 
-    def __init__(self, autosome_prefix="RL_", sync_chr_n=True):
+    def __init__(self, autosome_prefix="RL_"):
         self.autosome_prefix = autosome_prefix
-        self.chr_name_n = 0
-        self.current_chr_name = None
+        self.current_scaffold_name = None
         self.current_rank = None
         self.current_haplotype = None
         self.haplotig_n = 0
         self.haplotig_scaffolds = []
-        self.sync_chr_n = sync_chr_n
         self.target_tags = False
         self.unloc_n = 0
         self.unloc_scaffolds = []
@@ -41,12 +37,12 @@ class ChrNamer:
         "Unloc",
     }
 
-    def make_chr_name(self, scaffold: Scaffold) -> None:
+    def make_scaffold_name(self, scaffold: Scaffold) -> None:
         """
         Using the tags in the Scaffold from Pretext, work out what the
         chromosome name should be.
         """
-        chr_name = None
+        scaffold_name = None
         haplotype = None
         is_painted = False  # Has HiC contacts
         rank = None
@@ -58,15 +54,13 @@ class ChrNamer:
                 self.target_tags = True
             elif re.fullmatch(r"([A-Z]\d*|[IVX_]+)", tag):
                 # This tag looks like a chromosome name
-                if chr_name and tag != chr_name:
+                if scaffold_name and tag != scaffold_name:
                     msg = (
-                        f"Found more than one chr_name name: '{chr_name}'"
+                        f"Found more than one scaffold_name name: '{scaffold_name}'"
                         f" and '{tag}' in scaffold:\n\n{scaffold}"
                     )
                     raise ValueError(msg)
-                chr_name = tag
-                # Keep chromosome numbering in sync with Pretext scaffolds:
-                self.chr_name_n += 1
+                scaffold_name = tag
                 rank = 2
             elif tag not in self.OTHER_KNOWN_TAGS:
                 # Any tag that doesn't look like a chromosome name is assumed
@@ -83,26 +77,26 @@ class ChrNamer:
                     # i.e.  "Hap1" will be used if it is seen before "HAP1".
                     haplotype = self.haplotype_lc_dict.setdefault(tag.lower(), tag)
 
-        if not chr_name:
+        if not scaffold_name:
             if is_painted:
-                chr_name = scaffold.name
+                scaffold_name = scaffold.name
                 if not rank:
                     rank = 1  # Rank for autosomes
             else:
                 # Unpainted scaffolds keep the name they have in the input
                 # assembly
-                chr_name = scaffold.rows[0].name
+                scaffold_name = scaffold.rows[0].name
                 rank = 3
 
                 # If we don't have a haplotype from a tag, does its name begin
                 # with the name of a haplotype?  (This will fail if unplaced
                 # contigs from a haplotype appear before the first Scaffold
                 # assigned to that haplotype in the Pretext Assembly.)
-                if not haplotype and (m := re.match(r"([^_]+)_", chr_name)):
+                if not haplotype and (m := re.match(r"([^_]+)_", scaffold_name)):
                     lc_prefix = m.group(1).lower()
                     haplotype = self.haplotype_lc_dict.get(lc_prefix)
 
-        self.current_chr_name = chr_name
+        self.current_scaffold_name = scaffold_name
         self.current_rank = rank
         self.current_haplotype = haplotype
         self.unloc_n = 0
@@ -113,9 +107,9 @@ class ChrNamer:
         scaffold: Scaffold,
         fragment: Fragment,
         scaffold_tags: set[str],
-        from_scffld_name: str,
+        original_name: str,
     ) -> None:
-        name = self.current_chr_name
+        name = self.current_scaffold_name
         if "Contaminant" in fragment.tags:
             scaffold.tag = "Contaminant"
         elif "Haplotig" in fragment.tags:
@@ -124,7 +118,7 @@ class ChrNamer:
             self.haplotig_scaffolds.append(scaffold)
         elif "Unloc" in fragment.tags:
             if "Painted" not in scaffold_tags:
-                msg = f"Unloc in unpainted scaffold {from_scffld_name!r}: {fragment}"
+                msg = f"Unloc in unpainted scaffold {original_name!r}: {fragment}"
                 raise ValueError(msg)
             name = self.unloc_name()
             self.unloc_scaffolds.append(scaffold)
@@ -132,15 +126,9 @@ class ChrNamer:
             scaffold.tag = "Contaminant"
 
         scaffold.name = name
-        scaffold.rank = self.current_rank
         scaffold.haplotype = self.current_haplotype
-
-    def autosome_name(self) -> str:
-        """
-        Name the next autosome in the haplotype
-        """
-        self.chr_name_n += 1
-        return self.autosome_prefix + str(self.chr_name_n)
+        scaffold.rank = self.current_rank
+        scaffold.original_name = original_name
 
     def haplotig_name(self) -> str:
         self.haplotig_n += 1
@@ -148,7 +136,7 @@ class ChrNamer:
 
     def unloc_name(self) -> str:
         self.unloc_n += 1
-        return f"{self.current_chr_name}_unloc_{self.unloc_n}"
+        return f"{self.current_scaffold_name}_unloc_{self.unloc_n}"
 
     def rename_haplotigs_by_size(self) -> None:
         self.rename_by_size(self.haplotig_scaffolds)
@@ -163,6 +151,43 @@ class ChrNamer:
         by_size = sorted(scaffolds, key=lambda s: s.length, reverse=True)
         for s, n in zip(by_size, names, strict=True):
             s.name = n
+
+
+class ChrNamer:
+    def __init__(self, chr_prefix="SUPER_"):
+        self.chr_prefix = chr_prefix
+        self.scaffolds = []
+        self.haplotypes_seen = {}
+        self.groups = []
+
+    def add_scaffold(self, haplotype, scffld):
+        self.haplotypes_seen[haplotype] = True
+        self.scaffolds.append((haplotype, scffld))
+
+    def new_group(self):
+        grp = {}
+        for hap in self.haplotypes_seen:
+            grp[hap] = {}
+        self.groups.append(grp)
+        return grp
+
+    def group_length(self, group, first_haplotype):
+        pass
+
+    def name_autosomes(self):
+        first_haplotype, *_ = self.haplotypes_seen.keys()
+        group = self.new_group()
+        last_haplotype = None
+        for haplotype, scffld in self.scaffolds:
+            orig = scffld.original_name
+            if not orig:
+                msg = "Missing original_name value in Scaffold:\n{scffld}"
+                raise ValueError(msg)
+            if haplotype != last_haplotype and group.get(haplotype):
+                # New haplotype which is already filled in this group
+                group = self.new_group()
+            last_haplotype = haplotype
+            group[haplotype].setdefault(orig, []).append(scffld)
 
 
 class FoundFragment:

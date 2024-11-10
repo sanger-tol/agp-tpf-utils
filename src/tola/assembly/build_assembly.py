@@ -8,6 +8,7 @@ from tola.assembly.build_utils import (
     ChrNamer,
     FoundFragment,
     OverhangResolver,
+    ScaffoldNamer,
 )
 from tola.assembly.fragment import Fragment
 from tola.assembly.gap import Gap
@@ -33,24 +34,23 @@ class BuildAssembly(Assembly):
         default_gap=None,
         bp_per_texel=None,
         autosome_prefix=None,
-        sync_chr_n=True,
     ):
         super().__init__(name, header, scaffolds, bp_per_texel)
         self.default_gap = default_gap
         self.found_fragments = {}
         self.fragments_found_more_than_once = {}
-        self.chr_namer = ChrNamer(sync_chr_n=sync_chr_n)
+        self.scaffold_namer = ScaffoldNamer()
         self.assembly_stats = AssemblyStats()
         if autosome_prefix:
             self.autosome_prefix = autosome_prefix
 
     @property
     def autosome_prefix(self):
-        return self.chr_namer.autosome_prefix
+        return self.scaffold_namer.autosome_prefix
 
     @autosome_prefix.setter
     def autosome_prefix(self, prefix: str):
-        self.chr_namer.autosome_prefix = prefix
+        self.scaffold_namer.autosome_prefix = prefix
         self.assembly_stats.autosome_prefix = prefix
 
     @property
@@ -72,21 +72,21 @@ class BuildAssembly(Assembly):
         self.find_assembly_overlaps(prtxt_asm, input_asm)
         self.discard_overhanging_fragments()
         self.cut_remaining_overhangs()
-        self.chr_namer.rename_haplotigs_by_size()
+        self.scaffold_namer.rename_haplotigs_by_size()
         self.add_missing_scaffolds_from_input(input_asm)
 
     def find_assembly_overlaps(
         self, prtxt_asm: Assembly, input_asm: IndexedAssembly
     ) -> None:
         logging.info(f"Pretext resolution = {self.bp_per_texel:,.0f} bp per texel\n")
-        chr_namer = self.chr_namer
+        scaffold_namer = self.scaffold_namer
         err_length = self.error_length
         for prtxt_scffld in prtxt_asm.scaffolds:
-            chr_namer.make_chr_name(prtxt_scffld)
+            scaffold_namer.make_scaffold_name(prtxt_scffld)
             prtxt_scffld_tags = prtxt_scffld.fragment_tags()
             for prtxt_frag in prtxt_scffld.fragments():
                 if found := input_asm.find_overlaps(prtxt_frag):
-                    chr_namer.label_scaffold(
+                    scaffold_namer.label_scaffold(
                         found, prtxt_frag, prtxt_scffld_tags, prtxt_scffld.name
                     )
                     found.trim_large_overhangs(err_length)
@@ -95,7 +95,7 @@ class BuildAssembly(Assembly):
                         self.store_fragments_found(found)
                 else:
                     logging.warning(f"No overlaps found for: {prtxt_frag}")
-            chr_namer.rename_unlocs_by_size()
+            scaffold_namer.rename_unlocs_by_size()
 
     def discard_overhanging_fragments(self) -> None:
         multi = self.fragments_found_more_than_once
@@ -229,7 +229,7 @@ class BuildAssembly(Assembly):
             fnd.add_scaffold(scffld)
 
     def add_missing_scaffolds_from_input(self, input_asm: Assembly) -> None:
-        chr_namer = self.chr_namer
+        scaffold_namer = self.scaffold_namer
         found_frags = self.found_fragments
         for scffld in input_asm.scaffolds:
             new_scffld = None
@@ -250,11 +250,12 @@ class BuildAssembly(Assembly):
                     last_added_i = i
 
             if new_scffld:
-                chr_namer.make_chr_name(new_scffld)
-                new_scffld.haplotype = chr_namer.current_haplotype
+                scaffold_namer.make_scaffold_name(new_scffld)
+                new_scffld.haplotype = scaffold_namer.current_haplotype
                 self.add_scaffold(new_scffld)
 
     def assemblies_with_scaffolds_fused(self) -> list[Assembly]:
+        chr_namer = ChrNamer()
         assemblies = {}
         for scffld in self.scaffolds_fused_by_name():
             if tag := scffld.tag:
@@ -268,6 +269,10 @@ class BuildAssembly(Assembly):
                 asm_name = self.name
             new_asm = assemblies.setdefault(asm_key, Assembly(asm_name))
             new_asm.add_scaffold(scffld)
+            if scffld.rank == 1:
+                chr_namer.add_scaffold(asm_key, scffld)
+
+        chr_namer.name_autosomes()
 
         asm_list = list(assemblies.values())
         for asm in asm_list:

@@ -6,7 +6,7 @@ import pytest
 
 from tola.assembly.assembly import Assembly
 from tola.assembly.build_assembly import BuildAssembly
-from tola.assembly.build_utils import ChrNamer
+from tola.assembly.build_utils import ScaffoldNamer
 from tola.assembly.fragment import Fragment
 from tola.assembly.gap import Gap
 from tola.assembly.indexed_assembly import IndexedAssembly
@@ -14,7 +14,7 @@ from tola.assembly.scaffold import Scaffold
 
 
 def test_unpainted_unloc():
-    namer = ChrNamer()
+    namer = ScaffoldNamer()
     with pytest.raises(
         ValueError,
         match=r"Unloc in unpainted scaffold 'Scaffold_7': Bad_Unloc:1-100\(-\) Unloc",

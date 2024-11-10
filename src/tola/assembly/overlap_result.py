@@ -6,10 +6,21 @@ from tola.assembly.scaffold import Scaffold
 
 
 class OverlapResult(Scaffold):
-    def __init__(self, bait, rows, start, end, name=None, tag=None, haplotype=None):
+    def __init__(
+        self,
+        bait,
+        rows,
+        start,
+        end,
+        name=None,
+        tag=None,
+        haplotype=None,
+        rank=None,
+        original_name=None,
+    ):
         if not name:
             name = f"matches to {bait.name} {bait.start} to {bait.end}"
-        super().__init__(name, rows, tag, haplotype)
+        super().__init__(name, rows, tag, haplotype, rank, original_name)
         self.bait = bait
         self.start = start
         self.end = end
@@ -164,7 +175,7 @@ class OverlapResult(Scaffold):
         raise NotImplementedError
 
     def to_scaffold(self) -> Scaffold:
-        scffld = Scaffold(self.name, self.rows)
+        scffld = Scaffold(self.name, self.rows, original_name=self.original_name)
         if self.bait.strand == -1:
             return scffld.reverse()
         else:

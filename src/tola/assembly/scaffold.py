@@ -5,7 +5,9 @@ from tola.assembly.gap import Gap
 
 
 class Scaffold:
-    def __init__(self, name, rows=None, tag=None, haplotype=None, rank=0):
+    def __init__(
+        self, name, rows=None, tag=None, haplotype=None, rank=0, original_name=None,
+    ):
         self.name = str(name)
         if rows:
             self.rows = [*rows]
@@ -14,10 +16,14 @@ class Scaffold:
         self.tag = tag
         self.haplotype = haplotype
         self.rank = rank
+        self.original_name = original_name if original_name else name
 
     def __repr__(self):
         txt = io.StringIO()
-        txt.write(f"{self.__class__.__name__}(\n    name='{self.name}',\n    rows=[\n")
+        txt.write(f"{self.__class__.__name__}(\n    name='{self.name}',\n")
+        if orig := self.original_name:
+            txt.write(f"    original_name='{orig}',\n")
+        txt.write("    rows=[\n")
         for row in self.rows:
             txt.write(f"        {row!r},\n")
         txt.write("    ],\n)")
@@ -25,7 +31,10 @@ class Scaffold:
 
     def __str__(self):
         txt = io.StringIO()
-        txt.write(f"{self.name}\n")
+        txt.write(f"{self.name}")
+        if (orig := self.original_name) and orig != self.name:
+            txt.write(f" ({orig})")
+        txt.write("\n")
         for row in self.rows:
             txt.write(f"  {row.length:14_d}  {row}\n")
         return txt.getvalue()
