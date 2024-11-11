@@ -108,7 +108,7 @@ In your cloned copy of the git repository:
 python3 -m venv --prompt asm-utils venv
 source venv/bin/activate
 pip install --upgrade pip
-pip install --editable .
+pip install --editable . 'tola-agp-tpf-utils[devel]'
 ```
 
 An alias such as this:
@@ -128,7 +128,7 @@ reinstalled:
 
 ```sh
 pip uninstall tola-agp-tpf-utils
-pip install --editable .
+pip install --editable . 'tola-agp-tpf-utils[devel]'
 hash -r
 ```
 
