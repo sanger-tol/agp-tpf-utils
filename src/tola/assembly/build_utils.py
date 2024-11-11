@@ -153,41 +153,96 @@ class ScaffoldNamer:
             s.name = n
 
 
+class ChrGroup:
+    def __init__(self, haplotypes):
+        self.data = data = {}
+        for hap in haplotypes:
+            data[hap] = {}
+
+    def haplotype_dict(self, hap_name):
+        return self.data.get(hap_name)
+
+    def length_of_first_haplotype(self):
+        first, *_ = self.data.values()
+        orig, *others = first
+
+        if others:
+            first_hap, *_ = self.data
+            scaffold_names = [self.data[first_hap].keys()]
+            msg = (
+                f"Expected a single scaffold in first haplotype '{first_hap}'"
+                f" but found: {scaffold_names!r}"
+            )
+            raise ValueError(msg)
+
+        length = 0
+        for scffld in first[orig]:
+            length += scffld.fragments_length
+        return length
+
+    @staticmethod
+    def multi_chr_list(chr_name, multi_count):
+        if multi_count == 1:
+            return [chr_name]
+        else:
+            chr_list = []
+            for ltr in range(ord("A"), ord("A") + multi_count):
+                chr_list.append(chr_name + chr(ltr))
+
+    def name_chromosome(self, chr_prefix, chr_n):
+        for hap_set in self.data.values():
+            chr_names = self.multi_chr_list(chr_prefix + str(chr_n), len(hap_set))
+            for orig, scffld_list in hap_set.items():
+                this_chr = chr_names.pop(0)
+                for scffld in scffld_list:
+                    scffld.name = scffld.name.replace(orig, this_chr)
+
+
 class ChrNamer:
     def __init__(self, chr_prefix="SUPER_"):
         self.chr_prefix = chr_prefix
         self.scaffolds = []
         self.haplotypes_seen = {}
-        self.groups = []
+        self.groups = None
 
     def add_scaffold(self, haplotype, scffld):
         self.haplotypes_seen[haplotype] = True
         self.scaffolds.append((haplotype, scffld))
 
     def new_group(self):
-        grp = {}
-        for hap in self.haplotypes_seen:
-            grp[hap] = {}
+        grp = ChrGroup(self.haplotypes_seen)
         self.groups.append(grp)
         return grp
 
-    def group_length(self, group, first_haplotype):
-        pass
+    def name_chromosomes(self):
+        self.groups = []
+        self.build_groups()
+        self.groups.sort(key=lambda x: x.length_of_first_haplotype(), reverse=True)
+        chr_prefix = self.chr_prefix
+        for i, grp in enumerate(self.groups):
+            grp.name_chromosome(chr_prefix, i + 1)
 
-    def name_autosomes(self):
-        first_haplotype, *_ = self.haplotypes_seen.keys()
+    def build_groups(self):
+        first_haplotype, *other_haplotypes = self.haplotypes_seen
         group = self.new_group()
         last_haplotype = None
+        last_orig = None
         for haplotype, scffld in self.scaffolds:
             orig = scffld.original_name
             if not orig:
-                msg = "Missing original_name value in Scaffold:\n{scffld}"
+                msg = f"Missing original_name value in Scaffold:\n{scffld}"
                 raise ValueError(msg)
-            if haplotype != last_haplotype and group.get(haplotype):
-                # New haplotype which is already filled in this group
-                group = self.new_group()
+            if group.haplotype_dict(haplotype):
+                if other_haplotypes:
+                    if haplotype != last_haplotype:
+                        # New haplotype which is already filled in this group
+                        group = self.new_group()
+                elif orig != last_orig:
+                    # When there's only one haplotype, we split
+                    group = self.new_group()
+            group.haplotype_dict(haplotype).setdefault(orig, []).append(scffld)
             last_haplotype = haplotype
-            group[haplotype].setdefault(orig, []).append(scffld)
+            last_orig = orig
 
 
 class FoundFragment:

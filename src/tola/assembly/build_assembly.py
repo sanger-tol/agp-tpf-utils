@@ -272,7 +272,7 @@ class BuildAssembly(Assembly):
             if scffld.rank == 1:
                 chr_namer.add_scaffold(asm_key, scffld)
 
-        chr_namer.name_autosomes()
+        chr_namer.name_chromosomes()
 
         asm_list = list(assemblies.values())
         for asm in asm_list:
@@ -297,6 +297,7 @@ class BuildAssembly(Assembly):
                     tag=scffld.tag,
                     haplotype=scffld.haplotype,
                     rank=scffld.rank,
+                    original_name=scffld.original_name,
                 ),
             )
             if isinstance(scffld, OverlapResult):

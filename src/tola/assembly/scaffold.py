@@ -16,7 +16,7 @@ class Scaffold:
         self.tag = tag
         self.haplotype = haplotype
         self.rank = rank
-        self.original_name = original_name if original_name else name
+        self.original_name = original_name
 
     def __repr__(self):
         txt = io.StringIO()
