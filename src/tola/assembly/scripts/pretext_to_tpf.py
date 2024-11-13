@@ -105,6 +105,13 @@ def ul(txt):
     help="""Output file, usually a TPF.
       If not given, prints to STDOUT in 'STR' format.""",
 )
+# @click.option(
+#     "--version",
+#     "-v",
+#     default="1",
+#     show_default=True,
+#     help="Version of the assembly, used when naming the output files.",
+# )
 @click.option(
     "--autosome-prefix",
     "-c",
@@ -202,6 +209,18 @@ def setup_logging(log_level, output_file, write_log, clobber):
         sys.exit(1)
     return logfile
 
+
+"""
+
+<ToLID>.hap1.1.inter.csv                     # Supply better file with all chr
+
+<ToLID>.hap1.1.primary.curated.fa
+<ToLID>.hap1.1.all_haplotigs.curated.fa      # Do not make
+<ToLID>.hap1.1.primary.chromosome.list.csv
+
+<ToLID>.hap2.1.primary.curated.fa
+<ToLID>.hap2.1.all_haplotigs.curated.fa
+"""
 
 def write_assembly(fai, out_asm, output_file, clobber):
     if output_file:

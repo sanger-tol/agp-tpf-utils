@@ -13,7 +13,10 @@ from tola.assembly.scaffold import Scaffold
 
 class ScaffoldNamer:
     """
-    Tracks naming of chromosomes as Pretext assembly is processed
+    Labels Scaffolds with named chromosomes (sex chromosomes, B chromosomes),
+    ranks (autosomes=1, named=2, unplaced=3), and haplotypes as the Pretext
+    assembly is processed. Also saves the original pretext scaffold name
+    under the `original_name` attribute.
     """
 
     def __init__(self, autosome_prefix="RL_"):
@@ -39,8 +42,8 @@ class ScaffoldNamer:
 
     def make_scaffold_name(self, scaffold: Scaffold) -> None:
         """
-        Using the tags in the Scaffold from Pretext, work out what the
-        chromosome name should be.
+        Using the tags from Pretext in the Scaffold, work out what the
+        haplotype is, if it has been named, and what its rank is.
         """
         scaffold_name = None
         haplotype = None
@@ -110,11 +113,14 @@ class ScaffoldNamer:
         original_name: str,
     ) -> None:
         name = self.current_scaffold_name
+        rank = self.current_rank
         if "Contaminant" in fragment.tags:
             scaffold.tag = "Contaminant"
+            rank = 3
         elif "Haplotig" in fragment.tags:
             name = self.haplotig_name()
             scaffold.tag = "Haplotig"
+            rank = 3
             self.haplotig_scaffolds.append(scaffold)
         elif "Unloc" in fragment.tags:
             if "Painted" not in scaffold_tags:
@@ -124,10 +130,11 @@ class ScaffoldNamer:
             self.unloc_scaffolds.append(scaffold)
         elif self.target_tags and "Target" not in scaffold_tags:
             scaffold.tag = "Contaminant"
+            rank = 3
 
         scaffold.name = name
         scaffold.haplotype = self.current_haplotype
-        scaffold.rank = self.current_rank
+        scaffold.rank = rank
         scaffold.original_name = original_name
 
     def haplotig_name(self) -> str:
@@ -154,6 +161,11 @@ class ScaffoldNamer:
 
 
 class ChrGroup:
+    """
+    Used to group together adjacent chromosomes from each haplotype so that
+    they can be kept together when sorting by size in the first haplotype.
+    """
+
     def __init__(self, haplotypes):
         self.data = data = {}
         for hap in haplotypes:
@@ -182,14 +194,29 @@ class ChrGroup:
 
     @staticmethod
     def multi_chr_list(chr_name, multi_count):
+        """
+        Adds the suffix "A", "B", "C" etc... to the supplied chromosome name
+        for when there are multiple chromosomes in a group.
+        """
         if multi_count == 1:
             return [chr_name]
         else:
             chr_list = []
             for ltr in range(ord("A"), ord("A") + multi_count):
                 chr_list.append(chr_name + chr(ltr))
+            return chr_list
 
     def name_chromosome(self, chr_prefix, chr_n):
+        """
+        Replace the original Pretext scaffold name with the supplied
+        `chr_prefix` and `chr_n` for each haplotype within the group.
+
+        e.g.
+              "Scaffold_10"         > "SUPER_9A"
+              "Scaffold_10_unloc_1" > "SUPER_9A_unloc_1"
+              "Scaffold_10_unloc_2" > "SUPER_9A_unloc_2"
+              "Scaffold_11"         > "SUPER_9B"
+        """
         for hap_set in self.data.values():
             chr_names = self.multi_chr_list(chr_prefix + str(chr_n), len(hap_set))
             for orig, scffld_list in hap_set.items():
@@ -199,6 +226,10 @@ class ChrGroup:
 
 
 class ChrNamer:
+    """
+    Groups chromosomes across haplotypes and sorts and names them.
+    """
+
     def __init__(self, chr_prefix="SUPER_"):
         self.chr_prefix = chr_prefix
         self.scaffolds = []
@@ -206,6 +237,8 @@ class ChrNamer:
         self.groups = None
 
     def add_scaffold(self, haplotype, scffld):
+        # A dict is used to store the haplotypes seen since order is
+        # significant and sets do not preserve order.
         self.haplotypes_seen[haplotype] = True
         self.scaffolds.append((haplotype, scffld))
 
@@ -215,6 +248,9 @@ class ChrNamer:
         return grp
 
     def name_chromosomes(self):
+        if not self.haplotypes_seen:
+            # No autosomes to name
+            return
         self.groups = []
         self.build_groups()
         self.groups.sort(key=lambda x: x.length_of_first_haplotype(), reverse=True)
@@ -232,14 +268,39 @@ class ChrNamer:
             if not orig:
                 msg = f"Missing original_name value in Scaffold:\n{scffld}"
                 raise ValueError(msg)
+
+            # Do we already have a scaffold in this haplotype in the ChrGroup?
             if group.haplotype_dict(haplotype):
                 if other_haplotypes:
                     if haplotype != last_haplotype:
-                        # New haplotype which is already filled in this group
+                        # New haplotype which already has an entry in this
+                        # group, so we must be in to a new group.
                         group = self.new_group()
                 elif orig != last_orig:
-                    # When there's only one haplotype, we split
+                    # When there's only one haplotype, we make a new ChrGroup
+                    # for each original_name, i.e. Pretext scaffold name.
+                    # There will be mulitple scaffolds in a row from with the
+                    # same original_name when there are Unlocs.
                     group = self.new_group()
+
+            # Append to the list under Haplotype > Pretext Scaffold in the
+            # ChrGroup. i.e. Each ChrGroup will be structured like this:
+            #
+            #   ChrGroup(
+            #       data={
+            #           "Hap1": {
+            #               "Scaffold_9": [
+            #                   Scaffold(name="Scaffold_9"),
+            #               ]
+            #           },
+            #           "Hap2": {
+            #               "Scaffold_10": [
+            #                   Scaffold(name="Scaffold_10"),
+            #                   Scaffold(name="Scaffold_10_unloc_1)",
+            #               ]
+            #           },
+            #       }
+            #   )
             group.haplotype_dict(haplotype).setdefault(orig, []).append(scffld)
             last_haplotype = haplotype
             last_orig = orig

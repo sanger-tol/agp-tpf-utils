@@ -23,6 +23,8 @@ class Scaffold:
         txt.write(f"{self.__class__.__name__}(\n    name='{self.name}',\n")
         if orig := self.original_name:
             txt.write(f"    original_name='{orig}',\n")
+        if rnk := self.rank:
+            txt.write(f"    rank='{rnk}',\n")
         txt.write("    rows=[\n")
         for row in self.rows:
             txt.write(f"        {row!r},\n")
@@ -34,6 +36,8 @@ class Scaffold:
         txt.write(f"{self.name}")
         if (orig := self.original_name) and orig != self.name:
             txt.write(f" ({orig})")
+        if (rnk := self.rank):
+            txt.write(f" rank={rnk}")
         txt.write("\n")
         for row in self.rows:
             txt.write(f"  {row.length:14_d}  {row}\n")

@@ -238,6 +238,7 @@ class BuildAssembly(Assembly):
                 if not found_frags.get(frag.key_tuple):
                     if not new_scffld:
                         new_scffld = Scaffold(scffld.name)
+                        new_scffld.rank = 3
                     if last_added_i is not None and last_added_i != i - 1:
                         # Last added row was not the previous row in the
                         # scaffold
@@ -260,22 +261,24 @@ class BuildAssembly(Assembly):
         for scffld in self.scaffolds_fused_by_name():
             if tag := scffld.tag:
                 asm_key = tag
-                asm_name = f"{self.name}_{tag}s"
+                asm_name = f"{self.name}.{tag.lower()}s"
             elif hap := scffld.haplotype:
                 asm_key = hap
-                asm_name = f"{self.name}_{hap}"
+                asm_name = f"{self.name}.{hap.lower()}"
             else:
                 asm_key = None
                 asm_name = self.name
             new_asm = assemblies.setdefault(asm_key, Assembly(asm_name))
             new_asm.add_scaffold(scffld)
             if scffld.rank == 1:
+                # Add autosome to the ChrNamer
                 chr_namer.add_scaffold(asm_key, scffld)
 
+        # ChrNamer names autosome chromsomes by size
         chr_namer.name_chromosomes()
 
-        asm_list = list(assemblies.values())
-        for asm in asm_list:
+        for asm in assemblies.values():
+            # Sort scaffolds by name
             asm.smart_sort_scaffolds()
 
         self.assembly_stats.make_stats(assemblies)

@@ -6,11 +6,20 @@ import pytest
 
 from tola.assembly.assembly import Assembly
 from tola.assembly.build_assembly import BuildAssembly
-from tola.assembly.build_utils import ScaffoldNamer
+from tola.assembly.build_utils import ChrGroup, ScaffoldNamer
 from tola.assembly.fragment import Fragment
 from tola.assembly.gap import Gap
 from tola.assembly.indexed_assembly import IndexedAssembly
 from tola.assembly.scaffold import Scaffold
+
+
+def test_multi_chr_list():
+    assert ChrGroup.multi_chr_list("SUPER_3", 1) == ["SUPER_3"]
+    assert ChrGroup.multi_chr_list("SUPER_3", 3) == [
+        "SUPER_3A",
+        "SUPER_3B",
+        "SUPER_3C",
+    ]
 
 
 def test_unpainted_unloc():
@@ -86,11 +95,11 @@ def shuffled_assembly(asm, name):
         i = 0
         p = 0
         while i < len(scffld.rows):
-            j = i + random.randint(1, max_chunk)
+            j = i + random.randint(1, max_chunk)  # noqa: S311
             chunk = scffld.rows[i:j]
             start = p + 1
             end = p + sum(f.length for f in chunk)
-            strand = 1 if random.random() < 0.8 else -1
+            strand = 1 if random.random() < 0.8 else -1  # noqa: S311
             if any(isinstance(x, Fragment) for x in chunk):
                 # Don't add any baits which are only gaps
                 baits.append(Fragment(scffld.name, start, end, strand))
@@ -105,7 +114,7 @@ def shuffled_assembly(asm, name):
         sn += 1
         scffld = Scaffold(f"RL_{sn}")
         ptxt.add_scaffold(scffld)
-        j = random.randint(1, 4 * max_chunk)
+        j = random.randint(1, 4 * max_chunk)  # noqa: S311
         scffld.rows = baits[0:j]
         del baits[0:j]
     return ptxt
@@ -130,7 +139,7 @@ def fuzz_coordinates(asm):
                 end = row.end
 
                 # Simulate edit of long fragments when Pretext is zoomed out
-                screen_res = row.length / 1000
+                # screen_res = row.length / 1000
                 # if screen_res > bp_per_texel:
                 #     start = 1 + round_down(start, screen_res)
                 #     end = round_down(end, screen_res)
@@ -171,21 +180,22 @@ def make_random_assembly(
     g1 = Gap(200, "scaffold")
     for sn in range(1, scaffolds + 1):
         s = Scaffold(f"scaffold_{sn}")
+        s.rank = 3
         p = 0
-        for rn in range(random.randint(1, rows)):
+        for rn in range(random.randint(1, rows)):  # noqa: S311
             # Don't add a Gap if it's the first row
             if rn != 0:
                 s.add_row(g1)
                 p += g1.length
 
-            end_offset = max(999, random.randint(1, fragment_length))
+            end_offset = max(999, random.randint(1, fragment_length))  # noqa: S311
 
             # Add a Fragment
             f = Fragment(
                 s.name,
                 p + 1,
                 p + end_offset,
-                1 if random.random() < 0.8 else -1,
+                1 if random.random() < 0.8 else -1,  # noqa: S311
             )
             s.add_row(f)
             p += f.length
@@ -218,7 +228,7 @@ if __name__ == "__main__":
     else:
         while True:
             random.seed()
-            rndm = random.randint(0, sys.maxsize)
+            rndm = random.randint(0, sys.maxsize)  # noqa: S311
             asm = make_random_assembly(
                 seed=rndm,
                 scaffolds=1,
