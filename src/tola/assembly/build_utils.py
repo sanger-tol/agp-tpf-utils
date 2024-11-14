@@ -180,10 +180,10 @@ class ChrGroup:
 
         if others:
             first_hap, *_ = self.data
-            scaffold_names = [self.data[first_hap].keys()]
+            scaffold_names = list(self.data[first_hap].keys())
             msg = (
                 f"Expected a single scaffold in first haplotype '{first_hap}'"
-                f" but found: {scaffold_names!r}"
+                f" but found: {scaffold_names}"
             )
             raise ValueError(msg)
 

@@ -6,7 +6,7 @@ import pytest
 
 from tola.assembly.assembly import Assembly
 from tola.assembly.build_assembly import BuildAssembly
-from tola.assembly.build_utils import ChrGroup, ScaffoldNamer
+from tola.assembly.build_utils import ChrGroup, ChrNamer, ScaffoldNamer
 from tola.assembly.fragment import Fragment
 from tola.assembly.gap import Gap
 from tola.assembly.indexed_assembly import IndexedAssembly
@@ -20,6 +20,107 @@ def test_multi_chr_list():
         "SUPER_3B",
         "SUPER_3C",
     ]
+
+
+def list_chr_naming_tests():
+    for test_data in [
+        {
+            "input": [
+                ("S1", "Hap1", 2_000_000, "S1"),
+                ("S2", "Hap1", 1_000_000, "S2"),
+                ("S3", "Hap3", 3_000_000, "S3"),
+            ],
+            "exception": r"Expected a single scaffold in first haplotype",
+        },
+        {
+            "input": [
+                # SUPER_2
+                ("P1", None, 10_000_000, "P1"),
+                ("P1_unloc_2", None, 9_000, "P1"),
+                ("P1_unloc_1", None, 10_000, "P1"),
+                # SUPER_1
+                ("P2", None, 20_000_000, "P2"),
+            ],
+            "expected": {
+                None: [
+                    ("SUPER_1", None, 20_000_000, "P2"),
+                    ("SUPER_2", None, 10_000_000, "P1"),
+                    ("SUPER_2_unloc_1", None, 10_000, "P1"),
+                    ("SUPER_2_unloc_2", None, 9_000, "P1"),
+                ]
+            },
+        },
+        {
+            "input": [
+                # SUPER_2
+                ("S4", "Hap1", 20_000_000, "S4"),
+                ("S5", "Hap2", 10_000_000, "S5"),
+                ("S5_unloc_2", "Hap2", 10_000, "S5"),
+                ("S5_unloc_1", "Hap2", 19_000, "S5"),
+                # SUPER_3
+                ("S1", "Hap1", 10_000_000, "S1"),
+                ("S2", "Hap2", 7_000_000, "S2"),
+                ("S3", "Hap2", 6_000_000, "S3"),
+                ("S3_unloc_1", "Hap2", 12_000, "S3"),
+                # SUPER_1
+                ("S6", "Hap1", 40_000_000, "S6"),
+                ("S7", "Hap2", 2_000_000, "S7"),
+            ],
+            "expected": {
+                "Hap1": [
+                    ("SUPER_1", "Hap1", 40_000_000, "S6"),
+                    ("SUPER_2", "Hap1", 20_000_000, "S4"),
+                    ("SUPER_3", "Hap1", 10_000_000, "S1"),
+                ],
+                "Hap2": [
+                    ("SUPER_1", "Hap2", 2_000_000, "S7"),
+                    ("SUPER_2", "Hap2", 10_000_000, "S5"),
+                    ("SUPER_2_unloc_1", "Hap2", 19_000, "S5"),
+                    ("SUPER_2_unloc_2", "Hap2", 10_000, "S5"),
+                    ("SUPER_3A", "Hap2", 7_000_000, "S2"),
+                    ("SUPER_3B", "Hap2", 6_000_000, "S3"),
+                    ("SUPER_3B_unloc_1", "Hap2", 12_000, "S3"),
+                ],
+            },
+        },
+    ]:
+        yield (
+            test_data["input"],
+            test_data.get("expected", {}),
+            test_data.get("exception"),
+        )
+
+
+@pytest.mark.parametrize("input_data,expected,exception", list_chr_naming_tests())
+def test_chr_namer(input_data, expected, exception):
+    if exception:
+        with pytest.raises(ValueError, match=exception):
+            run_chr_namer(input_data, expected)
+    else:
+        run_chr_namer(input_data, expected)
+
+
+def run_chr_namer(input_data, expected):
+    cn = ChrNamer()
+    assemblies = {}
+    for name, haplotype, length, orig in input_data:
+        asm = assemblies.setdefault(haplotype, Assembly(haplotype))
+        scffld = Scaffold(
+            name,
+            rows=[Fragment(name, 1, length, 1)],
+            original_name=orig,
+            rank=1,
+        )
+        asm.add_scaffold(scffld)
+        cn.add_scaffold(haplotype, scffld)
+    cn.name_chromosomes()
+    for haplotype, asm in assemblies.items():
+        asm.smart_sort_scaffolds()
+        fingerprint = [
+            (x.name, haplotype, x.fragments_length, x.original_name)
+            for x in asm.scaffolds
+        ]
+        assert fingerprint == expected[haplotype]
 
 
 def test_unpainted_unloc():
