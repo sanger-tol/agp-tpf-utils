@@ -256,7 +256,7 @@ class BuildAssembly(Assembly):
                 self.add_scaffold(new_scffld)
 
     def assemblies_with_scaffolds_fused(self) -> list[Assembly]:
-        chr_namer = ChrNamer()
+        chr_namer = ChrNamer(chr_prefix=self.autosome_prefix)
         assemblies = {}
         for scffld in self.scaffolds_fused_by_name():
             if tag := scffld.tag:
@@ -273,6 +273,8 @@ class BuildAssembly(Assembly):
             if scffld.rank == 1:
                 # Add autosome to the ChrNamer
                 chr_namer.add_scaffold(asm_key, scffld)
+            elif scffld.rank == 2:
+                chr_namer.add_chr_prefix(scffld)
 
         # ChrNamer names autosome chromsomes by size
         chr_namer.name_chromosomes()

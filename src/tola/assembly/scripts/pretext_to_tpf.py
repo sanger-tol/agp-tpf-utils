@@ -115,7 +115,7 @@ def ul(txt):
 @click.option(
     "--autosome-prefix",
     "-c",
-    default="RL_",
+    default="SUPER_",
     show_default=True,
     help="Prefix for naming autosomal chromosomes.",
 )
@@ -179,6 +179,7 @@ def cli(
         write_assembly(fai, out_asm, output_file, clobber)
     stats = build_asm.assembly_stats
     if output_file:
+        write_chr_report_csv(output_file, stats, out_assemblies, clobber)
         write_chr_csv_files(output_file, stats, out_assemblies, clobber)
         write_info_yaml(output_file, stats, out_assemblies, clobber)
     for asm_key, out_asm in out_assemblies.items():
@@ -222,6 +223,7 @@ def setup_logging(log_level, output_file, write_log, clobber):
 <ToLID>.hap2.1.all_haplotigs.curated.fa
 """
 
+
 def write_assembly(fai, out_asm, output_file, clobber):
     if output_file:
         out_fmt = format_from_file_extn(output_file, "TPF")
@@ -251,11 +253,22 @@ def write_assembly(fai, out_asm, output_file, clobber):
         out_fh.write(str(out_asm))
 
 
+def write_chr_report_csv(output_file, stats, out_assemblies, clobber):
+    csv = stats.chromosomes_report_csv(out_assemblies)
+    if not csv:
+        return
+    csv_file = pathlib.Path(output_file.stem + "_chr_report.csv")
+    with get_output_filehandle(csv_file, clobber) as csv_fh:
+        csv_fh.write(csv)
+
+
 def write_chr_csv_files(output_file, stats, out_assemblies, clobber):
     for asm_key, asm in out_assemblies.items():
         if chr_names := stats.chromosome_names(asm):
-            csv_file = output_file.parent / (
-                f"chrs_{asm_key}.csv" if asm_key else "chrs.csv"
+            csv_file = pathlib.Path(
+                output_file.stem
+                + (f".{asm_key}" if asm_key else "")
+                + ".chromsomes.list.csv"
             )
             with get_output_filehandle(csv_file, clobber) as csv_fh:
                 for cn_list in chr_names:

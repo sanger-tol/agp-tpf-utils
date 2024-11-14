@@ -1,3 +1,4 @@
+import io
 import logging
 
 from tola.assembly.assembly import Assembly
@@ -5,7 +6,7 @@ from tola.assembly.scaffold import Scaffold
 
 
 class AssemblyStats:
-    def __init__(self, autosome_prefix: str = "RL_") -> None:
+    def __init__(self, autosome_prefix: str = "SUPER_") -> None:
         self.autosome_prefix = autosome_prefix
         self.input_assembly = None
         self.cuts = 0
@@ -89,19 +90,67 @@ class AssemblyStats:
 
     def chromosome_names(self, asm: Assembly):
         chr_names = []
-        for rank, scaffolds in self.ranked_scaffolds(asm).items():
-            if rank in (1, 2):
-                current_chr = None
-                current_chr_list = None
-                for scffld in scaffolds:
-                    name = scffld.name
-                    if current_chr and name.startswith(current_chr):
-                        current_chr_list.append(name)
-                    else:
-                        current_chr = name
-                        current_chr_list = [name]
-                        chr_names.append(current_chr_list)
+        current_chr = None
+        current_chr_list = None
+        for scffld in asm.scaffolds:
+            if scffld.rank in (1, 2):
+                name = scffld.name
+                if current_chr and name.startswith(current_chr):
+                    current_chr_list.append(name)
+                else:
+                    current_chr = name
+                    current_chr_list = [name]
+                    chr_names.append(current_chr_list)
         return chr_names if chr_names else None
+
+    def chromosomes_report_csv(self, hap_asm: dict[str, Assembly]):
+        csv = io.StringIO()
+        csv.write(
+            ",".join(
+                (
+                    "assembly",
+                    "seq_name",
+                    "chr_name",
+                    "localised",
+                    "pretext_scaffold",
+                    "length",
+                    "length_minus_gaps",
+                )
+            )
+        )
+        csv.write("\n")
+        head_pos = csv.tell()
+
+        prefix = self.autosome_prefix
+        current_root = None
+        current_chr = None
+        for hap, asm in hap_asm.items():
+            if not hap:
+                hap = "Primary"
+            for scffld in asm.scaffolds:
+                if scffld.rank in (1, 2):
+                    name = scffld.name
+                    if current_root and name.startswith(current_root):
+                        chr_name = current_chr
+                    else:
+                        current_root = name
+                        chr_name = current_chr = name.replace(prefix, "", 1)
+                    csv.write(
+                        ",".join(
+                            (
+                                hap,
+                                name,
+                                chr_name,
+                                "true" if name == current_root else "false",
+                                scffld.original_name,
+                                str(scffld.length),
+                                str(scffld.fragments_length),
+                            )
+                        )
+                    )
+                    csv.write("\n")
+
+        return csv.getvalue() if csv.tell() > head_pos else None
 
     def log_assembly_chromosomes(self, asm_key: str | None, asm: Assembly):
         ranked_names_lengths = self.get_assembly_scaffold_lengths(asm_key, asm)

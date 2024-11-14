@@ -30,7 +30,7 @@ def list_chr_naming_tests():
                 ("S2", "Hap1", 1_000_000, "S2"),
                 ("S3", "Hap3", 3_000_000, "S3"),
             ],
-            "exception": r"Expected a single scaffold in first haplotype",
+            "exception": (ValueError, r"Expected a single scaffold in first haplotype"),
         },
         {
             "input": [
@@ -94,7 +94,8 @@ def list_chr_naming_tests():
 @pytest.mark.parametrize("input_data,expected,exception", list_chr_naming_tests())
 def test_chr_namer(input_data, expected, exception):
     if exception:
-        with pytest.raises(ValueError, match=exception):
+        exptn_type, exptn_pattern = exception
+        with pytest.raises(exptn_type, match=exptn_pattern):
             run_chr_namer(input_data, expected)
     else:
         run_chr_namer(input_data, expected)

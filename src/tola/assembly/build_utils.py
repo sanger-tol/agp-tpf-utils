@@ -19,7 +19,7 @@ class ScaffoldNamer:
     under the `original_name` attribute.
     """
 
-    def __init__(self, autosome_prefix="RL_"):
+    def __init__(self, autosome_prefix="SUPER_"):
         self.autosome_prefix = autosome_prefix
         self.current_scaffold_name = None
         self.current_rank = None
@@ -246,6 +246,11 @@ class ChrNamer:
         grp = ChrGroup(self.haplotypes_seen)
         self.groups.append(grp)
         return grp
+
+    def add_chr_prefix(self, scffld):
+        prefix = self.chr_prefix
+        if not scffld.name.startswith(prefix):
+            scffld.name = prefix + scffld.name
 
     def name_chromosomes(self):
         if not self.haplotypes_seen:
