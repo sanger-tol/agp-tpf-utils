@@ -293,6 +293,7 @@ class BuildAssembly(Assembly):
                 # discard_overhanging_fragments() may have removed the only
                 # row from an OverlapResult
                 continue
+
             build_scffld = hap_name_scaffold.setdefault(
                 (scffld.haplotype, scffld.name),
                 Scaffold(
