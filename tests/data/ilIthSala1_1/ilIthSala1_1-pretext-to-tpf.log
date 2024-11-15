@@ -183,18 +183,18 @@ cut into:
           309,695  HAP1_SCAFFOLD_40:5116558-5426252(+) Cut Haplotig
 
 
-ilIthSala1_1-pretext-to-tpf_HAP1
+ilIthSala1_1-pretext-to-tpf.hap1
         504,003,295  bp sequence (minus gaps)
   Autosomes:
     n = 38
-         14,311,964  RL_61
+         14,311,964  SUPER_1
                 ...  ...
-          5,759,299  RL_75
+          5,759,299  SUPER_38
         374,425,016  bp total
   Named:
     n = 2
-         14,678,243  W
-         22,375,193  Z
+         14,678,243  SUPER_W
+         22,375,193  SUPER_Z
          37,053,436  bp total
   Unplaced:
     n = 791
@@ -203,13 +203,13 @@ ilIthSala1_1-pretext-to-tpf_HAP1
              16,408  HAP1_SCAFFOLD_864
          92,524,843  bp total
 
-ilIthSala1_1-pretext-to-tpf_HAP2
+ilIthSala1_1-pretext-to-tpf.hap2
         389,828,879  bp sequence (minus gaps)
   Autosomes:
     n = 38
-         13,185,411  RL_4
+         13,185,411  SUPER_3
                 ...  ...
-          5,064,735  RL_66
+          5,064,735  SUPER_36
         347,504,210  bp total
   Unplaced:
     n = 1041
@@ -218,7 +218,7 @@ ilIthSala1_1-pretext-to-tpf_HAP2
               5,267  HAP2_SCAFFOLD_1115
          42,324,669  bp total
 
-ilIthSala1_1-pretext-to-tpf_Haplotigs
+ilIthSala1_1-pretext-to-tpf.haplotigs
             309,695  bp sequence (minus gaps)
     n = 1
             309,695  H_1

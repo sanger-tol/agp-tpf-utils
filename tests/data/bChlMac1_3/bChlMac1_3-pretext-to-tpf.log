@@ -7,18 +7,18 @@ cut into:
         8,465,749  HAP2_SCAFFOLD_241:11938377-20404125(+) Cut
 
 
-bChlMac1_3-pretext-to-tpf_Hap1
+bChlMac1_3-pretext-to-tpf.hap1
       1,275,074,175  bp sequence (minus gaps)
   Autosomes:
     n = 36
-        215,692,358  RL_1
+        215,692,358  SUPER_1
                 ...  ...
-            292,585  RL_67
+            292,585  SUPER_36
       1,086,170,135  bp total
   Named:
     n = 2
-         54,806,811  W
-         84,787,122  Z
+         54,806,811  SUPER_W
+         84,787,122  SUPER_Z
         139,593,933  bp total
   Unplaced:
     n = 289
@@ -27,13 +27,13 @@ bChlMac1_3-pretext-to-tpf_Hap1
              24,798  HAP1_SCAFFOLD_108
          49,310,107  bp total
 
-bChlMac1_3-pretext-to-tpf_Hap2
+bChlMac1_3-pretext-to-tpf.hap2
       1,105,677,449  bp sequence (minus gaps)
   Autosomes:
     n = 36
-        214,587,655  RL_2
+        214,587,655  SUPER_1
                 ...  ...
-            188,044  RL_74
+            188,044  SUPER_34
       1,053,881,404  bp total
   Unplaced:
     n = 305
@@ -42,7 +42,7 @@ bChlMac1_3-pretext-to-tpf_Hap2
              13,916  HAP2_SCAFFOLD_112
          51,796,045  bp total
 
-bChlMac1_3-pretext-to-tpf_Haplotigs
+bChlMac1_3-pretext-to-tpf.haplotigs
           4,560,100  bp sequence (minus gaps)
     n = 1
           4,560,100  H_1

@@ -5,9 +5,9 @@ iyExeIsch1-pretext-to-tpf
         283,906,128  bp sequence (minus gaps)
   Autosomes:
     n = 12
-         30,489,920  RL_1
+         30,489,920  SUPER_1
                 ...  ...
-         16,885,640  RL_10
+         16,885,640  SUPER_12
         280,543,463  bp total
   Unplaced:
     n = 72

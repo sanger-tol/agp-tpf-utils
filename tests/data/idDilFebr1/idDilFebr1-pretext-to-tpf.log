@@ -5,13 +5,13 @@ idDilFebr1-pretext-to-tpf
         308,817,177  bp sequence (minus gaps)
   Autosomes:
     n = 5
-         70,706,926  RL_1
+         70,706,926  SUPER_1
                 ...  ...
-         41,257,060  RL_5
+         41,257,060  SUPER_5
         268,001,475  bp total
   Named:
     n = 1
-         24,666,171  X
+         24,666,171  SUPER_X
   Unplaced:
     n = 120
           1,535,000  scaffold_8
@@ -19,7 +19,7 @@ idDilFebr1-pretext-to-tpf
               1,000  scaffold_162
          16,149,531  bp total
 
-idDilFebr1-pretext-to-tpf_Haplotigs
+idDilFebr1-pretext-to-tpf.haplotigs
           3,119,814  bp sequence (minus gaps)
     n = 7
             950,000  H_1

@@ -36,15 +36,15 @@ nxCaeSini1_1-pretext-to-tpf
         152,385,837  bp sequence (minus gaps)
   Autosomes:
     n = 6
-         34,667,637  RL_1
+         34,667,637  SUPER_1
                 ...  ...
-         19,642,777  RL_6
+         19,642,777  SUPER_6
         152,370,145  bp total
   Unplaced:
     n = 1
              15,692  SCAFFOLD_15
 
-nxCaeSini1_1-pretext-to-tpf_Haplotigs
+nxCaeSini1_1-pretext-to-tpf.haplotigs
              54,697  bp sequence (minus gaps)
     n = 2
              31,436  H_1

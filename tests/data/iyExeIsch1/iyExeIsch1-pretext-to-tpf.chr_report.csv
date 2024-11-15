@@ -1,0 +1,13 @@
+assembly,seq_name,chr_name,localised,pretext_scaffold,length,length_minus_gaps
+Primary,SUPER_1,1,true,Scaffold_1,30499120,30489920
+Primary,SUPER_2,2,true,Scaffold_4,28797786,28789386
+Primary,SUPER_3,3,true,Scaffold_2,28349879,28343679
+Primary,SUPER_4,4,true,Scaffold_3,27475874,27467074
+Primary,SUPER_5,5,true,Scaffold_8,26801871,26793271
+Primary,SUPER_6,6,true,Scaffold_5,23927040,23921040
+Primary,SUPER_7,7,true,Scaffold_7,22620837,22613237
+Primary,SUPER_8,8,true,Scaffold_6,20365201,20359401
+Primary,SUPER_9,9,true,Scaffold_9,18953628,18945228
+Primary,SUPER_10,10,true,Scaffold_11,18205039,18197439
+Primary,SUPER_11,11,true,Scaffold_12,17743748,17738148
+Primary,SUPER_12,12,true,Scaffold_10,16895040,16885640

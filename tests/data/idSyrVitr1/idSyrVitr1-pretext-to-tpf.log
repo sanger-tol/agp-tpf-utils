@@ -5,14 +5,14 @@ idSyrVitr1-pretext-to-tpf
         388,720,741  bp sequence (minus gaps)
   Autosomes:
     n = 3
-        148,767,433  RL_1
-        110,870,686  RL_3
-        110,494,704  RL_2
+        148,767,433  SUPER_1
+        110,870,686  SUPER_2
+        110,494,704  SUPER_3
         370,132,823  bp total
   Named:
     n = 2
-          8,853,854  X
-            888,747  Y
+          8,853,854  SUPER_X
+            888,747  SUPER_Y
           9,742,601  bp total
   Unplaced:
     n = 394
@@ -21,7 +21,7 @@ idSyrVitr1-pretext-to-tpf
               1,000  scaffold_492
           8,845,317  bp total
 
-idSyrVitr1-pretext-to-tpf_Haplotigs
+idSyrVitr1-pretext-to-tpf.haplotigs
             812,954  bp sequence (minus gaps)
     n = 1
             812,954  H_1

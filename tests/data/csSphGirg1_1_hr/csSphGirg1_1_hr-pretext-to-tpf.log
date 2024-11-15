@@ -5,9 +5,9 @@ csSphGirg1_1_hr-pretext-to-tpf
         431,990,959  bp sequence (minus gaps)
   Autosomes:
     n = 21
-         35,515,324  RL_1
+         35,515,324  SUPER_1
                 ...  ...
-          1,588,691  RL_21
+          1,588,691  SUPER_21
         431,830,959  bp total
   Unplaced:
     n = 137
@@ -16,7 +16,7 @@ csSphGirg1_1_hr-pretext-to-tpf
               1,000  SCAFFOLD_5395
             160,000  bp total
 
-csSphGirg1_1_hr-pretext-to-tpf_Contaminants
+csSphGirg1_1_hr-pretext-to-tpf.contaminants
          15,253,452  bp sequence (minus gaps)
     n = 502
             269,705  SCAFFOLD_62

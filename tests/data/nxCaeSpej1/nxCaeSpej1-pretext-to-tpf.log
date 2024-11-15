@@ -12,15 +12,15 @@ nxCaeSpej1-pretext-to-tpf
          55,157,430  bp sequence (minus gaps)
   Named:
     n = 6
-          7,367,313  I_II
-         10,007,913  II_I
-          8,500,470  III
-          8,760,981  IV
-          9,627,112  V
-         10,893,641  X
+          7,367,313  SUPER_I_II
+         10,007,913  SUPER_II_I
+          8,500,470  SUPER_III
+          8,760,981  SUPER_IV
+          9,627,112  SUPER_V
+         10,893,641  SUPER_X
          55,157,430  bp total
 
-nxCaeSpej1-pretext-to-tpf_Haplotigs
+nxCaeSpej1-pretext-to-tpf.haplotigs
              81,747  bp sequence (minus gaps)
     n = 4
              31,487  H_1
