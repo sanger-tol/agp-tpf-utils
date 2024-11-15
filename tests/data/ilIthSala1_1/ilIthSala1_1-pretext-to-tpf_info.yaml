@@ -1,10 +1,10 @@
 assemblies:
   HAP1:
     manual_breaks: 32
-    manual_joins: 97
+    manual_joins: 98
   HAP2:
     manual_breaks: 55
     manual_joins: 88
 manual_breaks: 87
-manual_joins: 185
+manual_joins: 186
 manual_haplotig_removals: 1

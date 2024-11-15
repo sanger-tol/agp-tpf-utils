@@ -1,5 +1,5 @@
 assemblies:
   Primary:
     manual_breaks: 210
-    manual_joins: 468
+    manual_joins: 472
 manual_haplotig_removals: 24

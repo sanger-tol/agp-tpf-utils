@@ -201,7 +201,7 @@ ilIthSala1_1-pretext-to-tpf_HAP1
             651,870  HAP1_SCAFFOLD_54
                 ...  ...
              16,408  HAP1_SCAFFOLD_864
-         92,470,266  bp total
+         92,524,843  bp total
 
 ilIthSala1_1-pretext-to-tpf_HAP2
         389,828,879  bp sequence (minus gaps)
@@ -223,4 +223,4 @@ ilIthSala1_1-pretext-to-tpf_Haplotigs
     n = 1
             309,695  H_1
 
-Curation made 37 cuts in contigs, 87 breaks at gaps and 185 joins
+Curation made 37 cuts in contigs, 87 breaks at gaps and 186 joins

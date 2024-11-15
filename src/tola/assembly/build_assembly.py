@@ -279,25 +279,24 @@ class BuildAssembly(Assembly):
 
     def scaffolds_fused_by_name(self) -> Iterator[Scaffold]:
         gap = self.default_gap
-        new_scffld = None
-        current_hap_chr = None, None
+        hap_name_scaffold = {}
         for scffld in self.scaffolds:
             if not scffld.rows:
                 # discard_overhanging_fragments() may have removed the only
                 # row from an OverlapResult
                 continue
-            hap_chr = scffld.haplotype, scffld.name
-            if hap_chr != current_hap_chr:
-                if new_scffld:
-                    yield new_scffld
-                current_hap_chr = hap_chr
-                new_scffld = Scaffold(
-                    scffld.name, tag=scffld.tag, haplotype=scffld.haplotype
-                )
+            build_scffld = hap_name_scaffold.setdefault(
+                (scffld.haplotype, scffld.name),
+                Scaffold(
+                    scffld.name,
+                    tag=scffld.tag,
+                    haplotype=scffld.haplotype,
+                ),
+            )
             if isinstance(scffld, OverlapResult):
-                new_scffld.append_scaffold(scffld.to_scaffold(), gap)
+                build_scffld.append_scaffold(scffld.to_scaffold(), gap)
             else:
-                new_scffld.append_scaffold(scffld)
+                build_scffld.append_scaffold(scffld)
 
-        if new_scffld:
-            yield new_scffld
+        for scffld in hap_name_scaffold.values():
+            yield scffld
