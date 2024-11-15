@@ -187,7 +187,7 @@ def cli(
     logging.info("")
     stats.log_curation_stats()
     if logfile:
-        click.echo(f"Log saved to file '{logfile}'", err=True)
+        click.echo(f"  Log saved: '{logfile}'", err=True)
 
 
 def setup_logging(log_level, output_file, write_log, clobber):
@@ -226,10 +226,10 @@ def setup_logging(log_level, output_file, write_log, clobber):
 
 def write_assembly(fai, out_asm, output_file, clobber):
     if output_file:
-        out_fmt = format_from_file_extn(output_file, "TPF")
+        out_fmt = format_from_file_extn(output_file, "AGP")
         mode = "b" if out_fmt == "FASTA" else ""
         if out_asm.name != output_file.stem:
-            output_file = output_file.with_stem(out_asm.name)
+            output_file = output_file.with_stem(out_asm.name.lower())
         out_fh = get_output_filehandle(output_file, clobber, mode)
     else:
         out_fmt = "STR"
@@ -257,7 +257,7 @@ def write_chr_report_csv(output_file, stats, out_assemblies, clobber):
     csv = stats.chromosomes_report_csv(out_assemblies)
     if not csv:
         return
-    csv_file = pathlib.Path(output_file.stem + "_chr_report.csv")
+    csv_file = output_file.with_suffix(".chr_report.csv")
     with get_output_filehandle(csv_file, clobber) as csv_fh:
         csv_fh.write(csv)
 
@@ -265,11 +265,12 @@ def write_chr_report_csv(output_file, stats, out_assemblies, clobber):
 def write_chr_csv_files(output_file, stats, out_assemblies, clobber):
     for asm_key, asm in out_assemblies.items():
         if chr_names := stats.chromosome_names(asm):
-            csv_file = pathlib.Path(
+            csv_file = output_file.parent / (
                 output_file.stem
-                + (f".{asm_key}" if asm_key else "")
+                + (f".{asm_key.lower()}" if asm_key else "")
                 + ".chromsomes.list.csv"
             )
+
             with get_output_filehandle(csv_file, clobber) as csv_fh:
                 for cn_list in chr_names:
                     csv_fh.write(",".join(cn_list) + "\n")
@@ -291,9 +292,6 @@ def write_info_yaml(output_file, stats, out_assemblies, clobber):
     with get_output_filehandle(yaml_file, clobber) as yaml_fh:
         yaml_fh.write(yaml.safe_dump(info, sort_keys=False))
 
-    op = "Overwrote" if clobber else "Created"
-    click.echo(f"{op} file '{yaml_file}'", err=True)
-
 
 def get_output_filehandle(path, clobber, mode=""):
     op = "Overwrote" if path.exists() else "Created"
@@ -302,7 +300,7 @@ def get_output_filehandle(path, clobber, mode=""):
     except FileExistsError:
         click.echo(f"Error: output file '{path}' already exists", err=True)
         sys.exit(1)
-    click.echo(f"{op} file '{path}'", err=True)
+    click.echo(f"{op:>11}: '{path}'", err=True)
     return out_fh
 
 
