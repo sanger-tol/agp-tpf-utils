@@ -1,3 +1,4 @@
+import csv
 import io
 import logging
 
@@ -104,22 +105,22 @@ class AssemblyStats:
         return chr_names if chr_names else None
 
     def chromosomes_report_csv(self, hap_asm: dict[str, Assembly]):
-        csv = io.StringIO()
-        csv.write(
-            ",".join(
-                (
-                    "assembly",
-                    "seq_name",
-                    "chr_name",
-                    "localised",
-                    "pretext_scaffold",
-                    "length",
-                    "length_minus_gaps",
-                )
+        csv_str = io.StringIO()
+        # Would prefer to use quoting=csv.QUOTE_STRINGS but it was introduced
+        # only in Python 3.12
+        csvr = csv.writer(csv_str, quoting=csv.QUOTE_NONNUMERIC)
+        csvr.writerow(
+            (
+                "assembly",
+                "seq_name",
+                "chr_name",
+                "localised",
+                "pretext_scaffold",
+                "length",
+                "length_minus_gaps",
             )
         )
-        csv.write("\n")
-        head_pos = csv.tell()
+        head_pos = csv_str.tell()
 
         prefix = self.autosome_prefix
         current_root = None
@@ -135,22 +136,19 @@ class AssemblyStats:
                     else:
                         current_root = name
                         chr_name = current_chr = name.replace(prefix, "", 1)
-                    csv.write(
-                        ",".join(
-                            (
-                                hap,
-                                name,
-                                chr_name,
-                                "true" if name == current_root else "false",
-                                scffld.original_name,
-                                str(scffld.length),
-                                str(scffld.fragments_length),
-                            )
+                    csvr.writerow(
+                        (
+                            hap,
+                            name,
+                            chr_name,
+                            "true" if name == current_root else "false",
+                            scffld.original_name,
+                            scffld.length,
+                            scffld.fragments_length,
                         )
                     )
-                    csv.write("\n")
 
-        return csv.getvalue() if csv.tell() > head_pos else None
+        return csv_str.getvalue() if csv_str.tell() > head_pos else None
 
     def log_assembly_chromosomes(self, asm_key: str | None, asm: Assembly):
         ranked_names_lengths = self.get_assembly_scaffold_lengths(asm_key, asm)

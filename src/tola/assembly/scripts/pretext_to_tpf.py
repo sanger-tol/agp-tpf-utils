@@ -211,19 +211,6 @@ def setup_logging(log_level, output_file, write_log, clobber):
     return logfile
 
 
-"""
-
-<ToLID>.hap1.1.inter.csv                     # Supply better file with all chr
-
-<ToLID>.hap1.1.primary.curated.fa
-<ToLID>.hap1.1.all_haplotigs.curated.fa      # Do not make
-<ToLID>.hap1.1.primary.chromosome.list.csv
-
-<ToLID>.hap2.1.primary.curated.fa
-<ToLID>.hap2.1.all_haplotigs.curated.fa
-"""
-
-
 def write_assembly(fai, out_asm, output_file, clobber):
     if output_file:
         out_fmt = format_from_file_extn(output_file, "AGP")

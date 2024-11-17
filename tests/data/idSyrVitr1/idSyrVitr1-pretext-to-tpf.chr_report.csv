@@ -1,6 +1,6 @@
-assembly,seq_name,chr_name,localised,pretext_scaffold,length,length_minus_gaps
-Primary,SUPER_1,1,true,Scaffold_1,148792233,148767433
-Primary,SUPER_2,2,true,Scaffold_3,110905286,110870686
-Primary,SUPER_3,3,true,Scaffold_2,110522704,110494704
-Primary,SUPER_X,X,true,Scaffold_4,8861054,8853854
-Primary,SUPER_Y,Y,true,Scaffold_5,889347,888747
+"assembly","seq_name","chr_name","localised","pretext_scaffold","length","length_minus_gaps"
+"Primary","SUPER_1","1","true","Scaffold_1",148792233,148767433
+"Primary","SUPER_2","2","true","Scaffold_3",110905286,110870686
+"Primary","SUPER_3","3","true","Scaffold_2",110522704,110494704
+"Primary","SUPER_X","X","true","Scaffold_4",8861054,8853854
+"Primary","SUPER_Y","Y","true","Scaffold_5",889347,888747

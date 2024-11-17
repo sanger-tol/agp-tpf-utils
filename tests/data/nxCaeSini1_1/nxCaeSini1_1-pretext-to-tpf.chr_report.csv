@@ -1,8 +1,8 @@
-assembly,seq_name,chr_name,localised,pretext_scaffold,length,length_minus_gaps
-Primary,SUPER_1,1,true,Scaffold_1,34668837,34667637
-Primary,SUPER_2,2,true,Scaffold_2,28292709,28291083
-Primary,SUPER_2_unloc_1,2,false,Scaffold_2,193694,193694
-Primary,SUPER_3,3,true,Scaffold_3,27403670,27403070
-Primary,SUPER_4,4,true,Scaffold_4,22059136,22057736
-Primary,SUPER_5,5,true,Scaffold_5,20114748,20114148
-Primary,SUPER_6,6,true,Scaffold_6,19643377,19642777
+"assembly","seq_name","chr_name","localised","pretext_scaffold","length","length_minus_gaps"
+"Primary","SUPER_1","1","true","Scaffold_1",34668837,34667637
+"Primary","SUPER_2","2","true","Scaffold_2",28292709,28291083
+"Primary","SUPER_2_unloc_1","2","false","Scaffold_2",193694,193694
+"Primary","SUPER_3","3","true","Scaffold_3",27403670,27403070
+"Primary","SUPER_4","4","true","Scaffold_4",22059136,22057736
+"Primary","SUPER_5","5","true","Scaffold_5",20114748,20114148
+"Primary","SUPER_6","6","true","Scaffold_6",19643377,19642777
