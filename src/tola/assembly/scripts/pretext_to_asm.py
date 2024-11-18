@@ -293,7 +293,7 @@ def write_info_yaml(output_file, stats, out_assemblies, clobber):
         haplotig_count = len(h_asm.scaffolds)
     info["manual_haplotig_removals"] = haplotig_count
 
-    yaml_file = output_file.with_name(output_file.stem + "_info.yaml")
+    yaml_file = output_file.with_name(output_file.stem + ".info.yaml")
     with get_output_filehandle(yaml_file, clobber) as yaml_fh:
         yaml_fh.write(yaml.safe_dump(info, sort_keys=False))
 
