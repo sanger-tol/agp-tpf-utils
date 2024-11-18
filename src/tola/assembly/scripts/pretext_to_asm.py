@@ -258,16 +258,15 @@ def write_chr_report_csv(output_file, stats, out_assemblies, clobber):
 
 def write_chr_csv_files(output_file, stats, out_assemblies, clobber):
     for asm_key, asm in out_assemblies.items():
-        if chr_names := stats.chromosome_names(asm):
+        if chr_names := stats.chromosome_name_csv(asm):
             csv_file = output_file.parent / (
                 output_file.stem
                 + (f".{asm_key.lower()}" if asm_key else "")
-                + ".chromsomes.list.csv"
+                + ".chromsome.list.csv"
             )
 
             with get_output_filehandle(csv_file, clobber) as csv_fh:
-                for cn_list in chr_names:
-                    csv_fh.write(",".join(cn_list) + "\n")
+                csv_fh.write(chr_names)
 
 
 def write_info_yaml(output_file, stats, out_assemblies, clobber):

@@ -89,20 +89,32 @@ class AssemblyStats:
             asm_key, self.build_assembly_scaffold_lengths(asm)
         )
 
-    def chromosome_names(self, asm: Assembly):
-        chr_names = []
+    def chromosome_name_csv(self, asm: Assembly):
+        prefix = self.autosome_prefix
+        current_root = None
         current_chr = None
-        current_chr_list = None
+
+        csv_str = io.StringIO()
         for scffld in asm.scaffolds:
             if scffld.rank in (1, 2):
                 name = scffld.name
-                if current_chr and name.startswith(current_chr):
-                    current_chr_list.append(name)
+                if current_root and name.startswith(current_root):
+                    chr_name = current_chr
                 else:
-                    current_chr = name
-                    current_chr_list = [name]
-                    chr_names.append(current_chr_list)
-        return chr_names if chr_names else None
+                    current_root = name
+                    chr_name = current_chr = name.replace(prefix, "", 1)
+                csv_str.write(
+                    ",".join(
+                        (
+                            name,
+                            chr_name,
+                            "yes" if name == current_root else "no",
+                        )
+                    )
+                )
+                csv_str.write("\n")
+
+        return csv_str.getvalue() if csv_str.tell() else None
 
     def chromosomes_report_csv(self, hap_asm: dict[str, Assembly]):
         csv_str = io.StringIO()
