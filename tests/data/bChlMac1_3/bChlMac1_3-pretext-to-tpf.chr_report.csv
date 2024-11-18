@@ -1,4 +1,4 @@
-"assembly","seq_name","chr_name","localised","pretext_scaffold","length","length_minus_gaps"
+"assembly","seq_name","chromosome","localised","pretext_scaffold","length","length_minus_gaps"
 "Hap1","SUPER_1","1","true","Scaffold_1",215693158,215692358
 "Hap1","SUPER_2","2","true","Scaffold_3",164294231,164293231
 "Hap1","SUPER_3","3","true","Scaffold_5",128056697,128055897

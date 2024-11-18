@@ -1,4 +1,4 @@
-"assembly","seq_name","chr_name","localised","pretext_scaffold","length","length_minus_gaps"
+"assembly","seq_name","chromosome","localised","pretext_scaffold","length","length_minus_gaps"
 "Primary","SUPER_1","1","true","Scaffold_2",111496743,111372143
 "Primary","SUPER_1_unloc_1","1","false","Scaffold_2",186682,186682
 "Primary","SUPER_1_unloc_2","1","false","Scaffold_2",138556,138556

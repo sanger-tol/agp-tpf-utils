@@ -113,7 +113,7 @@ class AssemblyStats:
             (
                 "assembly",
                 "seq_name",
-                "chr_name",
+                "chromosome",
                 "localised",
                 "pretext_scaffold",
                 "length",
