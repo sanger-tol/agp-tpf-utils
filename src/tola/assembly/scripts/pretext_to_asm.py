@@ -214,7 +214,7 @@ def setup_logging(log_level, output_file, write_log, clobber):
     try:
         logging.basicConfig(**conf)
     except FileExistsError:
-        click.echo(f"Error: log file '{logfile}' already exists", err=True)
+        click.echo(f"ERROR: log file '{logfile}' already exists", err=True)
         sys.exit(1)
 
     if logfile:
@@ -243,6 +243,9 @@ def write_assembly(fai, out_asm, output_file, clobber):
     elif out_fmt == "AGP":
         format_agp(out_asm, out_fh)
     elif out_fmt == "FASTA":
+        if not fai:
+            logging.error("Cannot write FASTA output file without FASTA input!")
+            sys.exit(1)
         stream = FastaStream(out_fh, fai)
         stream.write_assembly(out_asm)
 
@@ -300,7 +303,7 @@ def get_output_filehandle(path, clobber, mode=""):
     try:
         out_fh = path.open("w" + mode if clobber else "x" + mode)
     except FileExistsError:
-        click.echo(f"Error: output file '{path}' already exists", err=True)
+        logging.error(f"Output file '{path}' already exists")
         sys.exit(1)
     click.echo(f"{op:>11}: '{path}'", err=True)
     return out_fh
