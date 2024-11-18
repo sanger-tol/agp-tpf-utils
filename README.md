@@ -15,11 +15,17 @@ Added to your `PATH` if the suggested development venv is set up. Run with
 
 Parses and reformats AGP and TPF files, converting into either format.
 
-### [`pretext-to-tpf`](src/tola/assembly/scripts/pretext_to_tpf.py)
+### [`pretext-to-asm`](src/tola/assembly/scripts/pretext_to_asm.py)
 
 Takes the AGP file output by
 [PretextView](https://github.com/wtsi-hpag/PretextView)
-and creates TPF files containing precise coordinates of the curated assembly.
+and the input assembly (usually FASTA), and produces an output assembly in
+FASTA and AGP formats. The input and output file formats are determined from
+the extensions of the files. FASTA input and output uses the `.fai` index
+format, as produced by
+[`faidx`](http://www.htslib.org/doc/samtools-faidx.html), and uses a streaming
+strategy with a 250 KB buffer to keep memory usage low no matter how large
+the chromosome.
 
 ## File Formats
 

@@ -30,7 +30,7 @@ def ul(txt):
 @click.command(
     help=f"""
       Uses fragments in the assembly (AGP) produced by PretextView to find
-      matching fragments in the assembly (TPF) which was fed into Pretext and
+      matching fragments in the assembly which was fed into Pretext and
       output an assembly made from the input assembly fragments.
 
       {ul("Named Chromsomes")}
@@ -78,9 +78,13 @@ def ul(txt):
         path_type=pathlib.Path,
         exists=True,
         readable=True,
+        resolve_path=True,
     ),
     required=True,
-    help="Assembly file from before curation, which is usually a TPF.",
+    help="""Assembly before curation, usually a FASTA file.
+      FASTA files will be indexed, creating a '.fai' and a '.agp' file
+      alongside the assembly if they are missing or are older than the
+      FASTA.""",
 )
 @click.option(
     "--pretext",
@@ -102,8 +106,11 @@ def ul(txt):
         path_type=pathlib.Path,
         dir_okay=False,
     ),
-    help="""Output file, usually a TPF.
-      If not given, prints to STDOUT in 'STR' format.""",
+    help="""Output file, usually a FASTA file.
+      If not given, prints to STDOUT in 'STR' format.
+      The output file type is determined from its extension. If the outuput is
+      FASTA ('.fa'), an AGP format file ('.fa.agp') is also written. Other
+      output files are named after the output file minus its extension.""",
 )
 # @click.option(
 #     "--version",

@@ -6,7 +6,7 @@ import tempfile
 import pytest
 from click.testing import CliRunner
 
-from tola.assembly.scripts.pretext_to_tpf import cli
+from tola.assembly.scripts.pretext_to_asm import cli
 
 
 def list_example_assemblies():
