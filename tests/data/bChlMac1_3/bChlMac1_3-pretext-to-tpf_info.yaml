@@ -7,4 +7,4 @@ assemblies:
     manual_joins: 15
 manual_breaks: 15
 manual_joins: 29
-manual_haplotig_removals: 1
+manual_haplotig_removals: 2

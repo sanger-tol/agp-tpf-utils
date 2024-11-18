@@ -147,7 +147,7 @@ class BuildAssembly(Assembly):
 
         self.assembly_stats.cuts += len(sub_fragments) - 1
 
-        logging.warning(
+        logging.info(
             f"Contig:\n  {frgmnt.length:15,d}  {frgmnt}\ncut into:\n"
             + "".join(f"  {sub.length:15,d}  {sub}\n" for sub in sub_fragments)
         )

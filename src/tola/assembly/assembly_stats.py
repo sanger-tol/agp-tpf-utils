@@ -116,7 +116,7 @@ class AssemblyStats:
 
         return csv_str.getvalue() if csv_str.tell() else None
 
-    def chromosomes_report_csv(self, hap_asm: dict[str, Assembly]):
+    def chromosomes_report_csv(self, hap_asm: dict[str | None, Assembly]):
         csv_str = io.StringIO()
         # Would prefer to use quoting=csv.QUOTE_STRINGS but it was introduced
         # only in Python 3.12
@@ -214,6 +214,64 @@ class AssemblyStats:
 
     def log_scaffold_length(self, name, length):
         logging.info(f"    {length:15,d}  {name}")
+
+    def log_sanity_checks(self, hap_asm: dict[str | None, Assembly]) -> None:
+        for check in (
+            self.check_consistent_autosome_count,
+            self.check_for_large_haplotigs,
+        ):
+            if msg_list := check(hap_asm):
+                for msg in msg_list:
+                    logging.warning(msg)
+
+    def check_consistent_autosome_count(
+        self, hap_asm: dict[str | None, Assembly]
+    ) -> str | None:
+        chr_counts = {}
+        for hap, asm in hap_asm.items():
+            if autosomes := [x for x in asm.scaffolds if x.rank == 1]:
+                chr_counts[hap if hap else "Primary"] = len(autosomes)
+        if len(chr_counts) > 1:
+            distinct_counts = set(chr_counts.values())
+            if len(distinct_counts) > 1:
+                return [
+                    "Mismatch in autosome count between "
+                    + (" and ".join([f"{x} = {n}" for x, n in chr_counts.items()]))
+                ]
+        return None
+
+    def check_for_large_haplotigs(
+        self, hap_asm: dict[str | None, Assembly]
+    ) -> str | None:
+        htigs = hap_asm.get("Haplotig")
+        if not htigs:
+            return None
+
+        shortest = None
+        for hap, asm in hap_asm.items():
+            if hap == "Haplotig":
+                continue
+            ranked_names_lengths = self.get_assembly_scaffold_lengths(hap, asm)
+            for rank in (1,2):
+                if names_lengths := ranked_names_lengths.get(rank):
+                    for frags_len in names_lengths.values():
+                        if shortest and frags_len > shortest:
+                            continue
+                        shortest = frags_len
+
+        if not shortest:
+            return None
+
+        msg_list = []
+        ht_names_lengths = self.get_assembly_scaffold_lengths("Haplotig", htigs)[3]
+        for ht in htigs.scaffolds:
+            ht_len = ht_names_lengths[ht.name]
+            if ht_len > shortest:
+                msg_list.append(
+                    f"Haplotig {ht.name} ({ht.original_name}) is {ht_len:,d} bp"
+                    f" which is longer than the shortest chromosome ({shortest:,d} bp)"
+                )
+        return msg_list if msg_list else None
 
     def merge_unlocs(self, scaffolds: list[Scaffold]):
         this = Scaffold(scaffolds[0].name)

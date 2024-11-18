@@ -147,7 +147,7 @@ def ul(txt):
 @click.option(
     "--write-log/--no-write-log",
     "-w/-W",
-    default=False,
+    default=True,
     show_default=True,
     help="Write messages into a '.log' file alongside the output file",
 )
@@ -193,6 +193,7 @@ def cli(
         stats.log_assembly_chromosomes(asm_key, out_asm)
     logging.info("")
     stats.log_curation_stats()
+    stats.log_sanity_checks(out_assemblies)
     if logfile:
         click.echo(f"  Log saved: '{logfile}'", err=True)
 
@@ -215,6 +216,14 @@ def setup_logging(log_level, output_file, write_log, clobber):
     except FileExistsError:
         click.echo(f"Error: log file '{logfile}' already exists", err=True)
         sys.exit(1)
+
+    if logfile:
+        # Also print warnings to STDERR if logging to a file
+        err_hdlr = logging.StreamHandler(sys.stderr)
+        err_hdlr.setLevel(logging.WARNING)
+        err_hdlr.setFormatter(logging.Formatter("%(levelname)s: %(message)s"))
+        logging.getLogger().addHandler(err_hdlr)
+
     return logfile
 
 
