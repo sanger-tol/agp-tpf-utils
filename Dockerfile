@@ -1,14 +1,15 @@
-FROM python:3.12.5
+FROM python:3.12
 LABEL maintainer=yy5@sanger.ac.uk
 LABEL org.opencontainers.image.licenses="MIT"
 
-# Create the working directory
-WORKDIR /myworkdir
+ARG work_dir="/myworkdir"
+WORKDIR $work_dir
 
 # Copy source code
-COPY src /myworkdir/src/
-COPY README.md /myworkdir/src/
-COPY pyproject.toml /myworkdir/
+COPY src $work_dir/src/
+COPY pyproject.toml $work_dir/
 
-# build
-RUN pip install --editable .
+RUN pip install --no-cache-dir --upgrade pip \
+  && pip install --no-cache-dir . \
+  && rm -r $work_dir/*
+COPY README.md $work_dir/
