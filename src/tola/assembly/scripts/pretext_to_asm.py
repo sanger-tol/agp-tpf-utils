@@ -232,7 +232,7 @@ def write_assembly(fai, out_asm, output_file, clobber):
         out_fmt = format_from_file_extn(output_file, "AGP")
         mode = "b" if out_fmt == "FASTA" else ""
         if out_asm.name != output_file.stem:
-            output_file = output_file.with_stem(out_asm.name.lower())
+            output_file = output_file.with_stem(out_asm.name)
         out_fh = get_output_filehandle(output_file, clobber, mode)
     else:
         out_fmt = "STR"
