@@ -252,6 +252,11 @@ class BuildAssembly(Assembly):
 
             if new_scffld:
                 scaffold_namer.make_scaffold_name(new_scffld)
+                if (
+                    scaffold_namer.target_tags
+                    and "Target" not in scffld.fragment_tags()
+                ):
+                    new_scffld.tag = "Contaminant"
                 new_scffld.haplotype = scaffold_namer.current_haplotype
                 self.add_scaffold(new_scffld)
 
