@@ -50,5 +50,5 @@ bChlMac1_3-pretext-to-tpf.haplotigs
           4,748,144  bp total
 
 Curation made 1 cut in a contig, 15 breaks at gaps and 29 joins
-Mismatch in autosome count between Hap1 = 38 and Hap2 = 37
+Mismatch in autosome count between Hap1 = 36 and Hap2 = 35
 Haplotig H_1 (Scaffold_75) is 4,560,100 bp which is longer than the shortest chromosome (292,585 bp)

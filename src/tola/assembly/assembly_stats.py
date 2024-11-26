@@ -229,8 +229,10 @@ class AssemblyStats:
     ) -> str | None:
         chr_counts = {}
         for hap, asm in hap_asm.items():
-            if autosomes := [x for x in asm.scaffolds if x.rank == 1]:
+            ranked_names_lengths = self.get_assembly_scaffold_lengths(hap, asm)
+            if autosomes := ranked_names_lengths.get(1):
                 chr_counts[hap if hap else "Primary"] = len(autosomes)
+
         if len(chr_counts) > 1:
             distinct_counts = set(chr_counts.values())
             if len(distinct_counts) > 1:
@@ -252,7 +254,7 @@ class AssemblyStats:
             if hap == "Haplotig":
                 continue
             ranked_names_lengths = self.get_assembly_scaffold_lengths(hap, asm)
-            for rank in (1,2):
+            for rank in (1, 2):
                 if names_lengths := ranked_names_lengths.get(rank):
                     for frags_len in names_lengths.values():
                         if shortest and frags_len > shortest:
