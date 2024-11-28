@@ -281,7 +281,7 @@ class BuildAssembly(Assembly):
             elif scffld.rank == 2:
                 chr_namer.add_chr_prefix(scffld)
 
-        # ChrNamer names autosome chromsomes by size
+        # ChrNamer names autosome chromosomes by size
         chr_namer.name_chromosomes()
 
         for asm in assemblies.values():

@@ -274,7 +274,7 @@ def write_chr_csv_files(output_file, stats, out_assemblies, clobber):
             csv_file = output_file.parent / (
                 output_file.stem
                 + (f".{asm_key.lower()}" if asm_key else "")
-                + ".chromsome.list.csv"
+                + ".chromosome.list.csv"
             )
 
             with get_output_filehandle(csv_file, clobber) as csv_fh:
