@@ -64,7 +64,7 @@ contains 9 tab delimited columns. Of these columns:
 Single words appended in tab-delimted columns beyond column 9, they can
 contain:
 
-- `Contaminant`
+- `Contaminant` or `Target`
 - `Haplotig` for haplotype-specific contigs.
 - Haplotypes:
   - `Hap1`, `Hap2`…

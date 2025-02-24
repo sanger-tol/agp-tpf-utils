@@ -43,14 +43,13 @@ def ul(txt):
         {bd("Contaminant")} tagged scaffolds are saved in a separate
       'Contaminants' file.
 
-        When there are large numbers of contaminant scaffolds in the
-        assembly, {bd("Target")} tags can insted be used to label the
-        non-contaminant scaffolds and reduce the amount of labelling
-        necessary in PretextView. Any un-tagged scaffolds will then be
-        treated as if they were tagged with {it("Contaminant")}.
-        (Any contaminants occurring before the first {it("Target")} tag in
-        the PretextView AGP must still be individually tagged with
-        {it("Contaminant")}.)
+        When there are large numbers of contaminant scaffolds in the assembly,
+      {bd("Target")} tags can insted be used to label the non-contaminant
+      scaffolds and reduce the amount of labelling necessary in PretextView.
+      Any un-tagged scaffolds will then be treated as if they were tagged
+      with {it("Contaminant")}. (Any contaminants occurring before the first
+      {it("Target")} tag in the PretextView AGP must still be individually
+      tagged with{it("Contaminant")}.)
 
         {bd("Haplotig")} taggged scaffolds are saved in a separate 'Haplotigs'
       file. The haplotig scaffolds receive names 'H_1' to 'H_{it("n")}',
