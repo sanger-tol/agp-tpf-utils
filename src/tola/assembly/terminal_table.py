@@ -97,13 +97,16 @@ class Table:
 
         self.buffer.write("┌" + "┬".join(n_cols * ["─" * pad_width]) + "┐\n")
 
-        ruler = "├" + "┼".join(n_cols * ["─" * pad_width]) + "┤\n"
 
         if hdr := self.header:
             self.render_row(hdr, n_cols, width)
 
+        ruler = "├" + "┼".join(n_cols * ["─" * pad_width]) + "┤\n"
         for row in self.rows:
-            self.buffer.write(ruler)
+            if hdr:
+                self.buffer.write(ruler)
+            else:
+                hdr = True
             self.render_row(row, n_cols, width)
 
         self.buffer.write("└" + "┴".join(n_cols * ["─" * pad_width]) + "┘\n")

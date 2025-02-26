@@ -1,4 +1,4 @@
-from inspect import cleandoc
+from textwrap import dedent
 
 from tola.assembly.terminal_table import (
     Table,
@@ -55,7 +55,7 @@ def test_simple_table():
             ),
         ],
     )
-    assert tbl.render() == cleandoc("""
+    expected = dedent("""
         ┌───────────────┬───────────────┬───────────────┐
         │     Hap1      │     Hap2      │     Hap3      │
         ├───────────────┼───────────────┼───────────────┤
@@ -66,4 +66,37 @@ def test_simple_table():
         │   Scaffold3   │   Scaffold4   │               │
         │ 19_330_000 bp │ 18_980_000 bp │               │
         └───────────────┴───────────────┴───────────────┘
-    """) + "\n"
+         """).lstrip()
+    assert tbl.render() == expected
+
+
+def test_no_header_table():
+    tbl = Table(
+        rows=[
+            TableRow(
+                [
+                    TableCell(
+                        [
+                            TableLine("Scaffold1"),
+                            TableLine("25_111_000 bp"),
+                        ]
+                    ),
+                    TableCell(
+                        [
+                            TableLine("Scaffold2"),
+                            TableLine("24_000_000 bp"),
+                            TableLine("Singleton"),
+                        ]
+                    ),
+                ]
+            ),
+        ],
+    )
+    expected = dedent("""
+        ┌───────────────┬───────────────┐
+        │   Scaffold1   │   Scaffold2   │
+        │ 25_111_000 bp │ 24_000_000 bp │
+        │               │   Singleton   │
+        └───────────────┴───────────────┘
+        """).lstrip()
+    assert tbl.render() == expected
