@@ -26,7 +26,7 @@ def test_assembly(specimen_dir):
 
     output_tpf = f"{specimen}-pretext-to-tpf.tpf"
     with tempfile.TemporaryDirectory() as tmp_dir:
-        tmp_path = pathlib.Path(str(tmp_dir))
+        tmp_path = pathlib.Path(tmp_dir)
         args = (
             "--assembly",
             specimen_dir / input_tpf,
