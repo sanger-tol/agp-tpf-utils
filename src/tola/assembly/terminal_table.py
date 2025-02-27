@@ -3,7 +3,7 @@ import io
 import click
 
 
-class TableLine:
+class CellLine:
     __slots__ = "text", "render"
 
     def __init__(self, text: tuple[str], render=None):
@@ -24,10 +24,10 @@ class TableLine:
 class TableCell:
     __slots__ = "lines"
 
-    def __init__(self, lines: list[TableLine] = None):
+    def __init__(self, lines: list[CellLine] = None):
         self.lines = lines if lines else []
 
-    def add_line(self, line: TableLine):
+    def add_line(self, line: CellLine):
         self.lines.append(line)
 
     def max_line_length(self):
@@ -50,6 +50,10 @@ class TableRow:
     __slots__ = "cells"
 
     def __init__(self, cells: list[TableCell] = None):
+        if cells and not isinstance(cells, list):
+            lst = list(cells)
+            msg = f"Not a list: {cells = !r} {lst = !r}"
+            raise ValueError(msg)
         self.cells = cells if cells else []
 
     def add_cell(self, cell: TableCell):
@@ -96,7 +100,6 @@ class Table:
         pad_width = width + 2
 
         self.buffer.write("┌" + "┬".join(n_cols * ["─" * pad_width]) + "┐\n")
-
 
         if hdr := self.header:
             self.render_row(hdr, n_cols, width)

@@ -9,6 +9,13 @@ import textwrap
 from tola.assembly.fragment import Fragment
 from tola.assembly.overlap_result import OverlapResult
 from tola.assembly.scaffold import Scaffold
+from tola.assembly.terminal_table import (
+    CellLine,
+    Table,
+    TableCell,
+    TableHeader,
+    TableRow,
+)
 
 
 class ScaffoldNamer:
@@ -206,6 +213,9 @@ class ChrGroup:
                 chr_list.append(chr_name + chr(ltr))
             return chr_list
 
+    def max_hap_set_count(self):
+        return max(len(hap_set) for hap_set in self.data.values())
+
     def name_chromosome(self, chr_prefix, chr_n):
         """
         Replace the original Pretext scaffold name with the supplied
@@ -309,6 +319,37 @@ class ChrNamer:
             group.haplotype_dict(haplotype).setdefault(orig, []).append(scffld)
             last_haplotype = haplotype
             last_orig = orig
+        errors, table = self.check_groups()
+        logging.debug(table.render())
+
+
+    def check_groups(self):
+        tbl = Table(
+            header=TableHeader([TableCell([CellLine(x)]) for x in self.haplotypes_seen])
+        )
+        ignore = set(self.haplotypes_seen)
+        ignore.add('Cut')
+        for grp in self.groups:
+            row_count = grp.max_hap_set_count()
+            for row_idx in range(row_count):
+                row = TableRow()
+                # for i, hap in enumerate(self.haplotypes_seen):
+                for hap in self.haplotypes_seen:
+                    cell = TableCell()
+
+                    if (scaffolds := grp.data.get(hap)) and row_idx < len(scaffolds):
+                        scffld_name = list(scaffolds)[row_idx]
+                        cell.add_line(CellLine(scffld_name))
+                        scffld = scaffolds[scffld_name][0]
+                        s_length = sum(x.fragments_length for x in scaffolds[scffld_name])
+                        cell.add_line(CellLine(f"{s_length:,} bp"))
+                        for tag in sorted(scffld.fragment_tags()):
+                            if tag not in ignore:
+                                cell.add_line(CellLine(tag))
+                    row.add_cell(cell)
+                tbl.add_row(row)
+        errors = 0
+        return errors, tbl
 
 
 class FoundFragment:

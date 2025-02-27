@@ -282,6 +282,7 @@ class BuildAssembly(Assembly):
                 chr_namer.add_chr_prefix(scffld)
 
         # ChrNamer names autosome chromosomes by size
+        # errors, table = chr_namer.check_groups()
         chr_namer.name_chromosomes()
 
         for asm in assemblies.values():

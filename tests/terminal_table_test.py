@@ -1,10 +1,10 @@
 from textwrap import dedent
 
 from tola.assembly.terminal_table import (
+    CellLine,
     Table,
     TableCell,
     TableHeader,
-    TableLine,
     TableRow,
 )
 
@@ -13,9 +13,9 @@ def test_simple_table():
     tbl = Table(
         header=TableHeader(
             [
-                TableCell([TableLine("Hap1")]),
-                TableCell([TableLine("Hap2")]),
-                TableCell([TableLine("Hap3")]),
+                TableCell([CellLine("Hap1")]),
+                TableCell([CellLine("Hap2")]),
+                TableCell([CellLine("Hap3")]),
             ]
         ),
         rows=[
@@ -23,16 +23,16 @@ def test_simple_table():
                 [
                     TableCell(
                         [
-                            TableLine("Scaffold1"),
-                            TableLine("25_111_000 bp"),
+                            CellLine("Scaffold1"),
+                            CellLine("25_111_000 bp"),
                         ]
                     ),
                     TableCell(),
                     TableCell(
                         [
-                            TableLine("Scaffold2"),
-                            TableLine("24_000_000 bp"),
-                            TableLine("Singleton"),
+                            CellLine("Scaffold2"),
+                            CellLine("24_000_000 bp"),
+                            CellLine("Singleton"),
                         ]
                     ),
                 ]
@@ -41,14 +41,14 @@ def test_simple_table():
                 [
                     TableCell(
                         [
-                            TableLine("Scaffold3"),
-                            TableLine("19_330_000 bp"),
+                            CellLine("Scaffold3"),
+                            CellLine("19_330_000 bp"),
                         ]
                     ),
                     TableCell(
                         [
-                            TableLine("Scaffold4"),
-                            TableLine("18_980_000 bp"),
+                            CellLine("Scaffold4"),
+                            CellLine("18_980_000 bp"),
                         ]
                     ),
                 ]
@@ -77,15 +77,15 @@ def test_no_header_table():
                 [
                     TableCell(
                         [
-                            TableLine("Scaffold1"),
-                            TableLine("25_111_000 bp"),
+                            CellLine("Scaffold1"),
+                            CellLine("25_111_000 bp"),
                         ]
                     ),
                     TableCell(
                         [
-                            TableLine("Scaffold2"),
-                            TableLine("24_000_000 bp"),
-                            TableLine("Singleton"),
+                            CellLine("Scaffold2"),
+                            CellLine("24_000_000 bp"),
+                            CellLine("Singleton"),
                         ]
                     ),
                 ]
