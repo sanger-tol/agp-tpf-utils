@@ -30,6 +30,11 @@ class TableCell:
     def add_line(self, line: CellLine):
         self.lines.append(line)
 
+    def new_line(self, *args):
+        line = CellLine(*args)
+        self.lines.append(line)
+        return line
+
     def max_line_length(self):
         if lns := self.lines:
             return max(x.length() for x in lns)
@@ -58,6 +63,11 @@ class TableRow:
 
     def add_cell(self, cell: TableCell):
         self.cells.append(cell)
+
+    def new_cell(self, *args):
+        cell = TableCell(*args)
+        self.cells.append(cell)
+        return cell
 
     def get_cell(self, index):
         if index < len(self.cells):
@@ -89,6 +99,16 @@ class Table:
 
     def add_row(self, row: TableRow):
         self.rows.append(row)
+
+    def new_header(self, *args):
+        row = TableHeader(*args)
+        self.rows.append(row)
+        return row
+
+    def new_row(self, *args):
+        row = TableRow(*args)
+        self.rows.append(row)
+        return row
 
     def render(self):
         # Empty the buffer

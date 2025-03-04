@@ -9,13 +9,7 @@ import textwrap
 from tola.assembly.fragment import Fragment
 from tola.assembly.overlap_result import OverlapResult
 from tola.assembly.scaffold import Scaffold
-from tola.assembly.terminal_table import (
-    CellLine,
-    Table,
-    TableCell,
-    TableHeader,
-    TableRow,
-)
+from tola.assembly.terminal_table import Table
 
 
 class ScaffoldNamer:
@@ -322,32 +316,33 @@ class ChrNamer:
         errors, table = self.check_groups()
         logging.debug(table.render())
 
-
     def check_groups(self):
-        tbl = Table(
-            header=TableHeader([TableCell([CellLine(x)]) for x in self.haplotypes_seen])
-        )
+        tbl = Table()
+        hdr = Table.new_header()
+        for hap in self.haplotypes_seen:
+            hdr.new_cell().new_line(hap)
+
         ignore = set(self.haplotypes_seen)
-        ignore.add('Cut')
+        ignore.add("Cut")
         for grp in self.groups:
             row_count = grp.max_hap_set_count()
             for row_idx in range(row_count):
-                row = TableRow()
+                row = tbl.new_row()
                 # for i, hap in enumerate(self.haplotypes_seen):
                 for hap in self.haplotypes_seen:
-                    cell = TableCell()
+                    cell = row.new_cell()
 
                     if (scaffolds := grp.data.get(hap)) and row_idx < len(scaffolds):
                         scffld_name = list(scaffolds)[row_idx]
-                        cell.add_line(CellLine(scffld_name))
+                        cell.new_line(scffld_name)
                         scffld = scaffolds[scffld_name][0]
-                        s_length = sum(x.fragments_length for x in scaffolds[scffld_name])
-                        cell.add_line(CellLine(f"{s_length:,} bp"))
+                        s_length = sum(
+                            x.fragments_length for x in scaffolds[scffld_name]
+                        )
+                        cell.new_line(f"{s_length:,} bp")
                         for tag in sorted(scffld.fragment_tags()):
                             if tag not in ignore:
-                                cell.add_line(CellLine(tag))
-                    row.add_cell(cell)
-                tbl.add_row(row)
+                                cell.new_line(tag)
         errors = 0
         return errors, tbl
 
