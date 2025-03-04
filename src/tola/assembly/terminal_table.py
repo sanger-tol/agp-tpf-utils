@@ -1,6 +1,11 @@
 import io
+import logging
 
 import click
+
+
+def bold_red(txt):
+    return click.style("".join(txt), bold=True, fg="red")
 
 
 class CellLine:
@@ -30,8 +35,8 @@ class TableCell:
     def add_line(self, line: CellLine):
         self.lines.append(line)
 
-    def new_line(self, *args):
-        line = CellLine(*args)
+    def new_line(self, *args, **kwargs):
+        line = CellLine(*args, **kwargs)
         self.lines.append(line)
         return line
 
@@ -64,8 +69,8 @@ class TableRow:
     def add_cell(self, cell: TableCell):
         self.cells.append(cell)
 
-    def new_cell(self, *args):
-        cell = TableCell(*args)
+    def new_cell(self, *args, **kwargs):
+        cell = TableCell(*args, **kwargs)
         self.cells.append(cell)
         return cell
 
@@ -89,28 +94,80 @@ class TableHeader(TableRow):
     pass
 
 
-class Table:
-    __slots__ = "header", "rows", "buffer"
+class TerminalTableError(Exception):
+    """Unexpected usage of Table and associated Classes"""
+
+
+class TerminalTable:
+    """A class for rendering a table in the terminal"""
+
+    __slots__ = "header", "rows", "buffer", "errors"
 
     def __init__(self, header: TableHeader = None, rows: list[TableRow] = None):
         self.header = header
         self.rows = rows if rows else []
         self.buffer = io.StringIO()
+        self.errors = {}
 
     def add_row(self, row: TableRow):
         self.rows.append(row)
 
-    def new_header(self, *args):
-        row = TableHeader(*args)
+    def new_header(self, *args, **kwargs):
+        if self.header:
+            msg = "TerminalTable header is already set"
+            raise TerminalTableError(msg)
+        hdr = TableHeader(*args, **kwargs)
+        self.header = hdr
+        return hdr
+
+    def new_row(self, *args, **kwargs):
+        row = TableRow(*args, **kwargs)
         self.rows.append(row)
         return row
 
-    def new_row(self, *args):
-        row = TableRow(*args)
-        self.rows.append(row)
-        return row
+    def current_row_number(self):
+        if n := len(self.rows):
+            return n
+        return None
 
-    def render(self):
+    def mark_error(self):
+        n = self.current_row_number()
+        err = self.errors
+        err[n] = err.get(n, 0) + 1
+
+    def error_render(self, context=1):
+        if err := self.errors:
+            err_indices = sorted(err)
+        else:
+            return None
+
+        row_count = len(self.rows)
+        for start, end in self.contiguous_ranges(err_indices, row_count, context):
+            yield self.render(range(start, end + 1))
+
+    @staticmethod
+    def contiguous_ranges(idxs, length, context=1):
+        max_i = length - 1
+        while idxs:
+            x = idxs.pop(0)
+            start = max(x - context, 0)
+            end = min(x + context, max_i)
+            while idxs:
+                y = idxs[0]
+                y_start = max(y - context, 0)
+                y_end = min(y + context, max_i)
+                if y_start > end + 1:
+                    # There's a gap
+                    break
+                idxs.pop(0)
+                end = y_end
+            yield start, end
+
+    def render(self, row_indices=None):
+        all_rows = self.rows
+        if not row_indices:
+            row_indices = range(len(all_rows))
+
         # Empty the buffer
         self.buffer.seek(0)
         self.buffer.truncate(0)
@@ -125,7 +182,9 @@ class Table:
             self.render_row(hdr, n_cols, width)
 
         ruler = "├" + "┼".join(n_cols * ["─" * pad_width]) + "┤\n"
-        for row in self.rows:
+
+        for i in row_indices:
+            row = all_rows[i]
             if hdr:
                 self.buffer.write(ruler)
             else:

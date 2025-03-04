@@ -2,15 +2,15 @@ from textwrap import dedent
 
 from tola.assembly.terminal_table import (
     CellLine,
-    Table,
     TableCell,
     TableHeader,
     TableRow,
+    TerminalTable,
 )
 
 
 def test_simple_table():
-    tbl = Table(
+    tbl = TerminalTable(
         header=TableHeader(
             [
                 TableCell([CellLine("Hap1")]),
@@ -71,7 +71,7 @@ def test_simple_table():
 
 
 def test_no_header_table():
-    tbl = Table(
+    tbl = TerminalTable(
         rows=[
             TableRow(
                 [
@@ -100,3 +100,38 @@ def test_no_header_table():
         └───────────────┴───────────────┘
         """).lstrip()
     assert tbl.render() == expected
+
+
+def test_contiguous_ranges():
+    # 012 56
+    assert list(
+        TerminalTable.contiguous_ranges(
+            [0, 1, 6],
+            7,
+        )
+    ) == [
+        (0, 2),
+        (5, 6),
+    ]
+
+    # 012345
+    assert list(
+        TerminalTable.contiguous_ranges(
+            [0, 1, 2, 4],
+            7,
+        )
+    ) == [
+        (0, 5),
+    ]
+
+    # 0123 5678
+    assert list(
+        TerminalTable.contiguous_ranges(
+            [0, 8],
+            9,
+            3,
+        )
+    ) == [
+        (0, 3),
+        (5, 8),
+    ]

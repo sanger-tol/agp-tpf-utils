@@ -9,7 +9,7 @@ import textwrap
 from tola.assembly.fragment import Fragment
 from tola.assembly.overlap_result import OverlapResult
 from tola.assembly.scaffold import Scaffold
-from tola.assembly.terminal_table import Table
+from tola.assembly.terminal_table import TerminalTable, bold_red
 
 
 class ScaffoldNamer:
@@ -229,6 +229,10 @@ class ChrGroup:
                     scffld.name = scffld.name.replace(orig, this_chr)
 
 
+class ChrNamerError(Exception):
+    """An error in the expected pattern of scaffolds and haplotypes"""
+
+
 class ChrNamer:
     """
     Groups chromosomes across haplotypes and sorts and names them.
@@ -240,9 +244,10 @@ class ChrNamer:
         self.haplotypes_seen = {}
         self.groups = None
 
-    def add_scaffold(self, haplotype, scffld):
+    def add_scaffold(self, hap, scffld):
         # A dict is used to store the haplotypes seen since order is
         # significant and sets do not preserve order.
+        haplotype = str(hap)
         self.haplotypes_seen[haplotype] = True
         self.scaffolds.append((haplotype, scffld))
 
@@ -313,12 +318,17 @@ class ChrNamer:
             group.haplotype_dict(haplotype).setdefault(orig, []).append(scffld)
             last_haplotype = haplotype
             last_orig = orig
-        errors, table = self.check_groups()
-        logging.debug(table.render())
+        table = self.check_groups()
+        if table.errors:
+            msg = "Errors in autosomes:\n"
+            logging.warn(msg + table.render())
+            raise ChrNamerError()
+        else:
+            logging.debug(table.render())
 
     def check_groups(self):
-        tbl = Table()
-        hdr = Table.new_header()
+        tbl = TerminalTable()
+        hdr = tbl.new_header()
         for hap in self.haplotypes_seen:
             hdr.new_cell().new_line(hap)
 
@@ -328,23 +338,47 @@ class ChrNamer:
             row_count = grp.max_hap_set_count()
             for row_idx in range(row_count):
                 row = tbl.new_row()
-                # for i, hap in enumerate(self.haplotypes_seen):
-                for hap in self.haplotypes_seen:
+                for i, hap in enumerate(self.haplotypes_seen):
+                    # Make a new cell, which may be empty
                     cell = row.new_cell()
 
-                    if (scaffolds := grp.data.get(hap)) and row_idx < len(scaffolds):
-                        scffld_name = list(scaffolds)[row_idx]
-                        cell.new_line(scffld_name)
-                        scffld = scaffolds[scffld_name][0]
-                        s_length = sum(
-                            x.fragments_length for x in scaffolds[scffld_name]
-                        )
-                        cell.new_line(f"{s_length:,} bp")
-                        for tag in sorted(scffld.fragment_tags()):
-                            if tag not in ignore:
-                                cell.new_line(tag)
-        errors = 0
-        return errors, tbl
+                    # Are there any scaffolds for this haplotype in this ChrGroup?
+                    if scaffolds := grp.data.get(hap):
+
+                        # Is there a scaffold for this row of the ChrGroup?
+                        if row_idx < len(scaffolds):
+
+                            # Get the scaffold on this row
+                            scffld_name = list(scaffolds)[row_idx]
+                            scffld = scaffolds[scffld_name][0]
+
+                            # The first haplotype should only have one
+                            # scaffold in the group
+                            if i == 0 and row_idx > 0:
+                                cell.new_line(scffld_name, bold_red)
+                                cell.new_line(f"Consecutive {hap}", bold_red)
+                                tbl.mark_error()
+                            else:
+                                cell.new_line(scffld_name)
+
+                            # Show the fragments length of this scaffold
+                            s_length = sum(
+                                x.fragments_length for x in scaffolds[scffld_name]
+                            )
+                            cell.new_line(f"{s_length:,} bp")
+
+                            # Show any tags on this scaffold
+                            for tag in sorted(scffld.fragment_tags()):
+                                if tag not in ignore:
+                                    cell.new_line(tag)
+
+                    # If this is the first line of the ChrGroup, is the first
+                    # haplotype missing?
+                    elif row_idx == 0 and i == 0:
+                        cell.new_line('<empty>', bold_red)
+                        tbl.mark_error()
+
+        return tbl
 
 
 class FoundFragment:

@@ -6,6 +6,7 @@ import click
 import yaml
 
 from tola.assembly.build_assembly import BuildAssembly
+from tola.assembly.build_utils import ChrNamerError
 from tola.assembly.format import format_agp, format_tpf
 from tola.assembly.gap import Gap
 from tola.assembly.indexed_assembly import IndexedAssembly
@@ -180,7 +181,11 @@ def cli(
     )
     build_asm.remap_to_input_assembly(prtxt_asm, input_asm)
 
-    out_assemblies = build_asm.assemblies_with_scaffolds_fused()
+    try:
+        out_assemblies = build_asm.assemblies_with_scaffolds_fused()
+    except ChrNamerError:
+        sys.exit("Error naming chromosomes")
+
     for out_asm in out_assemblies.values():
         write_assembly(fai, out_asm, output_file, clobber)
     stats = build_asm.assembly_stats
