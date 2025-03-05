@@ -34,6 +34,26 @@ def list_chr_naming_tests():
         },
         {
             "input": [
+                ("S1", "Hap1", 3_000_000, "S1", "Singleton"),
+                ("S1_unloc_1", "Hap1", 12_000, "S1"),
+                ("S2", "Hap1", 2_000_000, "S2"),
+                ("S3", "Hap3", 2_000_000, "S3"),
+                ("S4", "Hap1", 1_000_000, "S4", "Singleton"),
+            ],
+            "expected": {
+                "Hap1": [
+                    ("SUPER_1", "Hap1", 3_000_000, "S1"),
+                    ("SUPER_1_unloc_1", "Hap1", 12_000, "S1"),
+                    ("SUPER_2", "Hap1", 2_000_000, "S2"),
+                    ("SUPER_3", "Hap1", 1_000_000, "S4"),
+                ],
+                "Hap3": [
+                    ("SUPER_2", "Hap3", 2_000_000, "S3"),
+                ]
+            }
+        },
+        {
+            "input": [
                 # SUPER_2
                 ("P1", None, 10_000_000, "P1"),
                 ("P1_unloc_2", None, 9_000, "P1"),
@@ -104,14 +124,15 @@ def test_chr_namer(input_data, expected, exception):
 def run_chr_namer(input_data, expected):
     cn = ChrNamer()
     assemblies = {}
-    for name, haplotype, length, orig in input_data:
+    for name, haplotype, length, orig, *tags in input_data:
         asm = assemblies.setdefault(haplotype, Assembly(haplotype))
         scffld = Scaffold(
             name,
-            rows=[Fragment(name, 1, length, 1)],
+            rows=[Fragment(name, 1, length, 1, tags)],
             original_name=orig,
             rank=1,
         )
+        print(scffld, file=sys.stderr)
         asm.add_scaffold(scffld)
         cn.add_scaffold(haplotype, scffld)
     cn.name_chromosomes()

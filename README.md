@@ -69,6 +69,7 @@ contain:
 - Haplotypes:
   - `Hap1`, `Hap2`…
 - `Painted` where fragment has HiC contacts.
+- `Singleton` to flag chromosomes which were not found in any other haplotypes.
 - `Unloc` are fragments attached to chromosomes but unlocalised within them.
 - Sex Chromosomes:
   - `U`

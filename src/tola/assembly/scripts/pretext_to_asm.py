@@ -57,6 +57,9 @@ def ul(txt):
       file. The haplotig scaffolds receive names 'H_1' to 'H_{it("n")}',
       sorted and numbered from longest to shortest.
 
+        {bd("Singleton")} is used to flag chromsomes which were not found in
+      any other haplotype.
+
         {bd("Unloc")} tagged scaffolds receive names '{it("CHR")}_unloc_1'
       to '{it("CHR")}_unloc_{it("n")}', added to the end of their
       chromosome and sorted and numbered from longest to

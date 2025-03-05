@@ -293,11 +293,18 @@ class ChrNamer:
                         # New haplotype which already has an entry in this
                         # group, so we must be in to a new group.
                         group = self.new_group()
+                    elif (
+                        orig != last_orig  # i.e. not an Unloc
+                        and "Singleton"
+                        in group.haplotype_dict(haplotype)[last_orig][0].fragment_tags()
+                    ):
+                        # Previous scaffold is tagged as a Singleton
+                        group = self.new_group()
                 elif orig != last_orig:
-                    # When there's only one haplotype, we make a new ChrGroup
-                    # for each original_name, i.e. Pretext scaffold name.
                     # There will be mulitple scaffolds in a row from with the
                     # same original_name when there are Unlocs.
+                    # When there's only one haplotype, we make a new ChrGroup
+                    # for each original_name, i.e. Pretext scaffold name.
                     group = self.new_group()
 
             # Append to the list under Haplotype > Pretext Scaffold in the
@@ -321,13 +328,14 @@ class ChrNamer:
             group.haplotype_dict(haplotype).setdefault(orig, []).append(scffld)
             last_haplotype = haplotype
             last_orig = orig
+
         table = self.check_groups()
         if table.errors:
             s = "" if len(table.errors) == 1 else "s"
-            msg = f"Error{s} naming autosomes:\n" + "".join(table.error_render())
-            raise ChrNamerError(msg)
+            msg = f"Error{s} naming autosomes:\n"
+            raise ChrNamerError(msg, *table.error_render())
         else:
-            logging.debug(table.render())
+            logging.debug("\n" + table.render())
 
     def check_groups(self):
         tbl = TerminalTable()
@@ -352,15 +360,13 @@ class ChrNamer:
                             # Get the scaffold on this row
                             scffld_name = list(scaffolds)[row_idx]
                             scffld = scaffolds[scffld_name][0]
+                            cell.new_line(scffld_name)
 
                             # The first haplotype should only have one
                             # scaffold in the group
                             if i == 0 and row_idx > 0:
-                                cell.new_line(scffld_name)
                                 cell.new_line(f"<Consecutive {hap}>", bold_red)
                                 tbl.mark_error()
-                            else:
-                                cell.new_line(scffld_name)
 
                             # Show the fragments length of this scaffold
                             s_length = sum(
