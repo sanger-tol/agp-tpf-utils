@@ -1,4 +1,5 @@
 import logging
+import os
 import pathlib
 import sys
 
@@ -183,7 +184,10 @@ def cli(
 
     try:
         out_assemblies = build_asm.assemblies_with_scaffolds_fused()
-    except ChrNamerError:
+    except ChrNamerError as cne:
+        for msg in cne.args:
+            logging.info(msg)
+        page_messages(cne.args)
         sys.exit("Error naming chromosomes")
 
     for out_asm in out_assemblies.values():
@@ -326,6 +330,25 @@ def parse_assembly_file(path, default_format=None):
     else:
         msg = f"Unknown assembly file format '{fmt}'"
         raise ValueError(msg)
+
+
+def page_messages(itr):
+    if sys.stdout.isatty():
+        os.environ.setdefault(
+            "LESS",
+            " ".join(
+                (
+                    "--no-init",
+                    "--quit-if-one-screen",
+                    "--ignore-case",
+                    "--RAW-CONTROL-CHARS",
+                )
+            ),
+        )
+        click.echo_via_pager(itr, color=True)
+    else:
+        for msg in itr:
+            click.echo(msg, color=False, err=True)
 
 
 if __name__ == "__main__":

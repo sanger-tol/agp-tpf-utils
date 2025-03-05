@@ -1,11 +1,14 @@
 import io
-import logging
 
 import click
 
 
 def bold_red(txt):
     return click.style("".join(txt), bold=True, fg="red")
+
+
+def bold(txt):
+    return click.style("".join(txt), bold=True)
 
 
 class CellLine:
@@ -125,28 +128,34 @@ class TerminalTable:
         self.rows.append(row)
         return row
 
-    def current_row_number(self):
+    def current_row_index(self):
         if n := len(self.rows):
-            return n
+            return n - 1
         return None
 
     def mark_error(self):
-        n = self.current_row_number()
+        i = self.current_row_index()
         err = self.errors
-        err[n] = err.get(n, 0) + 1
+        err[i] = err.get(i, 0) + 1
 
     def error_render(self, context=1):
-        if err := self.errors:
-            err_indices = sorted(err)
-        else:
+        if not self.errors:
             return None
 
-        row_count = len(self.rows)
-        for start, end in self.contiguous_ranges(err_indices, row_count, context):
+        for start, end in self.contiguous_ranges(
+            self.errors.keys(),
+            len(self.rows),
+            context,
+        ):
             yield self.render(range(start, end + 1))
 
     @staticmethod
-    def contiguous_ranges(idxs, length, context=1):
+    def contiguous_ranges(indices: list[int], length: int, context=1):
+        """
+        Given a list of indices within a list of the supplied `length`,
+        returns a list of contiguous ranges padded by `context`.
+        """
+        idxs = sorted(indices)
         max_i = length - 1
         while idxs:
             x = idxs.pop(0)

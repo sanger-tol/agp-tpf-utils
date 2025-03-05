@@ -6,7 +6,7 @@ import pytest
 
 from tola.assembly.assembly import Assembly
 from tola.assembly.build_assembly import BuildAssembly
-from tola.assembly.build_utils import ChrGroup, ChrNamer, ScaffoldNamer
+from tola.assembly.build_utils import ChrGroup, ChrNamer, ChrNamerError, ScaffoldNamer
 from tola.assembly.fragment import Fragment
 from tola.assembly.gap import Gap
 from tola.assembly.indexed_assembly import IndexedAssembly
@@ -30,7 +30,7 @@ def list_chr_naming_tests():
                 ("S2", "Hap1", 1_000_000, "S2"),
                 ("S3", "Hap3", 3_000_000, "S3"),
             ],
-            "exception": (ValueError, r"Expected a single scaffold in first haplotype"),
+            "exception": (ChrNamerError, r"<Consecutive Hap1>"),
         },
         {
             "input": [

@@ -9,7 +9,7 @@ import textwrap
 from tola.assembly.fragment import Fragment
 from tola.assembly.overlap_result import OverlapResult
 from tola.assembly.scaffold import Scaffold
-from tola.assembly.terminal_table import TerminalTable, bold_red
+from tola.assembly.terminal_table import TerminalTable, bold, bold_red
 
 
 class ScaffoldNamer:
@@ -230,7 +230,10 @@ class ChrGroup:
 
 
 class ChrNamerError(Exception):
-    """An error in the expected pattern of scaffolds and haplotypes"""
+    """
+    An error in the expected pattern of scaffolds and haplotypes and tags when
+    naming the autosomes.
+    """
 
 
 class ChrNamer:
@@ -320,9 +323,9 @@ class ChrNamer:
             last_orig = orig
         table = self.check_groups()
         if table.errors:
-            msg = "Errors in autosomes:\n"
-            logging.warn(msg + table.render())
-            raise ChrNamerError()
+            s = "" if len(table.errors) == 1 else "s"
+            msg = f"Error{s} naming autosomes:\n" + "".join(table.error_render())
+            raise ChrNamerError(msg)
         else:
             logging.debug(table.render())
 
@@ -330,7 +333,7 @@ class ChrNamer:
         tbl = TerminalTable()
         hdr = tbl.new_header()
         for hap in self.haplotypes_seen:
-            hdr.new_cell().new_line(hap)
+            hdr.new_cell().new_line(hap, bold)
 
         ignore = set(self.haplotypes_seen)
         ignore.add("Cut")
@@ -344,10 +347,8 @@ class ChrNamer:
 
                     # Are there any scaffolds for this haplotype in this ChrGroup?
                     if scaffolds := grp.data.get(hap):
-
                         # Is there a scaffold for this row of the ChrGroup?
                         if row_idx < len(scaffolds):
-
                             # Get the scaffold on this row
                             scffld_name = list(scaffolds)[row_idx]
                             scffld = scaffolds[scffld_name][0]
@@ -355,8 +356,8 @@ class ChrNamer:
                             # The first haplotype should only have one
                             # scaffold in the group
                             if i == 0 and row_idx > 0:
-                                cell.new_line(scffld_name, bold_red)
-                                cell.new_line(f"Consecutive {hap}", bold_red)
+                                cell.new_line(scffld_name)
+                                cell.new_line(f"<Consecutive {hap}>", bold_red)
                                 tbl.mark_error()
                             else:
                                 cell.new_line(scffld_name)
@@ -375,7 +376,7 @@ class ChrNamer:
                     # If this is the first line of the ChrGroup, is the first
                     # haplotype missing?
                     elif row_idx == 0 and i == 0:
-                        cell.new_line('<empty>', bold_red)
+                        cell.new_line("<empty>", bold_red)
                         tbl.mark_error()
 
         return tbl
