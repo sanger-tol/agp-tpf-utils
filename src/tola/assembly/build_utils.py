@@ -12,6 +12,10 @@ from tola.assembly.scaffold import Scaffold
 from tola.assembly.terminal_table import TerminalTable, bold, bold_red
 
 
+class TaggingError(Exception):
+    """Error in Pretext tags"""
+
+
 class ScaffoldNamer:
     """
     Labels Scaffolds with named chromosomes (sex chromosomes, B chromosomes),
@@ -27,6 +31,7 @@ class ScaffoldNamer:
         self.current_haplotype = None
         self.haplotig_n = 0
         self.haplotig_scaffolds = []
+        self.primary_haplotype = None
         self.target_tags = False
         self.unloc_n = 0
         self.unloc_scaffolds = []
@@ -51,12 +56,15 @@ class ScaffoldNamer:
         haplotype = None
         is_painted = False  # Has HiC contacts
         rank = None
+        primary_tag = False
 
         for tag in scaffold.fragment_tags():
             if tag == "Painted":
                 is_painted = True
             elif tag == "Target":
                 self.target_tags = True
+            elif tag == "Primary":
+                primary_tag = True
             elif re.fullmatch(r"([A-Z]\d*|[IVX_]+|\d+[A-Z]+)", tag):
                 # This tag looks like a chromosome name, e.g. "X1", "I_II", "2RL"
                 if scaffold_name and tag != scaffold_name:
@@ -64,7 +72,7 @@ class ScaffoldNamer:
                         f"Found more than one scaffold_name name: '{scaffold_name}'"
                         f" and '{tag}' in scaffold:\n\n{scaffold}"
                     )
-                    raise ValueError(msg)
+                    raise TaggingError(msg)
                 scaffold_name = tag
                 rank = 2
             elif tag not in self.OTHER_KNOWN_TAGS:
@@ -76,11 +84,18 @@ class ScaffoldNamer:
                         f"Found both '{haplotype}' and '{tag}', when only one'"
                         f" is expected, in scaffold:\n\n{scaffold}"
                     )
-                    raise ValueError(msg)
+                    raise TaggingError(msg)
                 else:
                     # The first occurance of a haplotype tag sets its case.
-                    # i.e.  "Hap1" will be used if it is seen before "HAP1".
+                    # i.e. "Hap1" will be used if it is seen before "HAP1".
                     haplotype = self.haplotype_lc_dict.setdefault(tag.lower(), tag)
+
+        if primary_tag:
+            if haplotype:
+                self.primary_haplotype = haplotype
+            else:
+                if m := re.match(r"([^_]+)_", scaffold.rows[0].name):
+                    self.primary_haplotype = m.group(1)
 
         if not scaffold_name:
             if is_painted:
