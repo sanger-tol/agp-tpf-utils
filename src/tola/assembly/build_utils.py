@@ -38,6 +38,7 @@ class ScaffoldNamer:
         "Contaminant",
         "Cut",
         "Haplotig",
+        "Singleton",
         "Unloc",
     }
 
@@ -56,8 +57,8 @@ class ScaffoldNamer:
                 is_painted = True
             elif tag == "Target":
                 self.target_tags = True
-            elif re.fullmatch(r"([A-Z]\d*|[IVX_]+)", tag):
-                # This tag looks like a chromosome name
+            elif re.fullmatch(r"([A-Z]\d*|[IVX_]+|\d+[A-Z]+)", tag):
+                # This tag looks like a chromosome name, e.g. "X1", "I_II", "2RL"
                 if scaffold_name and tag != scaffold_name:
                     msg = (
                         f"Found more than one scaffold_name name: '{scaffold_name}'"
