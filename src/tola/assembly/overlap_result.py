@@ -54,8 +54,7 @@ class OverlapResult(Scaffold):
         p = self.start - 1
         for row in self.rows:
             txt.write(
-                f"    {p + 1 :14_d} {p + row.length :14_d}"
-                f" {row.length:11_d}  {row}\n"
+                f"    {p + 1:14_d} {p + row.length:14_d} {row.length:11_d}  {row}\n"
             )
             p += row.length
         txt.write(f"  overhang: {self.end_overhang:_d}")
@@ -175,7 +174,12 @@ class OverlapResult(Scaffold):
         raise NotImplementedError
 
     def to_scaffold(self) -> Scaffold:
-        scffld = Scaffold(self.name, self.rows, original_name=self.original_name)
+        scffld = Scaffold(
+            self.name,
+            self.rows,
+            original_name=self.original_name,
+            original_tags=self.original_tags,
+        )
         if self.bait.strand == -1:
             return scffld.reverse()
         else:

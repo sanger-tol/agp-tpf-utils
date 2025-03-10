@@ -128,8 +128,9 @@ def run_chr_namer(input_data, expected):
         asm = assemblies.setdefault(haplotype, Assembly(haplotype))
         scffld = Scaffold(
             name,
-            rows=[Fragment(name, 1, length, 1, tags)],
+            rows=[Fragment(name, 1, length, 1)],
             original_name=orig,
+            original_tags=set(tags),
             rank=1,
         )
         print(scffld, file=sys.stderr)

@@ -87,7 +87,10 @@ class BuildAssembly(Assembly):
             for prtxt_frag in prtxt_scffld.fragments():
                 if found := input_asm.find_overlaps(prtxt_frag):
                     scaffold_namer.label_scaffold(
-                        found, prtxt_frag, prtxt_scffld_tags, prtxt_scffld.name
+                        scaffold=found,
+                        fragment=prtxt_frag,
+                        scaffold_tags=prtxt_scffld_tags,
+                        original_name=prtxt_scffld.name,
                     )
                     found.trim_large_overhangs(err_length)
                     if found.rows:

@@ -153,6 +153,7 @@ class ScaffoldNamer:
         scaffold.haplotype = self.current_haplotype
         scaffold.rank = rank
         scaffold.original_name = original_name
+        scaffold.original_tags = scaffold_tags
 
     def haplotig_name(self) -> str:
         self.haplotig_n += 1
@@ -187,6 +188,10 @@ class ChrGroup:
         self.data = data = {}
         for hap in haplotypes:
             data[hap] = {}
+
+    def __repr__(self):
+        data_summary = {hap: list(self.data[hap].keys()) for hap in self.data}
+        return f"{self.__class__.__name__}(\n  data={data_summary})\n"
 
     def haplotype_dict(self, hap_name):
         return self.data.get(hap_name)
@@ -307,12 +312,12 @@ class ChrNamer:
                 if other_haplotypes:
                     if haplotype != last_haplotype:
                         # New haplotype which already has an entry in this
-                        # group, so we must be in to a new group.
+                        # group, so we must be in a new group.
                         group = self.new_group()
                     elif (
                         orig != last_orig  # i.e. not an Unloc
                         and "Singleton"
-                        in group.haplotype_dict(haplotype)[last_orig][0].fragment_tags()
+                        in group.haplotype_dict(haplotype)[last_orig][0].original_tags
                     ):
                         # Previous scaffold is tagged as a Singleton
                         group = self.new_group()

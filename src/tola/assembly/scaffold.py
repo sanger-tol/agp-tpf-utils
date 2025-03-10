@@ -6,7 +6,14 @@ from tola.assembly.gap import Gap
 
 class Scaffold:
     def __init__(
-        self, name, rows=None, tag=None, haplotype=None, rank=0, original_name=None,
+        self,
+        name,
+        rows=None,
+        tag=None,
+        haplotype=None,
+        rank=0,
+        original_name=None,
+        original_tags: set[str] = None,
     ):
         self.name = str(name)
         if rows:
@@ -17,12 +24,15 @@ class Scaffold:
         self.haplotype = haplotype
         self.rank = rank
         self.original_name = original_name
+        self.original_tags = original_tags
 
     def __repr__(self):
         txt = io.StringIO()
         txt.write(f"{self.__class__.__name__}(\n    name='{self.name}',\n")
         if orig := self.original_name:
             txt.write(f"    original_name='{orig}',\n")
+        if orig_tags := self.original_tags:
+            txt.write(f"    original_tags={sorted(orig_tags)!r},\n")
         if rnk := self.rank:
             txt.write(f"    rank='{rnk}',\n")
         txt.write("    rows=[\n")
@@ -36,7 +46,9 @@ class Scaffold:
         txt.write(f"{self.name}")
         if (orig := self.original_name) and orig != self.name:
             txt.write(f" ({orig})")
-        if (rnk := self.rank):
+        if orig_tags := self.original_tags:
+            txt.write(f" original_tags={sorted(orig_tags)!r}")
+        if rnk := self.rank:
             txt.write(f" rank={rnk}")
         txt.write("\n")
         for row in self.rows:
@@ -93,7 +105,11 @@ class Scaffold:
         return tag_set
 
     def reverse(self):
-        new = self.__class__(self.name)
+        new = self.__class__(
+            self.name,
+            original_name=self.original_name,
+            original_tags=self.original_tags,
+        )
         new.rows = self.rows[::-1]
         for i, frag in new.idx_fragments():
             new.rows[i] = frag.reverse()
