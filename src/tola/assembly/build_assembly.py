@@ -82,8 +82,8 @@ class BuildAssembly(Assembly):
         scaffold_namer = self.scaffold_namer
         err_length = self.error_length
         for prtxt_scffld in prtxt_asm.scaffolds:
-            scaffold_namer.make_scaffold_name(prtxt_scffld)
             prtxt_scffld_tags = prtxt_scffld.fragment_tags()
+            scaffold_namer.make_scaffold_name(prtxt_scffld, prtxt_scffld_tags)
             for prtxt_frag in prtxt_scffld.fragments():
                 if found := input_asm.find_overlaps(prtxt_frag):
                     scaffold_namer.label_scaffold(
@@ -267,16 +267,17 @@ class BuildAssembly(Assembly):
         chr_namer = ChrNamer(chr_prefix=self.autosome_prefix)
         assemblies = {}
         for scffld in self.scaffolds_fused_by_name():
+            curated = True
             if tag := scffld.tag:
+                curated = False
                 asm_key = tag
-                asm_name = f"{self.name}.{tag.lower()}s"
             elif hap := scffld.haplotype:
                 asm_key = hap
-                asm_name = f"{self.name}.{hap.lower()}"
             else:
                 asm_key = None
-                asm_name = self.name
-            new_asm = assemblies.setdefault(asm_key, Assembly(asm_name))
+            new_asm = assemblies.setdefault(
+                asm_key, Assembly(self.name, curated=curated)
+            )
             new_asm.add_scaffold(scffld)
             if scffld.rank == 1:
                 # Add autosome to the ChrNamer
@@ -285,7 +286,6 @@ class BuildAssembly(Assembly):
                 chr_namer.add_chr_prefix(scffld)
 
         # ChrNamer names autosome chromosomes by size
-        # errors, table = chr_namer.check_groups()
         chr_namer.name_chromosomes()
 
         for asm in assemblies.values():

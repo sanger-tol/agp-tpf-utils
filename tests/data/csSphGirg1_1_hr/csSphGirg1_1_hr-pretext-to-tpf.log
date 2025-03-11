@@ -1,7 +1,7 @@
 Pretext resolution = 6,826 bp per texel
 
 
-csSphGirg1_1_hr-pretext-to-tpf
+csSphGirg1_1_hr-pretext-to-tpf.1.primary
         431,830,959  bp sequence (minus gaps)
   Autosomes:
     n = 21
@@ -10,7 +10,7 @@ csSphGirg1_1_hr-pretext-to-tpf
           1,588,691  SUPER_21
         431,830,959  bp total
 
-csSphGirg1_1_hr-pretext-to-tpf.contaminants
+csSphGirg1_1_hr-pretext-to-tpf.1.contaminants
          15,413,452  bp sequence (minus gaps)
     n = 639
             269,705  SCAFFOLD_62

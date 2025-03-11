@@ -1,18 +1,19 @@
 import logging
 import os
-import pathlib
+import re
 import sys
+from pathlib import Path
 
 import click
 import yaml
 
+from tola.assembly.assembly import Assembly
 from tola.assembly.build_assembly import BuildAssembly
-from tola.assembly.build_utils import ChrNamerError
+from tola.assembly.build_utils import ChrNamerError, TaggingError
 from tola.assembly.format import format_agp, format_tpf
 from tola.assembly.gap import Gap
 from tola.assembly.indexed_assembly import IndexedAssembly
-from tola.assembly.parser import parse_agp, parse_tpf
-from tola.assembly.scripts.asm_format import format_from_file_extn
+from tola.assembly.parser import format_from_file_extn, parse_agp, parse_tpf
 from tola.fasta.index import FastaIndex
 from tola.fasta.stream import FastaStream
 
@@ -79,7 +80,7 @@ def ul(txt):
     "-a",
     "assembly_file",
     type=click.Path(
-        path_type=pathlib.Path,
+        path_type=Path,
         exists=True,
         readable=True,
         resolve_path=True,
@@ -95,7 +96,7 @@ def ul(txt):
     "-p",
     "pretext_file",
     type=click.Path(
-        path_type=pathlib.Path,
+        path_type=Path,
         exists=True,
         readable=True,
     ),
@@ -107,7 +108,7 @@ def ul(txt):
     "-o",
     "output_file",
     type=click.Path(
-        path_type=pathlib.Path,
+        path_type=Path,
         dir_okay=False,
     ),
     help="""Output file, usually a FASTA file.
@@ -177,9 +178,8 @@ def cli(
             "(Are the -a, --assembly and -p, --pretext arguments the right way around?)"
         )
 
-    out_name = output_file.stem if output_file else "stdout"
     build_asm = BuildAssembly(
-        out_name,
+        "stdout",
         default_gap=Gap(200, "scaffold"),
         autosome_prefix=autosome_prefix,
     )
@@ -192,14 +192,23 @@ def cli(
             logging.info(msg)
         page_messages(cne.args)
         sys.exit("Error naming chromosomes")
+    except TaggingError as te:
+        for msg in te.args:
+            logging.warning(msg)
+        sys.exit("Error in Pretext tags")
 
-    for out_asm in out_assemblies.values():
-        write_assembly(fai, out_asm, output_file, clobber)
     stats = build_asm.assembly_stats
     if output_file:
-        write_chr_report_csv(output_file, stats, out_assemblies, clobber)
-        write_chr_csv_files(output_file, stats, out_assemblies, clobber)
+        out_fmt, out_dir, out_root, asm_version, suffix = parse_output_file(output_file)
         write_info_yaml(output_file, stats, out_assemblies, clobber)
+        out_assemblies = name_assemblies(out_assemblies, out_root, asm_version)
+        write_assemblies(fai, out_fmt, out_dir, suffix, out_assemblies, clobber)
+        write_chr_csv_files(out_dir, stats, out_assemblies, clobber)
+        write_chr_report_csv(output_file, stats, out_assemblies, clobber)
+    else:
+        for asm in out_assemblies.values():
+            write_assembly(fai, asm, None, None, clobber)
+
     for asm_key, out_asm in out_assemblies.items():
         stats.log_assembly_chromosomes(asm_key, out_asm)
     logging.info("")
@@ -238,12 +247,104 @@ def setup_logging(log_level, output_file, write_log, clobber):
     return logfile
 
 
-def write_assembly(fai, out_asm, output_file, clobber):
+def name_assemblies(asm_dict, root: str, version: str):
+
+    ret_asm = {}
+
+    if asm_dict.get("Primary"):
+        # <ToLID>.1.primary.curated.fa  <- Sequence from "Hap1" tagged scaffolds)
+        # <ToLID>.1.primary.chromosome.list.csv
+        # <ToLID>.1.all_haplotigs.curated.fa  <- Sequence from "Hap2" tagged scaffolds)
+        other_asm = []
+        for asm_key, asm in asm_dict.items():
+            if asm_key == "Primary":
+                asm.name = f"{root}.{version}.primary"
+            elif asm.curated:
+                other_asm.append(asm)
+                continue
+            else:
+                asm.name = f"{root}.{version}.{asm_key.lower()}s"
+            ret_asm[asm_key] = asm
+        if other_asm:
+            htigs = merge_assemblies(other_asm)
+            htigs.curated = True
+            new_key = "all_haplotigs"
+            htigs.name = f"{root}.{version}.{new_key}"
+            ret_asm[new_key] = htigs
+
+    elif asm_dict.get(None):
+        # <ToLID>.1.primary.curated.fa
+        # <ToLID>.1.primary.chromosome.list.csv
+        # <ToLID>.1.additional_haplotigs.curated.fa <- Sequence from "Haplotig" tagged scaffolds
+        other_asm = []
+        for asm_key, asm in asm_dict.items():
+            if asm_key is None:
+                asm.name = f"{root}.{version}.primary"
+                ret_asm[None] = asm
+            elif asm_key == "Haplotig":
+                new_key = "additional_haplotigs"
+                asm.name = f"{root}.{version}.{new_key}"
+                asm.curated = True
+                ret_asm[new_key] = asm
+            else:
+                asm.name = f"{root}.{version}.{asm_key.lower()}s"
+                ret_asm[asm_key] = asm
+
+    else:
+        # <ToLID>.hap1.1.primary.curated.fa
+        # <ToLID>.hap1.1.primary.chromosome.list.csv
+
+        # <ToLID>.hap2.1.primary.curated.fa
+        # <ToLID>.hap2.1.primary.chromosome.list.csv
+        for asm_key, asm in asm_dict.items():
+            if asm.curated:
+                asm.name = f"{root}.{asm_key.lower()}.{version}.primary"
+            else:
+                asm.name = f"{root}.{version}.{asm_key.lower()}s"
+            ret_asm[asm_key] = asm
+
+    return ret_asm
+
+
+def merge_assemblies(asm_list):
+    new = Assembly()
+    for asm in asm_list:
+        for scffld in asm.scaffolds:
+            new.add_scaffold(scffld)
+    return new
+
+
+def parse_output_file(file):
+    out_fmt = format_from_file_extn(file)
+
+    sfx = f".{out_fmt.lower()}"
+    if sfx.startswith(file.suffix.lower()):
+        out_root = file.stem
+        sfx = file.suffix
+    else:
+        out_root = file.name
+
+    # Is there a version suffix?
+    if m := re.search(r"\.(\d+)$", out_root):
+        version = m.group(1)
+        # Clip version suffix off file name root
+        out_root = Path(out_root).stem
+    else:
+        version = "1"
+
+    return out_fmt, file.parent, out_root, version, sfx
+
+
+def write_assemblies(fai, out_fmt, out_dir, suffix, out_assemblies, clobber):
+    for asm in out_assemblies.values():
+        crtd = ".curated" if asm.curated else ""
+        output_file = out_dir / f"{asm.name}{crtd}{suffix}"
+        write_assembly(fai, asm, output_file, out_fmt, clobber)
+
+
+def write_assembly(fai, out_asm, output_file, out_fmt, clobber):
     if output_file:
-        out_fmt = format_from_file_extn(output_file, "AGP")
         mode = "b" if out_fmt == "FASTA" else ""
-        if out_asm.name != output_file.stem:
-            output_file = output_file.with_stem(out_asm.name)
         out_fh = get_output_filehandle(output_file, clobber, mode)
     else:
         out_fmt = "STR"
@@ -279,15 +380,12 @@ def write_chr_report_csv(output_file, stats, out_assemblies, clobber):
         csv_fh.write(csv)
 
 
-def write_chr_csv_files(output_file, stats, out_assemblies, clobber):
-    for asm_key, asm in out_assemblies.items():
+def write_chr_csv_files(out_dir, stats, out_assemblies, clobber):
+    for asm in out_assemblies.values():
+        if not asm.curated:
+            continue
         if chr_names := stats.chromosome_name_csv(asm):
-            csv_file = output_file.parent / (
-                output_file.stem
-                + (f".{asm_key.lower()}" if asm_key else "")
-                + ".chromosome.list.csv"
-            )
-
+            csv_file = out_dir / f"{asm.name}.chromosome.list.csv"
             with get_output_filehandle(csv_file, clobber) as csv_fh:
                 csv_fh.write(chr_names)
 

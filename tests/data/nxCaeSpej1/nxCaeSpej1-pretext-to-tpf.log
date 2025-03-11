@@ -8,7 +8,7 @@ cut into:
         2,516,417  SCAFFOLD_3:7121011-9637427(+) Cut
 
 
-nxCaeSpej1-pretext-to-tpf
+nxCaeSpej1-pretext-to-tpf.1.primary
          55,157,430  bp sequence (minus gaps)
   Named:
     n = 6
@@ -20,7 +20,7 @@ nxCaeSpej1-pretext-to-tpf
          10,893,641  SUPER_X
          55,157,430  bp total
 
-nxCaeSpej1-pretext-to-tpf.haplotigs
+nxCaeSpej1-pretext-to-tpf.1.additional_haplotigs
              81,747  bp sequence (minus gaps)
     n = 4
              31,487  H_1

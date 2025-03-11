@@ -5,7 +5,7 @@ import sys
 import click
 
 from tola.assembly.format import format_agp, format_tpf
-from tola.assembly.parser import parse_agp, parse_tpf
+from tola.assembly.parser import format_from_file_extn, parse_agp, parse_tpf
 
 
 @click.command(
@@ -147,17 +147,6 @@ def report_overlaps(asm_name, pairs):
         f1, s1 = pr[0]
         f2, s2 = pr[1]
         click.echo(f"\nOverlap:\n{s1.name} {f1}\n{s2.name} {f2}", err=True)
-
-
-def format_from_file_extn(pth, default=None):
-    """
-    Guess the file format from the extension, or return the supplied default
-    """
-    if m := re.match(r"\.(agp|tpf|fa(?:sta)?)\w*$", pth.suffix, flags=re.IGNORECASE):
-        uc_fmt = m.group(1).upper()
-        return "FASTA" if uc_fmt.startswith("FA") else uc_fmt
-    else:
-        return default
 
 
 if __name__ == "__main__":

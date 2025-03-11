@@ -32,7 +32,7 @@ cut into:
        11,970,057  SCAFFOLD_3:6413103-18383159(+) Cut
 
 
-nxCaeSini1_1-pretext-to-tpf
+nxCaeSini1_1-pretext-to-tpf.1.primary
         152,385,837  bp sequence (minus gaps)
   Autosomes:
     n = 6
@@ -44,7 +44,7 @@ nxCaeSini1_1-pretext-to-tpf
     n = 1
              15,692  SCAFFOLD_15
 
-nxCaeSini1_1-pretext-to-tpf.haplotigs
+nxCaeSini1_1-pretext-to-tpf.1.additional_haplotigs
              54,697  bp sequence (minus gaps)
     n = 2
              31,436  H_1

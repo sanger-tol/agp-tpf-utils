@@ -116,7 +116,7 @@ cut into:
           402,121  SCAFFOLD_24:6393654-6795774(+) Cut Haplotig
 
 
-eaAstIrre1-pretext-to-tpf
+eaAstIrre1-pretext-to-tpf.1.primary
         476,369,490  bp sequence (minus gaps)
   Autosomes:
     n = 22
@@ -131,7 +131,7 @@ eaAstIrre1-pretext-to-tpf
               1,000  SCAFFOLD_273
          10,027,724  bp total
 
-eaAstIrre1-pretext-to-tpf.haplotigs
+eaAstIrre1-pretext-to-tpf.1.additional_haplotigs
          20,154,414  bp sequence (minus gaps)
     n = 44
           3,717,954  H_1
@@ -139,7 +139,7 @@ eaAstIrre1-pretext-to-tpf.haplotigs
              79,837  H_44
          20,154,414  bp total
 
-eaAstIrre1-pretext-to-tpf.contaminants
+eaAstIrre1-pretext-to-tpf.1.contaminants
           2,742,977  bp sequence (minus gaps)
     n = 34
             280,776  SCAFFOLD_64

@@ -55,7 +55,7 @@ cut into:
            93,912  scaffold_5:43081661-43175572(+) Cut Haplotig
 
 
-ngHelPoly1_1-pretext-to-tpf
+ngHelPoly1_1-pretext-to-tpf.1.primary
         655,943,875  bp sequence (minus gaps)
   Autosomes:
     n = 5
@@ -73,7 +73,7 @@ ngHelPoly1_1-pretext-to-tpf
               1,000  scaffold_1564
          21,059,812  bp total
 
-ngHelPoly1_1-pretext-to-tpf.haplotigs
+ngHelPoly1_1-pretext-to-tpf.1.additional_haplotigs
           2,164,462  bp sequence (minus gaps)
     n = 24
             263,000  H_1

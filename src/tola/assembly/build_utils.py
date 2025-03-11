@@ -47,18 +47,21 @@ class ScaffoldNamer:
         "Unloc",
     }
 
-    def make_scaffold_name(self, scaffold: Scaffold) -> None:
+    def make_scaffold_name(self, scaffold: Scaffold, fragment_tags=None) -> None:
         """
         Using the tags from Pretext in the Scaffold, work out what the
         haplotype is, if it has been named, and what its rank is.
         """
         scaffold_name = None
         haplotype = None
-        is_painted = False  # Has HiC contacts
+        is_painted = False  # Is a curated chromsome
         rank = None
         primary_tag = False
 
-        for tag in scaffold.fragment_tags():
+        if not fragment_tags:
+            fragment_tags = scaffold.fragment_tags()
+
+        for tag in fragment_tags:
             if tag == "Painted":
                 is_painted = True
             elif tag == "Target":
@@ -92,10 +95,10 @@ class ScaffoldNamer:
 
         if primary_tag:
             if haplotype:
-                self.primary_haplotype = haplotype
+                self.primary_haplotype = haplotype.lower()
             else:
                 if m := re.match(r"([^_]+)_", scaffold.rows[0].name):
-                    self.primary_haplotype = m.group(1)
+                    self.primary_haplotype = m.group(1).lower()
 
         if not scaffold_name:
             if is_painted:
@@ -116,9 +119,15 @@ class ScaffoldNamer:
                     lc_prefix = m.group(1).lower()
                     haplotype = self.haplotype_lc_dict.get(lc_prefix)
 
+        if primary_haplotype := self.primary_haplotype:
+            self.current_haplotype = (
+                "Primary" if haplotype.lower() == primary_haplotype else haplotype
+            )
+        else:
+            self.current_haplotype = haplotype
+
         self.current_scaffold_name = scaffold_name
         self.current_rank = rank
-        self.current_haplotype = haplotype
         self.unloc_n = 0
         self.unloc_scaffolds = []
 
@@ -296,7 +305,17 @@ class ChrNamer:
         for i, grp in enumerate(self.groups):
             grp.name_chromosome(chr_prefix, i + 1)
 
+    def check_for_painted_scaffolds_missing_haplotype_tag(self):
+        if len(self.haplotypes_seen) > 1 and None in self.haplotypes_seen:
+            untagged = "".join(
+                [f"  {scffld.name}\n" for hap, scffld in self.scaffolds if hap is None]
+            )
+            msg = f"Haplotype tag missing from Painted scaffolds:\n{untagged}"
+            raise TaggingError(msg)
+
     def build_groups(self):
+        self.check_for_painted_scaffolds_missing_haplotype_tag()
+
         first_haplotype, *other_haplotypes = self.haplotypes_seen
         group = self.new_group()
         last_haplotype = None
@@ -366,6 +385,7 @@ class ChrNamer:
 
         ignore = set(self.haplotypes_seen)
         ignore.add("Cut")
+        ignore.add("Painted")
         for grp in self.groups:
             row_count = grp.max_hap_set_count()
             for row_idx in range(row_count):
@@ -396,7 +416,7 @@ class ChrNamer:
                             cell.new_line(f"{s_length:,} bp")
 
                             # Show any tags on this scaffold
-                            for tag in sorted(scffld.fragment_tags()):
+                            for tag in sorted(scffld.original_tags or ()):
                                 if tag not in ignore:
                                     cell.new_line(tag)
 

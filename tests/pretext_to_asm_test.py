@@ -1,16 +1,40 @@
 import difflib
 import io
-import pathlib
 import tempfile
+from pathlib import Path
 
 import pytest
 from click.testing import CliRunner
 
-from tola.assembly.scripts.pretext_to_asm import cli
+from tola.assembly.scripts.pretext_to_asm import cli, parse_output_file
+
+
+def test_parse_output_file():
+    assert parse_output_file(Path("xx/aaa.2.fa")) == (
+        "FASTA",
+        Path("xx"),
+        "aaa",
+        "2",
+        ".fa",
+    )
+    assert parse_output_file(Path("xx/aaa.fasta")) == (
+        "FASTA",
+        Path("xx"),
+        "aaa",
+        "1",
+        ".fasta",
+    )
+    assert parse_output_file(Path("xx/aaa.agp")) == (
+        "AGP",
+        Path("xx"),
+        "aaa",
+        "1",
+        ".agp",
+    )
 
 
 def list_example_assemblies():
-    data_dir = pathlib.Path(__file__).parent / "data"
+    data_dir = Path(__file__).parent / "data"
     for xd in data_dir.iterdir():
         if xd.is_dir():
             yield xd
@@ -26,7 +50,7 @@ def test_assembly(specimen_dir):
 
     output_tpf = f"{specimen}-pretext-to-tpf.tpf"
     with tempfile.TemporaryDirectory() as tmp_dir:
-        tmp_path = pathlib.Path(tmp_dir)
+        tmp_path = Path(tmp_dir)
         args = (
             "--assembly",
             specimen_dir / input_tpf,

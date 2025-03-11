@@ -6,10 +6,13 @@ from tola.assembly.scaffold import Scaffold
 
 
 class Assembly:
-    def __init__(self, name, header=None, scaffolds=None, bp_per_texel=None):
+    def __init__(
+        self, name, header=None, scaffolds=None, bp_per_texel=None, curated=False
+    ):
         self.name = str(name)
         self.scaffolds = scaffolds if scaffolds else []
         self.header = header if header else []
+        self.curated = curated
         if bp_per_texel:
             self.bp_per_texel = bp_per_texel
 

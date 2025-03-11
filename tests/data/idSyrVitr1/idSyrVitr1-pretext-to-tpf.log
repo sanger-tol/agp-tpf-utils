@@ -1,7 +1,7 @@
 Pretext resolution = 11,890 bp per texel
 
 
-idSyrVitr1-pretext-to-tpf
+idSyrVitr1-pretext-to-tpf.1.primary
         388,720,741  bp sequence (minus gaps)
   Autosomes:
     n = 3
@@ -21,7 +21,7 @@ idSyrVitr1-pretext-to-tpf
               1,000  scaffold_492
           8,845,317  bp total
 
-idSyrVitr1-pretext-to-tpf.haplotigs
+idSyrVitr1-pretext-to-tpf.1.additional_haplotigs
             812,954  bp sequence (minus gaps)
     n = 1
             812,954  H_1

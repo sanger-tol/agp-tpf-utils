@@ -127,3 +127,14 @@ def lowercase_and_dash_to_underscore():
         string.ascii_uppercase + "-",
         string.ascii_lowercase + "_",
     )
+
+
+def format_from_file_extn(pth, default=None):
+    """
+    Guess the file format from the extension, or return the supplied default
+    """
+    if m := re.match(r"\.(agp|tpf|fa(?:sta)?)\w*$", pth.suffix, flags=re.IGNORECASE):
+        uc_fmt = m.group(1).upper()
+        return "FASTA" if uc_fmt.startswith("FA") else uc_fmt
+    else:
+        return default
