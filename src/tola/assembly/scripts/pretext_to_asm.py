@@ -61,6 +61,10 @@ def ul(txt):
       file. The haplotig scaffolds receive names 'H_1' to 'H_{it("n")}',
       sorted and numbered from longest to shortest.
 
+        {bd("Primary")} in a multi-haplotpye Pretext map where only one of the
+      haplotypes is being curated, is used to tag the first 'Painted' chromosome
+      in the curated haplotype.
+
         {bd("Singleton")} is used to flag chromsomes which were not found in
       any other haplotype.
 

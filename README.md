@@ -70,6 +70,7 @@ contain:
 - Haplotypes:
   - `Hap1`, `Hap2`…
 - `Painted` where fragment has HiC contacts.
+- `Primary` for tagging the only curated haplotype in a multi-haplotype PretextView map.
 - `Singleton` to flag chromosomes which were not found in any other haplotypes.
 - `Unloc` are fragments attached to chromosomes but unlocalised within them.
 - Sex Chromosomes:
