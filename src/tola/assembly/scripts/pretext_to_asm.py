@@ -54,6 +54,9 @@ def ul(txt):
       {it("Target")} tag in the PretextView AGP must still be individually
       tagged with{it("Contaminant")}.)
 
+        {bd("FalseDuplicate")} for tagging duplicated regions in multi-haplotype
+      Pretext maps which should be removed, not moved to another haplotype.
+
         {bd("Haplotig")} taggged scaffolds are saved in a separate 'Haplotigs'
       file. The haplotig scaffolds receive names 'H_1' to 'H_{it("n")}',
       sorted and numbered from longest to shortest.
@@ -111,19 +114,21 @@ def ul(txt):
         path_type=Path,
         dir_okay=False,
     ),
-    help="""Output file, usually a FASTA file.
+    help=f"""Output file template, typically: '<ToLID>.<VERSION>.fa'
+
+      {it("e.g.")} --output mVulVul1.2.fa
+
+      for version 2 of the assembly of 'mVulVul1'. If <VERSION> is not
+      specified, it defaults to '1'.
+
+      The output file type is determined from its extension. When the outuput is
+      FASTA ('.fa'), an AGP format file ('.fa.agp') is also written.
+
+      The names of output files created are printed to STDERR.
+
       If not given, prints to STDOUT in 'STR' format.
-      The output file type is determined from its extension. If the outuput is
-      FASTA ('.fa'), an AGP format file ('.fa.agp') is also written. Other
-      output files are named after the output file minus its extension.""",
+      """,
 )
-# @click.option(
-#     "--version",
-#     "-v",
-#     default="1",
-#     show_default=True,
-#     help="Version of the assembly, used when naming the output files.",
-# )
 @click.option(
     "--autosome-prefix",
     "-c",
@@ -136,7 +141,7 @@ def ul(txt):
     "-f",
     default=True,
     show_default=True,
-    help="Overwrite an existing output file.",
+    help="Overwrite any existing output files.",
 )
 @click.option(
     "--log-level",
@@ -201,7 +206,10 @@ def cli(
     if output_file:
         out_fmt, out_dir, out_root, asm_version, suffix = parse_output_file(output_file)
         write_info_yaml(output_file, stats, out_assemblies, clobber)
+
+        # Rename assemblies for output files
         out_assemblies = name_assemblies(out_assemblies, out_root, asm_version)
+
         write_assemblies(fai, out_fmt, out_dir, suffix, out_assemblies, clobber)
         write_chr_csv_files(out_dir, stats, out_assemblies, clobber)
         write_chr_report_csv(output_file, stats, out_assemblies, clobber)
@@ -248,12 +256,13 @@ def setup_logging(log_level, output_file, write_log, clobber):
 
 
 def name_assemblies(asm_dict, root: str, version: str):
+    """Rename assemblies for their output files"""
 
     ret_asm = {}
 
     # A combined Pretext map of two or more haplotypes where only one of them
     # has been curated. One of the painted chromosomes in the curated
-    # haplotype has been tagged with "Primary"
+    # haplotype has been tagged with 'Primary'
     if asm_dict.get("Primary"):
         # <ToLID>.1.primary.curated.fa  <- Sequence from "Hap1" tagged scaffolds)
         # <ToLID>.1.primary.chromosome.list.csv
@@ -269,6 +278,8 @@ def name_assemblies(asm_dict, root: str, version: str):
                 asm.name = f"{root}.{version}.{asm_key.lower()}s"
             ret_asm[asm_key] = asm
         if other_asm:
+            # Join the other haplotypes in the other assemblies for an
+            # 'all_haplotigs' file
             htigs = merge_assemblies(other_asm)
             htigs.curated = True
             new_key = "all_haplotigs"

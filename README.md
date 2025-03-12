@@ -65,6 +65,7 @@ Single words appended in tab-delimted columns beyond column 9, they can
 contain:
 
 - `Contaminant` or `Target`
+- `FalseDuplicate`
 - `Haplotig` for haplotype-specific contigs.
 - Haplotypes:
   - `Hap1`, `Hap2`…

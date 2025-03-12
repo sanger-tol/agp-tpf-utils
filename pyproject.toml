@@ -22,7 +22,6 @@ devel = [
 [project.scripts]
 asm-format = "tola.assembly.scripts.asm_format:cli"
 pretext-to-asm = "tola.assembly.scripts.pretext_to_asm:cli"
-pretext-to-tpf = "tola.assembly.scripts.pretext_to_asm:cli"
 find-overlaps = "tola.assembly.scripts.find_overlaps:cli"
 
 [tool.setuptools.packages.find]
