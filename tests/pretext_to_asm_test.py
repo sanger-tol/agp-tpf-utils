@@ -62,7 +62,6 @@ def test_assembly(specimen_dir):
             "--pretext",
             specimen_dir / pretext_agp,
             "--output",
-            # specimen_dir / output_tpf,
             tmp_path / output_tpf,
             "--write-log",
         )
