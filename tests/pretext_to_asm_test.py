@@ -1,5 +1,6 @@
 import difflib
 import io
+import re
 import tempfile
 from pathlib import Path
 
@@ -43,12 +44,16 @@ def list_example_assemblies():
 @pytest.mark.parametrize("specimen_dir", list_example_assemblies())
 def test_assembly(specimen_dir):
     specimen = specimen_dir.name
-    input_tpf = f"{specimen}-input.tpf"
-    pretext_agp = f"{specimen}-pretext.agp"
+    version = ""
+    if m := re.search(r"_(\d+)$", specimen):
+        version = "." + m.group(1)
+        specimen = specimen[: -len(version)]
+    input_tpf = f"{specimen}-input{version}.tpf"
+    pretext_agp = f"{specimen}-pretext{version}.agp"
     assert (specimen_dir / input_tpf).exists()
     assert (specimen_dir / pretext_agp).exists()
 
-    output_tpf = f"{specimen}-pretext-to-tpf.tpf"
+    output_tpf = f"{specimen}-pretext-to-tpf{version}.tpf"
     with tempfile.TemporaryDirectory() as tmp_dir:
         tmp_path = Path(tmp_dir)
         args = (
@@ -57,6 +62,7 @@ def test_assembly(specimen_dir):
             "--pretext",
             specimen_dir / pretext_agp,
             "--output",
+            # specimen_dir / output_tpf,
             tmp_path / output_tpf,
             "--write-log",
         )

@@ -65,7 +65,7 @@ def ul(txt):
       haplotypes is being curated, is used to tag the first 'Painted' chromosome
       in the curated haplotype.
 
-        {bd("Singleton")} is used to flag chromsomes which were not found in
+        {bd("Singleton")} is used to flag autosomes which were not found in
       any other haplotype.
 
         {bd("Unloc")} tagged scaffolds receive names '{it("CHR")}_unloc_1'
@@ -327,7 +327,7 @@ def name_assemblies(asm_dict, root: str, version: str):
 
 
 def merge_assemblies(asm_list):
-    new = Assembly()
+    new = Assembly("merge")
     for asm in asm_list:
         for scffld in asm.scaffolds:
             new.add_scaffold(scffld)

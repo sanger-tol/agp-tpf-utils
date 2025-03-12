@@ -90,16 +90,22 @@ class ScaffoldNamer:
                     )
                     raise TaggingError(msg)
                 else:
-                    # The first occurance of a haplotype tag sets its case.
-                    # i.e. "Hap1" will be used if it is seen before "HAP1".
-                    haplotype = self.haplotype_lc_dict.setdefault(tag.lower(), tag)
+                    haplotype = self.get_set_haplotype(tag)
 
-        if primary_tag:
-            if haplotype:
-                self.primary_haplotype = haplotype.lower()
-            else:
-                if m := re.match(r"([^_]+)_", scaffold.rows[0].name):
-                    self.primary_haplotype = m.group(1).lower()
+        # If we don't have a haplotype from a tag, try to get it from the
+        # first row of the scaffold
+        if not haplotype:
+            haplotype = self.haplotype_from_first_row_name(scaffold)
+
+        if primary_tag and not self.primary_haplotype:
+            if not haplotype:
+                msg = (
+                    f"Failed to determine haplotype for Primary"
+                    f" from scaffold:\n\n{scaffold}"
+                )
+                raise TaggingError(msg)
+            self.primary_haplotype = self.get_set_haplotype(haplotype)
+            logging.debug(f"Primary haplotype is '{self.primary_haplotype}'")
 
         if not scaffold_name:
             if is_painted:
@@ -112,18 +118,8 @@ class ScaffoldNamer:
                 scaffold_name = scaffold.rows[0].name
                 rank = 3
 
-                # If we don't have a haplotype from a tag, does its name begin
-                # with the name of a haplotype?  (This will fail if unplaced
-                # contigs from a haplotype appear before the first Scaffold
-                # assigned to that haplotype in the Pretext Assembly.)
-                if not haplotype and (m := re.match(r"([^_]+)_", scaffold_name)):
-                    lc_prefix = m.group(1).lower()
-                    haplotype = self.haplotype_lc_dict.get(lc_prefix)
-
-        if primary_haplotype := self.primary_haplotype:
-            self.current_haplotype = (
-                "Primary" if haplotype.lower() == primary_haplotype else haplotype
-            )
+        if prim := self.primary_haplotype:
+            self.current_haplotype = "Primary" if haplotype == prim else haplotype
         else:
             self.current_haplotype = haplotype
 
@@ -166,6 +162,19 @@ class ScaffoldNamer:
         scaffold.rank = rank
         scaffold.original_name = original_name
         scaffold.original_tags = scaffold_tags
+
+    def haplotype_from_first_row_name(self, scaffold):
+        if m := re.search(r"^([^_]+)_.+_\d+$", scaffold.rows[0].name):
+            return self.get_set_haplotype(m.group(1))
+        else:
+            return None
+
+    def get_set_haplotype(self, haplotype):
+        """
+        The first occurance of a haplotype tag sets its case.
+        i.e. "Hap1" will be used if it is seen before "HAP1".
+        """
+        return self.haplotype_lc_dict.setdefault(haplotype.lower(), haplotype)
 
     def haplotig_name(self) -> str:
         self.haplotig_n += 1
