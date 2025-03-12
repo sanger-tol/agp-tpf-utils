@@ -251,6 +251,9 @@ def name_assemblies(asm_dict, root: str, version: str):
 
     ret_asm = {}
 
+    # A combined Pretext map of two or more haplotypes where only one of them
+    # has been curated. One of the painted chromosomes in the curated
+    # haplotype has been tagged with "Primary"
     if asm_dict.get("Primary"):
         # <ToLID>.1.primary.curated.fa  <- Sequence from "Hap1" tagged scaffolds)
         # <ToLID>.1.primary.chromosome.list.csv
@@ -272,10 +275,12 @@ def name_assemblies(asm_dict, root: str, version: str):
             htigs.name = f"{root}.{version}.{new_key}"
             ret_asm[new_key] = htigs
 
+    # A single haplotype Pretext map
     elif asm_dict.get(None):
         # <ToLID>.1.primary.curated.fa
         # <ToLID>.1.primary.chromosome.list.csv
-        # <ToLID>.1.additional_haplotigs.curated.fa <- Sequence from "Haplotig" tagged scaffolds
+        # <ToLID>.1.additional_haplotigs.curated.fa <- Sequence from "Haplotig"
+        #                                              tagged scaffolds
         other_asm = []
         for asm_key, asm in asm_dict.items():
             if asm_key is None:
@@ -290,10 +295,10 @@ def name_assemblies(asm_dict, root: str, version: str):
                 asm.name = f"{root}.{version}.{asm_key.lower()}s"
                 ret_asm[asm_key] = asm
 
+    # Two or more haplotypes in a combined map
     else:
         # <ToLID>.hap1.1.primary.curated.fa
         # <ToLID>.hap1.1.primary.chromosome.list.csv
-
         # <ToLID>.hap2.1.primary.curated.fa
         # <ToLID>.hap2.1.primary.chromosome.list.csv
         for asm_key, asm in asm_dict.items():

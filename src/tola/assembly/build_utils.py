@@ -42,6 +42,7 @@ class ScaffoldNamer:
     OTHER_KNOWN_TAGS = {
         "Contaminant",
         "Cut",
+        "FalseDuplicate",
         "Haplotig",
         "Singleton",
         "Unloc",
@@ -140,8 +141,13 @@ class ScaffoldNamer:
     ) -> None:
         name = self.current_scaffold_name
         rank = self.current_rank
-        if "Contaminant" in fragment.tags:
+        if "Contaminant" in fragment.tags or (
+            self.target_tags and "Target" not in scaffold_tags
+        ):
             scaffold.tag = "Contaminant"
+            rank = 3
+        if "FalseDuplicate" in fragment.tags:
+            scaffold.tag = "FalseDuplicate"
             rank = 3
         elif "Haplotig" in fragment.tags:
             name = self.haplotig_name()
@@ -154,9 +160,6 @@ class ScaffoldNamer:
                 raise ValueError(msg)
             name = self.unloc_name()
             self.unloc_scaffolds.append(scaffold)
-        elif self.target_tags and "Target" not in scaffold_tags:
-            scaffold.tag = "Contaminant"
-            rank = 3
 
         scaffold.name = name
         scaffold.haplotype = self.current_haplotype
