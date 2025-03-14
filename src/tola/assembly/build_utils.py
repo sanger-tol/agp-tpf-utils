@@ -217,6 +217,13 @@ class ChrGroup:
     def haplotype_dict(self, hap_name):
         return self.data.get(hap_name)
 
+    def add_scaffold_to_haplotype(self, hap_name, scaffold):
+        logging.debug(f"Adding scaffold to '{hap_name}':\n{scaffold}")
+        self.data.get(hap_name).setdefault(scaffold.original_name, []).append(scaffold)
+
+    def original_tags_of_haplotype_scaffold(self, hap_name, scffld_name):
+        return self.haplotype_dict(hap_name)[scffld_name][0].original_tags or ()
+
     def length_of_first_haplotype(self):
         first, *_ = self.data.values()
         orig, *others = first
@@ -348,7 +355,9 @@ class ChrNamer:
                     elif (
                         orig != last_orig  # i.e. not an Unloc
                         and "Singleton"
-                        in group.haplotype_dict(haplotype)[last_orig][0].original_tags
+                        in group.original_tags_of_haplotype_scaffold(
+                            haplotype, last_orig
+                        )
                     ):
                         # Previous scaffold is tagged as a Singleton
                         group = self.new_group()
@@ -377,7 +386,7 @@ class ChrNamer:
             #           },
             #       }
             #   )
-            group.haplotype_dict(haplotype).setdefault(orig, []).append(scffld)
+            group.add_scaffold_to_haplotype(haplotype, scffld)
             last_haplotype = haplotype
             last_orig = orig
 

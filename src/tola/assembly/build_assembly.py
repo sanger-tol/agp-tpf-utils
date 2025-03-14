@@ -313,6 +313,7 @@ class BuildAssembly(Assembly):
                     haplotype=scffld.haplotype,
                     rank=scffld.rank,
                     original_name=scffld.original_name,
+                    original_tags=scffld.original_tags,
                 ),
             )
             if isinstance(scffld, OverlapResult):
