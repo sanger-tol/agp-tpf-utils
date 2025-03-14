@@ -73,13 +73,23 @@ class AssemblyStats:
 
         ranked_names_lengths = {}
         for rank, scaffolds in ranked_scaffolds.items():
-            # If this isn't the Unplaced rank, merge in any Unlocs before
-            # storing lengths
-            if rank != 3:
-                scaffolds = self.merge_unlocs(scaffolds)
             name_length = {}
-            for scffld in scaffolds:
-                name_length[scffld.name] = scffld.fragments_length
+
+            if rank == 3:
+                for scffld in scaffolds:
+                    name_length[scffld.name] = scffld.fragments_length
+            else:
+                current_name = None
+                last_orig = None
+                for scffld in scaffolds:
+                    orig = scffld.original_name
+                    if orig != last_orig:
+                        current_name = scffld.name
+                        last_orig = orig
+                    name_length[current_name] = (
+                        name_length.get(current_name, 0) + scffld.fragments_length
+                    )
+
             ranked_names_lengths[rank] = name_length
 
         return ranked_names_lengths
@@ -91,27 +101,21 @@ class AssemblyStats:
 
     def chromosome_name_csv(self, asm: Assembly):
         prefix = self.autosome_prefix
-        current_root = None
-        current_chr = None
+        last_orig = None
+        chr_name = None
 
         csv_str = io.StringIO()
         for scffld in asm.scaffolds:
             if scffld.rank in (1, 2):
                 name = scffld.name
-                if current_root and name.startswith(current_root):
-                    chr_name = current_chr
+                orig = scffld.original_name
+                if last_orig and orig == last_orig:
+                    localised = "no"
                 else:
-                    current_root = name
-                    chr_name = current_chr = name.replace(prefix, "", 1)
-                csv_str.write(
-                    ",".join(
-                        (
-                            name,
-                            chr_name,
-                            "yes" if name == current_root else "no",
-                        )
-                    )
-                )
+                    localised = "yes"
+                    chr_name = name.replace(prefix, "", 1)
+                    last_orig = orig
+                csv_str.write(",".join((name, chr_name, localised)))
                 csv_str.write("\n")
 
         return csv_str.getvalue() if csv_str.tell() else None
@@ -135,25 +139,28 @@ class AssemblyStats:
         head_pos = csv_str.tell()
 
         prefix = self.autosome_prefix
-        current_root = None
-        current_chr = None
+        chr_name = None
+        last_orig = None
         for hap, asm in hap_asm.items():
             if not hap:
                 hap = "Primary"
             for scffld in asm.scaffolds:
                 if scffld.rank in (1, 2):
                     name = scffld.name
-                    if current_root and name.startswith(current_root):
-                        chr_name = current_chr
+                    orig = scffld.original_name
+                    if last_orig and orig == last_orig:
+                        # Unlocs share the same original_name
+                        localised = "false"
                     else:
-                        current_root = name
-                        chr_name = current_chr = name.replace(prefix, "", 1)
+                        localised = "true"
+                        last_orig = orig
+                        chr_name = name.replace(prefix, "", 1)
                     csvr.writerow(
                         (
                             hap,
                             name,
                             chr_name,
-                            "true" if name == current_root else "false",
+                            localised,
                             scffld.original_name,
                             scffld.length,
                             scffld.fragments_length,
@@ -274,13 +281,3 @@ class AssemblyStats:
                     f" which is longer than the shortest chromosome ({shortest:,d} bp)"
                 )
         return msg_list if msg_list else None
-
-    def merge_unlocs(self, scaffolds: list[Scaffold]):
-        this = Scaffold(scaffolds[0].name)
-        merged = [this]
-        for scffld in scaffolds:
-            if not scffld.name.startswith(this.name):
-                this = Scaffold(scffld.name)
-                merged.append(this)
-            this.append_scaffold(scffld)
-        return merged
