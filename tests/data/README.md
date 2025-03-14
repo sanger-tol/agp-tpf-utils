@@ -36,9 +36,15 @@ haplotypes.
 Two haplotypes `HAP1` and `HAP2` with 38 autosomes, plus `W` and `Z` sex
 chromosomes.
 
+### [nxCaeAgri1](nxCaeAgri1)
+
+Nemtode with straight roman numeral naming: `I`, `II`, `III`, `IV`, `V` and
+`X`.
+
 ### [nxCaeSpej1](nxCaeSpej1)
 
-Nematode with example of roman numeral chromosome naming.
+Nematode with example of roman numeral chromosome naming labelling chromosomes
+recombinations: `I_II`, `II_I`, `III`, `IV`, `V` and `X`.
 
 ### [csSphGirg1](csSphGirg1)
 
@@ -47,3 +53,5 @@ Test of `Target` tagging.
 ### [ilLyoCler1_2](ilLyoCler1_2)
 
 Moth with a `Primary` tag set on `HAP1`.
+
+
