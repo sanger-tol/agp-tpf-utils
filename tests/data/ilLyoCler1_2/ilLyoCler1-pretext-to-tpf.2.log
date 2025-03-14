@@ -1,10 +1,84 @@
 Pretext resolution = 7,762 bp per texel
 
 Contig:
+          213,196  HAP1_SCAFFOLD_1:3130268-3343463(+)
+cut into:
+           67,607  HAP1_SCAFFOLD_1:3130268-3197874(+) Cut Primary
+          145,589  HAP1_SCAFFOLD_1:3197875-3343463(+) Cut Primary
+
+Contig:
+          269,023  HAP1_SCAFFOLD_3:9154923-9423945(+)
+cut into:
+          104,943  HAP1_SCAFFOLD_3:9154923-9259865(+) Cut
+          164,080  HAP1_SCAFFOLD_3:9259866-9423945(+) Cut
+
+Contig:
+          160,670  HAP1_SCAFFOLD_2:1-160670(+)
+cut into:
+           23,285  HAP1_SCAFFOLD_2:1-23285(+) Cut Unloc
+          137,385  HAP1_SCAFFOLD_2:23286-160670(+) Cut Z
+
+Contig:
+           68,347  HAP1_SCAFFOLD_9:351610-419956(+)
+cut into:
+           44,244  HAP1_SCAFFOLD_9:351610-395853(+) Cut
+           24,103  HAP1_SCAFFOLD_9:395854-419956(+) Cut
+
+Contig:
+          245,283  HAP1_SCAFFOLD_9:3587874-3833156(+)
+cut into:
+          106,758  HAP1_SCAFFOLD_9:3587874-3694631(+) Cut
+          138,525  HAP1_SCAFFOLD_9:3694632-3833156(+) Cut
+
+Contig:
+           99,450  HAP1_SCAFFOLD_10:2958683-3058132(+)
+cut into:
+           52,908  HAP1_SCAFFOLD_10:2958683-3011590(+) Cut
+           46,542  HAP1_SCAFFOLD_10:3011591-3058132(+) Cut
+
+Contig:
+          719,592  HAP1_SCAFFOLD_11:5972230-6691821(+)
+cut into:
+           43,190  HAP1_SCAFFOLD_11:5972230-6015419(+) Cut
+          676,402  HAP1_SCAFFOLD_11:6015420-6691821(+) Cut
+
+Contig:
+          226,834  HAP1_SCAFFOLD_13:678432-905265(+)
+cut into:
+           58,943  HAP1_SCAFFOLD_13:678432-737374(+) Cut Unloc
+          167,891  HAP1_SCAFFOLD_13:737375-905265(+) Cut
+
+Contig:
+          641,812  HAP1_SCAFFOLD_14:1784935-2426746(+)
+cut into:
+           54,620  HAP1_SCAFFOLD_14:1784935-1839554(+) Cut
+          587,192  HAP1_SCAFFOLD_14:1839555-2426746(+) Cut
+
+Contig:
+          338,286  HAP1_SCAFFOLD_16:6410910-6749195(+)
+cut into:
+          101,267  HAP1_SCAFFOLD_16:6410910-6512176(+) Cut
+           93,142  HAP1_SCAFFOLD_16:6512177-6605318(+) Cut Haplotig
+           77,619  HAP1_SCAFFOLD_16:6605319-6682937(+) Cut
+           66,258  HAP1_SCAFFOLD_16:6682938-6749195(+) Cut
+
+Contig:
+           85,530  HAP1_SCAFFOLD_22:23409-108938(+)
+cut into:
+           23,162  HAP1_SCAFFOLD_22:23409-46570(+) Cut
+           62,368  HAP1_SCAFFOLD_22:46571-108938(+) Cut
+
+Contig:
           205,524  HAP1_SCAFFOLD_22:1634983-1840506(+)
 cut into:
            26,049  HAP1_SCAFFOLD_22:1634983-1661031(+) Cut
           179,475  HAP1_SCAFFOLD_22:1661032-1840506(+) Cut
+
+Contig:
+           54,552  HAP1_SCAFFOLD_23:1366734-1421285(+)
+cut into:
+           30,396  HAP1_SCAFFOLD_23:1366734-1397129(+) Cut
+           24,156  HAP1_SCAFFOLD_23:1397130-1421285(+) Cut
 
 Contig:
           142,700  HAP1_SCAFFOLD_24:66790-209489(+)
@@ -25,6 +99,12 @@ cut into:
            23,611  HAP1_SCAFFOLD_25:3228922-3252532(+) Cut
 
 Contig:
+          289,004  HAP1_SCAFFOLD_17:1085994-1374997(+)
+cut into:
+           70,519  HAP1_SCAFFOLD_17:1085994-1156512(+) Cut
+          218,485  HAP1_SCAFFOLD_17:1156513-1374997(+) Cut
+
+Contig:
           156,773  HAP1_SCAFFOLD_28:3086907-3243679(+)
 cut into:
           118,730  HAP1_SCAFFOLD_28:3086907-3205636(+) Cut
@@ -40,19 +120,31 @@ Contig:
           672,410  HAP1_SCAFFOLD_31:207194-879603(+)
 cut into:
           429,277  HAP1_SCAFFOLD_31:207194-636470(+) Cut
-          243,133  HAP1_SCAFFOLD_31:636471-879603(+) Cut
+          243,133  HAP1_SCAFFOLD_31:636471-879603(+) Cut Haplotig
 
 Contig:
-          338,286  HAP1_SCAFFOLD_16:6410910-6749195(+)
+           83,373  HAP1_SCAFFOLD_125:1-83373(+)
 cut into:
-          272,028  HAP1_SCAFFOLD_16:6410910-6682937(+) Cut
-           66,258  HAP1_SCAFFOLD_16:6682938-6749195(+) Cut
+           62,094  HAP1_SCAFFOLD_125:1-62094(+) Cut
+           21,279  HAP1_SCAFFOLD_125:62095-83373(+) Cut Haplotig
+
+Contig:
+           54,219  HAP1_SCAFFOLD_18:1-54219(+)
+cut into:
+           23,285  HAP1_SCAFFOLD_18:1-23285(+) Cut Haplotig
+           30,934  HAP1_SCAFFOLD_18:23286-54219(+) Cut
 
 Contig:
           735,795  HAP1_SCAFFOLD_10:580752-1316546(+)
 cut into:
           102,290  HAP1_SCAFFOLD_10:580752-683041(+) Cut
           633,505  HAP1_SCAFFOLD_10:683042-1316546(+) Cut
+
+Contig:
+          172,648  HAP1_SCAFFOLD_22:902461-1075108(+)
+cut into:
+           98,816  HAP1_SCAFFOLD_22:902461-1001276(+) Cut
+           73,832  HAP1_SCAFFOLD_22:1001277-1075108(+) Cut
 
 Contig:
           283,000  HAP1_SCAFFOLD_25:4728644-5011643(+)
@@ -67,31 +159,45 @@ cut into:
            85,380  HAP1_SCAFFOLD_25:5045191-5130570(+) Cut
            33,246  HAP1_SCAFFOLD_25:5130571-5163816(+) Cut
 
+Contig:
+          127,923  HAP1_SCAFFOLD_3:3327501-3455423(+)
+cut into:
+           56,658  HAP1_SCAFFOLD_3:3327501-3384158(+) Cut
+           71,265  HAP1_SCAFFOLD_3:3384159-3455423(+) Cut
+
 
 ilLyoCler1-pretext-to-tpf.2.primary
-        257,151,530  bp sequence (minus gaps)
+        256,383,505  bp sequence (minus gaps)
   Autosomes:
     n = 30
-          9,947,391  SUPER_1
+         10,335,324  SUPER_1
                 ...  ...
-          3,722,770  SUPER_30
-        201,646,699  bp total
+          4,020,765  SUPER_30
+        210,239,639  bp total
   Named:
     n = 1
-         12,410,721  SUPER_Z
+         12,870,137  SUPER_Z
   Unplaced:
-    n = 1785
-            402,909  HAP1_SCAFFOLD_34
+    n = 1696
+            316,742  HAP1_SCAFFOLD_39
                 ...  ...
               1,000  HAP1_SCAFFOLD_1838
-         43,094,110  bp total
+         33,273,729  bp total
+
+ilLyoCler1-pretext-to-tpf.2.haplotigs
+            817,140  bp sequence (minus gaps)
+    n = 10
+            243,133  H_1
+                ...  ...
+             21,279  H_10
+            817,140  bp total
 
 ilLyoCler1-pretext-to-tpf.2.all_haplotigs
-        250,708,070  bp sequence (minus gaps)
-    n = 5034
+        250,658,955  bp sequence (minus gaps)
+    n = 5033
           4,961,150  HAP2_SCAFFOLD_1
                 ...  ...
               1,000  HAP2_SCAFFOLD_5041
-        250,708,070  bp total
+        250,658,955  bp total
 
-Curation made 12 cuts in contigs, 48 breaks at gaps and 81 joins
+Curation made 30 cuts in contigs, 129 breaks at gaps and 242 joins

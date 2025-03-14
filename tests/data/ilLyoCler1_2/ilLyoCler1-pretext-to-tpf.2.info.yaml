@@ -2,4 +2,4 @@ assemblies:
   HAP2:
     manual_breaks: 5
     manual_joins: 5
-manual_haplotig_removals: 0
+manual_haplotig_removals: 10
