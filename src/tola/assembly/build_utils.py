@@ -126,7 +126,7 @@ class ScaffoldNamer:
         self.current_scaffold_name = scaffold_name
         self.current_rank = rank
         self.unloc_n = 0
-        self.unloc_scaffolds = []
+        self.unloc_scaffolds.append([])
 
     def label_scaffold(
         self,
@@ -155,7 +155,7 @@ class ScaffoldNamer:
                 msg = f"Unloc in unpainted scaffold {original_name!r}: {fragment}"
                 raise ValueError(msg)
             name = self.unloc_name()
-            self.unloc_scaffolds.append(scaffold)
+            self.unloc_scaffolds[-1].append(scaffold)
 
         scaffold.name = name
         scaffold.haplotype = self.current_haplotype
@@ -188,7 +188,8 @@ class ScaffoldNamer:
         self.rename_by_size(self.haplotig_scaffolds)
 
     def rename_unlocs_by_size(self) -> None:
-        self.rename_by_size(self.unloc_scaffolds)
+        for unloc_list in self.unloc_scaffolds:
+            self.rename_by_size(unloc_list)
 
     def rename_by_size(self, scaffolds: list[Scaffold]) -> None:
         if not scaffolds:

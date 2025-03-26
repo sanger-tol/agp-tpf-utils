@@ -72,6 +72,7 @@ class BuildAssembly(Assembly):
         self.find_assembly_overlaps(prtxt_asm, input_asm)
         self.discard_overhanging_fragments()
         self.cut_remaining_overhangs()
+        self.scaffold_namer.rename_unlocs_by_size()
         self.scaffold_namer.rename_haplotigs_by_size()
         self.add_missing_scaffolds_from_input(input_asm)
 
@@ -98,7 +99,6 @@ class BuildAssembly(Assembly):
                         self.store_fragments_found(found)
                 else:
                     logging.warning(f"No overlaps found for: {prtxt_frag}")
-            scaffold_namer.rename_unlocs_by_size()
 
     def discard_overhanging_fragments(self) -> None:
         multi = self.fragments_found_more_than_once
