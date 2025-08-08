@@ -6,14 +6,37 @@ project, where the combination of long read sequencing and HiC data is used
 to produce whole genome assemblies. It is not therefore intended to cover the
 full range of AGP and TPF syntax.
 
+## Installation
+
+Installation with [uv](https://docs.astral.sh/uv/) is recommended. First
+install `uv` itself, following the instructions on
+[Astral's web page](https://docs.astral.sh/uv/), which on MacOS or Linux is to
+run:
+
+```sh
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+then, to install the scripts to be available to your user account, install a
+recent Python followed by these utilities:
+
+```sh
+uv python install 3.13
+uv tool install 'git+https://github.com/sanger-tol/agp-tpf-utils'
+```
+
 ## Scripts
 
-Added to your `PATH` if the suggested development venv is set up. Run with
-`--help` for usage.
+Run with `--help` for usage.
 
 ### [`asm-format`](src/tola/assembly/scripts/asm_format.py)
 
 Parses and reformats AGP and TPF files, converting into either format.
+
+### [`find-overlaps`](src/tola/assembly/scripts/find_overlaps.py)
+
+Finds overlapping entries within AGP or TPF assembly files. Useful for
+debugging.
 
 ### [`pretext-to-asm`](src/tola/assembly/scripts/pretext_to_asm.py)
 
