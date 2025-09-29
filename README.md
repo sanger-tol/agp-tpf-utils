@@ -8,6 +8,8 @@ full range of AGP and TPF syntax.
 
 ## Installation
 
+### uv
+
 Installation with [uv](https://docs.astral.sh/uv/) is recommended. First
 install `uv` itself, following the instructions on
 [Astral's web page](https://docs.astral.sh/uv/), which on MacOS or Linux is to
@@ -24,6 +26,30 @@ recent Python followed by these utilities:
 uv python install 3.13
 uv tool install 'git+https://github.com/sanger-tol/agp-tpf-utils'
 ```
+
+### Pixi
+
+Installation can also be performed with [pixi](https://pixi.sh/latest/) (which also uses the `uv` library for python packages). Follow the instructions on the installation page to install `pixi`.
+
+If a pixi toml is not already present one can be created using:
+
+```sh
+# See docs for how add extra supported platforms and channels
+pixi init -c conda-forge
+```
+
+Then install the package into it's own environment:
+
+```sh
+# Add python from conda-forge channel to a feature (package collection)
+pixi add --feature sanger-curation-utils python=3.13
+# Add this tool to the feature.
+pixi add --feature sanger-curation-utils --pypi "tola-agp-tpf-utils@git+https://github.com/sanger-tol/agp-tpf-utils"
+# Add feature to environment
+pixi workspace environment add curation --feature sanger-curation-utils
+```
+
+Use `pixi shell -e curation` to enter the environment.
 
 ## Scripts
 
