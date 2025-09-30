@@ -29,12 +29,14 @@ uv tool install 'git+https://github.com/sanger-tol/agp-tpf-utils'
 
 ### Pixi
 
-Installation can also be performed with [pixi](https://pixi.sh/latest/) (which also uses the `uv` library for python packages). Follow the instructions on the installation page to install `pixi`.
+Installation into an isolated, reproducible environment can be achieved using
+[pixi](https://pixi.sh/). Follow the instructions on the
+[installation page](https://pixi.sh/latest/installation/) to install `pixi`.
 
-If a pixi toml is not already present one can be created using:
+To create a new environment in the current directory, using the `conda-forge`
+channel:
 
 ```sh
-# See docs for how add extra supported platforms and channels
 pixi init -c conda-forge
 ```
 
@@ -42,11 +44,11 @@ Then install the package into it's own environment:
 
 ```sh
 # Add python from conda-forge channel to a feature (package collection)
-pixi add --feature sanger-curation-utils python=3.13
-# Add this tool to the feature.
-pixi add --feature sanger-curation-utils --pypi "tola-agp-tpf-utils@git+https://github.com/sanger-tol/agp-tpf-utils"
+pixi add --feature tol-curation-utils python=3.13
 # Add feature to environment
-pixi workspace environment add curation --feature sanger-curation-utils
+pixi workspace environment add curation --feature tol-curation-utils
+# Add this tool to the feature.
+pixi add --feature tol-curation-utils --pypi "tola-agp-tpf-utils@git+https://github.com/sanger-tol/agp-tpf-utils"
 ```
 
 Use `pixi shell -e curation` to enter the environment.
