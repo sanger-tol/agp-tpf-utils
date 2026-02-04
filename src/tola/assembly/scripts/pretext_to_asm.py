@@ -438,7 +438,9 @@ def get_output_filehandle(path, clobber, mode=""):
     return out_fh
 
 
-def parse_assembly_file(path, default_format=None):
+def parse_assembly_file(
+    path: Path, default_format: str = None
+) -> tuple[Assembly, FastaIndex | None]:
     fmt = format_from_file_extn(path, default_format)
     if fmt == "AGP":
         return parse_agp(path.open(), path.stem), None

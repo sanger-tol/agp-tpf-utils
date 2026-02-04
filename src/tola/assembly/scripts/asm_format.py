@@ -6,6 +6,7 @@ import click
 
 from tola.assembly.format import format_agp, format_tpf
 from tola.assembly.parser import format_from_file_extn, parse_agp, parse_tpf
+from tola.fasta.index import FastaIndex
 
 
 @click.command(
@@ -26,7 +27,7 @@ from tola.assembly.parser import format_from_file_extn, parse_agp, parse_tpf
     "--input-format",
     "-i",
     type=click.Choice(
-        ["AGP", "TPF"],
+        ["AGP", "TPF", "FASTA"],
         case_sensitive=False,
     ),
     help="""Format of input. Automatically determined from each input file's
@@ -81,32 +82,30 @@ def cli(
     if input_files:
         for pth in input_files:
             # Select the format of the input file
-            if input_format:
-                in_fmt = input_format
-            else:
-                in_fmt = format_from_file_extn(pth, default="AGP")
+            in_fmt = input_format or format_from_file_extn(pth, default="AGP")
 
             # Select the name of the assembly
             asm_name = assembly_name if assembly_name else pth.stem
 
-            with pth.open("r") as in_fh:
-                try:
-                    process_fh(
-                        in_fh,
-                        in_fmt,
-                        asm_name,
-                        out_fh,
-                        output_format,
-                        qc_overlaps,
-                    )
-                except Exception as e:
-                    msg = f"Error processing file '{pth}'"
-                    raise ValueError(msg) from e
+            try:
+                process_file(
+                    pth,
+                    in_fmt,
+                    asm_name,
+                    out_fh,
+                    output_format,
+                    qc_overlaps,
+                )
+            except Exception as e:
+                msg = f"Error processing file '{pth}'"
+                raise ValueError(msg) from e
     else:
         # Process STDIN
         in_fmt = input_format if input_format else "AGP"
+        if in_fmt == "FASTA":
+            sys.exit("Cannot process FASTA on STDIN")
         asm_name = assembly_name if assembly_name else "stdin"
-        process_fh(
+        process_file(
             sys.stdin,
             in_fmt,
             asm_name,
@@ -116,11 +115,17 @@ def cli(
         )
 
 
-def process_fh(in_fh, in_fmt, asm_name, out_fh, out_fmt, qc_overlaps):
+def process_file(in_file, in_fmt, asm_name, out_fh, out_fmt, qc_overlaps):
+    in_fh = in_file if in_file is sys.stdin else in_file.open("r")
+
     if in_fmt == "AGP":
         asm = parse_agp(in_fh, asm_name)
     elif in_fmt == "TPF":
         asm = parse_tpf(in_fh, asm_name)
+    elif in_fmt == "FASTA":
+        fai = FastaIndex(in_file)
+        fai.auto_load()
+        asm = fai.assembly
     else:
         msg = f"Unknown input format: '{in_fmt}'"
         raise ValueError(msg)
@@ -139,6 +144,9 @@ def process_fh(in_fh, in_fmt, asm_name, out_fh, out_fmt, qc_overlaps):
     else:
         msg = f"Unknown output format: '{out_fmt}'"
         raise ValueError(msg)
+
+    if in_fh is not sys.stdin:
+        in_fh.close()
 
 
 def report_overlaps(asm_name, pairs):
