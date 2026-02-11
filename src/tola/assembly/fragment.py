@@ -42,7 +42,7 @@ class Fragment:
         return self._end - self._start + 1
 
     @property
-    def key_tuple(self) -> tuple:
+    def key_tuple(self) -> tuple[str, int, int]:
         return self._name, self._start, self._end
 
     def junction_tuple(self, othr) -> tuple:

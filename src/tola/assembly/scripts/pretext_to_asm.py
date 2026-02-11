@@ -17,6 +17,8 @@ from tola.assembly.parser import format_from_file_extn, parse_agp, parse_tpf
 from tola.fasta.index import FastaIndex
 from tola.fasta.stream import FastaStream
 
+log = logging.getLogger(__name__)
+
 
 def bd(txt):
     return click.style(txt, bold=True)
@@ -163,7 +165,15 @@ def ul(txt):
     "-w/-W",
     default=True,
     show_default=True,
-    help="Write messages into a '.log' file alongside the output file",
+    help="Write messages into a '.log' file alongside the output file.",
+)
+@click.option(
+    "--keep-map-order",
+    "-k",
+    flag_value=True,
+    default=False,
+    show_default=True,
+    help="Output a single assembly in the order of input Pretext map AGP.",
 )
 def cli(
     assembly_file,
@@ -173,6 +183,7 @@ def cli(
     clobber,
     log_level,
     write_log,
+    keep_map_order,
 ):
     logfile = setup_logging(log_level, output_file, write_log, clobber)
 
@@ -195,15 +206,19 @@ def cli(
     build_asm.remap_to_input_assembly(prtxt_asm, input_asm)
 
     try:
-        out_assemblies = build_asm.assemblies_with_scaffolds_fused()
+        out_assemblies = (
+            build_asm.assembly_with_scaffolds_in_map_order()
+            if keep_map_order
+            else build_asm.assemblies_with_scaffolds_fused()
+        )
     except ChrNamerError as cne:
         for msg in cne.args:
-            logging.info(msg)
+            log.info(msg)
         page_messages(cne.args)
         sys.exit("Error naming chromosomes")
     except TaggingError as te:
         for msg in te.args:
-            logging.warning(msg)
+            log.warning(msg)
         sys.exit("Error in Pretext tags")
 
     stats = build_asm.assembly_stats
@@ -223,7 +238,7 @@ def cli(
 
     for asm_key, out_asm in out_assemblies.items():
         stats.log_assembly_chromosomes(asm_key, out_asm)
-    logging.info("")
+    log.info("")
     stats.log_curation_stats()
     stats.log_sanity_checks(out_assemblies)
     if logfile:
@@ -259,7 +274,11 @@ def setup_logging(log_level, output_file, write_log, clobber):
     return logfile
 
 
-def name_assemblies(asm_dict, root: str, version: str):
+def name_assemblies(
+    asm_dict: dict[str | None, Assembly],
+    root: str,
+    version: str,
+) -> dict[str | None, Assembly]:
     """Rename assemblies for their output files"""
 
     ret_asm = {}
@@ -336,6 +355,14 @@ def merge_assemblies(asm_list):
 
 def parse_output_file(file):
     out_fmt = format_from_file_extn(file)
+    if not out_fmt:
+        reason = (
+            "Missing extension"
+            if file.suffix == ""
+            else f"Unknown extension '{file.suffix}'"
+        )
+        click.echo(f"{reason} on file name: '{file}'", err=True)
+        sys.exit(1)
 
     sfx = f".{out_fmt.lower()}"
     if sfx.startswith(file.suffix.lower()):
@@ -376,7 +403,7 @@ def write_assembly(fai, out_asm, output_file, out_fmt, clobber):
         format_agp(out_asm, out_fh)
     elif out_fmt == "FASTA":
         if not fai:
-            logging.error("Cannot write FASTA output file without FASTA input!")
+            log.error("Cannot write FASTA output file without FASTA input!")
             sys.exit(1)
         stream = FastaStream(out_fh, fai)
         stream.write_assembly(out_asm)
@@ -432,7 +459,7 @@ def get_output_filehandle(path, clobber, mode=""):
     try:
         out_fh = path.open("w" + mode if clobber else "x" + mode)
     except FileExistsError:
-        logging.error(f"Output file '{path}' already exists")
+        log.error(f"Output file '{path}' already exists")
         sys.exit(1)
     click.echo(f"{op:>11}: '{path}'", err=True)
     return out_fh

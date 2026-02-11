@@ -7,6 +7,7 @@ from tola.assembly.assembly_stats import AssemblyStats
 from tola.assembly.build_utils import (
     ChrNamer,
     FoundFragment,
+    OverhangPremise,
     OverhangResolver,
     ScaffoldNamer,
 )
@@ -15,6 +16,8 @@ from tola.assembly.gap import Gap
 from tola.assembly.indexed_assembly import IndexedAssembly
 from tola.assembly.overlap_result import OverlapResult
 from tola.assembly.scaffold import Scaffold
+
+log = logging.getLogger(__name__)
 
 
 class BuildAssembly(Assembly):
@@ -79,7 +82,7 @@ class BuildAssembly(Assembly):
     def find_assembly_overlaps(
         self, prtxt_asm: Assembly, input_asm: IndexedAssembly
     ) -> None:
-        logging.info(f"Pretext resolution = {self.bp_per_texel:,.0f} bp per texel\n")
+        log.info(f"Pretext resolution = {self.bp_per_texel:,.0f} bp per texel\n")
         scaffold_namer = self.scaffold_namer
         err_length = self.error_length
         for prtxt_scffld in prtxt_asm.scaffolds:
@@ -98,7 +101,7 @@ class BuildAssembly(Assembly):
                         self.add_scaffold(found)
                         self.store_fragments_found(found)
                 else:
-                    logging.warning(f"No overlaps found for: {prtxt_frag}")
+                    log.warning(f"No overlaps found for: {prtxt_frag}")
 
     def discard_overhanging_fragments(self) -> None:
         multi = self.fragments_found_more_than_once
@@ -150,7 +153,7 @@ class BuildAssembly(Assembly):
 
         self.assembly_stats.cuts += len(sub_fragments) - 1
 
-        logging.info(
+        log.info(
             f"Contig:\n  {frgmnt.length:15,d}  {frgmnt}\ncut into:\n"
             + "".join(f"  {sub.length:15,d}  {sub}\n" for sub in sub_fragments)
         )
@@ -206,7 +209,7 @@ class BuildAssembly(Assembly):
 
         for fnd in multi.values():
             ff = fnd.fragment
-            logging.warning(
+            log.warning(
                 f"\nFragment {ff} ({ff.length}) found in:\n"
                 + "\n".join(
                     (
@@ -263,12 +266,29 @@ class BuildAssembly(Assembly):
                 new_scffld.haplotype = scaffold_namer.current_haplotype
                 self.add_scaffold(new_scffld)
 
-    def assemblies_with_scaffolds_fused(self) -> list[Assembly]:
+    def assembly_with_scaffolds_in_map_order(self) -> dict[None, Assembly]:
+        scaffolds, _ = self.__build_name_and_sort_assemblies()
+        return {
+            None: Assembly("Pretext", scaffolds=scaffolds)
+        }
+
+    def assemblies_with_scaffolds_fused(self) -> dict[str | None, Assembly]:
+        _, assemblies = self.__build_name_and_sort_assemblies()
+        return assemblies
+
+    def __build_name_and_sort_assemblies(
+        self,
+    ) -> tuple[list[Scaffold], dict[str | None, Assembly]]:
         chr_namer = ChrNamer(chr_prefix=self.autosome_prefix)
+
+        scaffolds = self.scaffolds_fused_by_name()
+
         assemblies = {}
-        for scffld in self.scaffolds_fused_by_name():
+        for scffld in scaffolds:
             curated = True
             if tag := scffld.tag:
+                # Set assembly name from tag, which will be one of:
+                #   Contaminant | FalseDuplicate | Haplotig
                 curated = False
                 asm_key = tag
             elif hap := scffld.haplotype:
@@ -294,11 +314,11 @@ class BuildAssembly(Assembly):
 
         self.assembly_stats.make_stats(assemblies)
 
-        return assemblies
+        return scaffolds, assemblies
 
-    def scaffolds_fused_by_name(self) -> Iterator[Scaffold]:
+    def scaffolds_fused_by_name(self) -> list[Scaffold]:
         gap = self.default_gap
-        hap_name_scaffold = {}
+        hap_name_scaffold: dict[tuple[str, str], Scaffold] = {}
         for scffld in self.scaffolds:
             if not scffld.rows:
                 # discard_overhanging_fragments() may have removed the only
@@ -321,5 +341,4 @@ class BuildAssembly(Assembly):
             else:
                 build_scffld.append_scaffold(scffld)
 
-        for scffld in hap_name_scaffold.values():
-            yield scffld
+        return list(hap_name_scaffold.values())

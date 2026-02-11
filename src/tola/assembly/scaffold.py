@@ -13,7 +13,7 @@ class Scaffold:
         haplotype=None,
         rank=0,
         original_name=None,
-        original_tags: set[str] = None,
+        original_tags: set[str] | None = None,
     ):
         self.name = str(name)
         if rows:

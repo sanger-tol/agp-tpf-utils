@@ -11,6 +11,8 @@ from tola.assembly.overlap_result import OverlapResult
 from tola.assembly.scaffold import Scaffold
 from tola.assembly.terminal_table import TerminalTable, bold, bold_red
 
+log = logging.getLogger(__name__)
+
 
 class TaggingError(Exception):
     """Error in Pretext tags"""
@@ -105,7 +107,7 @@ class ScaffoldNamer:
                 )
                 raise TaggingError(msg)
             self.primary_haplotype = self.get_set_haplotype(haplotype)
-            logging.debug(f"Primary haplotype is '{self.primary_haplotype}'")
+            log.debug(f"Primary haplotype is '{self.primary_haplotype}'")
 
         if not scaffold_name:
             if is_painted:
@@ -153,7 +155,7 @@ class ScaffoldNamer:
         elif "Unloc" in fragment.tags:
             if "Painted" not in scaffold_tags:
                 msg = f"Unloc in unpainted scaffold {original_name!r}: {fragment}"
-                raise ValueError(msg)
+                raise TaggingError(msg)
             name = self.unloc_name()
             self.unloc_scaffolds[-1].append(scaffold)
 
@@ -219,7 +221,7 @@ class ChrGroup:
         return self.data.get(hap_name)
 
     def add_scaffold_to_haplotype(self, hap_name, scaffold):
-        logging.debug(f"Adding scaffold to '{hap_name}':\n{scaffold}")
+        log.debug(f"Adding scaffold to '{hap_name}':\n{scaffold}")
         self.data.get(hap_name).setdefault(scaffold.original_name, []).append(scaffold)
 
     def original_tags_of_haplotype_scaffold(self, hap_name, scffld_name):
@@ -227,20 +229,11 @@ class ChrGroup:
 
     def length_of_first_haplotype(self):
         first, *_ = self.data.values()
-        orig, *others = first
-
-        if others:
-            first_hap, *_ = self.data
-            scaffold_names = list(self.data[first_hap].keys())
-            msg = (
-                f"Expected a single scaffold in first haplotype '{first_hap}'"
-                f" but found: {scaffold_names}"
-            )
-            raise ValueError(msg)
 
         length = 0
-        for scffld in first[orig]:
-            length += scffld.fragments_length
+        for hap_scffld_grp in first.values():
+            for scffld in hap_scffld_grp:
+                length += scffld.fragments_length
         return length
 
     @staticmethod
@@ -283,6 +276,12 @@ class ChrNamerError(Exception):
     """
     An error in the expected pattern of scaffolds and haplotypes and tags when
     naming the autosomes.
+    """
+
+
+class ChrNamerUsageError(Exception):
+    """
+    Programming usage error in ChrNamer
     """
 
 
@@ -344,7 +343,7 @@ class ChrNamer:
             orig = scffld.original_name
             if not orig:
                 msg = f"Missing original_name value in Scaffold:\n{scffld}"
-                raise ValueError(msg)
+                raise ChrNamerUsageError(msg)
 
             # Do we already have a scaffold in this haplotype in the ChrGroup?
             if group.haplotype_dict(haplotype):
@@ -397,7 +396,7 @@ class ChrNamer:
             msg = f"Error{s} naming autosomes:\n"
             raise ChrNamerError(msg, *table.error_render())
         else:
-            logging.debug("\n" + table.render())
+            log.debug("\n" + table.render())
 
     def check_groups(self):
         tbl = TerminalTable()
@@ -408,6 +407,9 @@ class ChrNamer:
         ignore = set(self.haplotypes_seen)
         ignore.add("Cut")
         ignore.add("Painted")
+        if self.groups is None:
+            msg = "Groups attribute not set"
+            raise ChrNamerUsageError(msg)
         for grp in self.groups:
             row_count = grp.max_hap_set_count()
             for row_idx in range(row_count):
@@ -425,11 +427,11 @@ class ChrNamer:
                             scffld = scaffolds[scffld_name][0]
                             cell.new_line(scffld_name)
 
-                            # The first haplotype should only have one
-                            # scaffold in the group
-                            if i == 0 and row_idx > 0:
-                                cell.new_line(f"<Consecutive {hap}>", bold_red)
-                                tbl.mark_error()
+                            # # The first haplotype should only have one
+                            # # scaffold in the group
+                            # if i == 0 and row_idx > 0:
+                            #     cell.new_line(f"<Consecutive {hap}>", bold_red)
+                            #     tbl.mark_error()
 
                             # Show the fragments length of this scaffold
                             s_length = sum(
@@ -556,7 +558,9 @@ class OverhangResolver:
     """
 
     def __init__(self, error_length=None):
-        self.premises_by_fragment_key = {}
+        self.premises_by_fragment_key: dict[
+            tuple[str, int, int], list[OverhangPremise]
+        ] = {}
         self.error_length = error_length
 
     def add_overhang_premise(self, fragment: Fragment, scffld: OverlapResult) -> None:
@@ -570,14 +574,14 @@ class OverhangResolver:
         fk = fragment.key_tuple
         self.premises_by_fragment_key.setdefault(fk, []).append(premise)
 
-    def make_fixes(self) -> list[OverlapResult]:
+    def make_fixes(self) -> list[OverhangPremise]:
         fixes_made = []
         err_length = self.error_length
 
         for prem_list in self.premises_by_fragment_key.values():
             prem_count = len(prem_list)
 
-            logging.debug(
+            log.debug(
                 f"\n{prem_count} OverhangPremises for {prem_list[0].fragment}:\n"
                 + textwrap.indent("".join(f"\n{prem}" for prem in prem_list), "  ")
             )

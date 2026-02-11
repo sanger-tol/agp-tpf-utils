@@ -6,7 +6,7 @@ import pytest
 
 from tola.assembly.assembly import Assembly
 from tola.assembly.build_assembly import BuildAssembly
-from tola.assembly.build_utils import ChrGroup, ChrNamer, ChrNamerError, ScaffoldNamer
+from tola.assembly.build_utils import ChrGroup, ChrNamer, ScaffoldNamer, TaggingError
 from tola.assembly.fragment import Fragment
 from tola.assembly.gap import Gap
 from tola.assembly.indexed_assembly import IndexedAssembly
@@ -25,12 +25,23 @@ def test_multi_chr_list():
 def list_chr_naming_tests():
     for test_data in [
         {
+            # Changed to allow consecutive chromosomes in the first haplotype
             "input": [
                 ("S1", "Hap1", 2_000_000, "S1"),
                 ("S2", "Hap1", 1_000_000, "S2"),
-                ("S3", "Hap3", 3_000_000, "S3"),
+                ("S3", "Hap3", 1_000_000, "S3"),
+                ("S4", "Hap3", 2_000_000, "S4"),
             ],
-            "exception": (ChrNamerError, r"<Consecutive Hap1>"),
+            "expected": {
+                "Hap1": [
+                    ("SUPER_1A", "Hap1", 2_000_000, "S1"),
+                    ("SUPER_1B", "Hap1", 1_000_000, "S2"),
+                ],
+                "Hap3": [
+                    ("SUPER_1A", "Hap3", 1_000_000, "S3"),
+                    ("SUPER_1B", "Hap3", 2_000_000, "S4"),
+                ],
+            },
         },
         {
             "input": [
@@ -49,8 +60,8 @@ def list_chr_naming_tests():
                 ],
                 "Hap3": [
                     ("SUPER_2", "Hap3", 2_000_000, "S3"),
-                ]
-            }
+                ],
+            },
         },
         {
             "input": [
@@ -149,13 +160,13 @@ def run_chr_namer(input_data, expected):
 def test_unpainted_unloc():
     namer = ScaffoldNamer()
     with pytest.raises(
-        ValueError,
+        TaggingError,
         match=r"Unloc in unpainted scaffold 'Scaffold_7': Bad_Unloc:1-100\(-\) Unloc",
     ):
         namer.label_scaffold(
             Scaffold("TEST"),
             Fragment("Bad_Unloc", 1, 100, -1, ("Unloc",)),
-            (),  # No "Painted" tag in scaffold tags
+            set(),  # No "Painted" tag in scaffold tags
             "Scaffold_7",
         )
 
