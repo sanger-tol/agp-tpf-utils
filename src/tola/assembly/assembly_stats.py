@@ -3,7 +3,8 @@ import io
 import logging
 
 from tola.assembly.assembly import Assembly
-from tola.assembly.scaffold import Scaffold
+
+log = logging.getLogger(__name__)
 
 
 class AssemblyStats:
@@ -56,7 +57,7 @@ class AssemblyStats:
         cut_plural = "cut in a contig" if self.cuts == 1 else "cuts in contigs"
         break_plural = "break at a gap" if self.breaks == 1 else "breaks at gaps"
         join_plural = "join" if self.joins == 1 else "joins"
-        logging.info(
+        log.info(
             f"Curation made {self.cuts} {cut_plural}, {self.breaks}"
             f" {break_plural} and {self.joins} {join_plural}"
         )
@@ -142,8 +143,6 @@ class AssemblyStats:
         chr_name = None
         last_orig = None
         for hap, asm in hap_asm.items():
-            if not hap:
-                hap = "Primary"
             for scffld in asm.scaffolds:
                 if scffld.rank in (1, 2):
                     name = scffld.name
@@ -157,7 +156,7 @@ class AssemblyStats:
                         chr_name = name.replace(prefix, "", 1)
                     csvr.writerow(
                         (
-                            hap,
+                            scffld.haplotype or hap or "Primary",
                             name,
                             chr_name,
                             localised,
@@ -172,8 +171,8 @@ class AssemblyStats:
     def log_assembly_chromosomes(self, asm_key: str | None, asm: Assembly):
         ranked_names_lengths = self.get_assembly_scaffold_lengths(asm_key, asm)
 
-        logging.info(f"\n{asm.name}")
-        logging.info(f"    {asm.fragments_length:15,d}  bp sequence (minus gaps)")
+        log.info(f"\n{asm.name}")
+        log.info(f"    {asm.fragments_length:15,d}  bp sequence (minus gaps)")
         is_main = False
         rank_label = {
             1: "Autosomes",
@@ -187,8 +186,8 @@ class AssemblyStats:
 
             # Only show rank headings for main assemblies
             if is_main:
-                logging.info(f"  {rank_label[rank]}:")
-            logging.info(f"    n = {len(name_length)}")
+                log.info(f"  {rank_label[rank]}:")
+            log.info(f"    n = {len(name_length)}")
 
             if rank == 2:
                 # Show all the named scaffolds
@@ -207,7 +206,7 @@ class AssemblyStats:
                     self.log_scaffold_length(*scaffolds[1])
                 # Omit the "..." line if there are only one or two scaffolds
                 elif len(scaffolds) > 2:
-                    logging.info("                ...  ...")
+                    log.info("                ...  ...")
 
                 # Show shortest scaffold
                 if len(scaffolds) > 1:
@@ -217,10 +216,10 @@ class AssemblyStats:
             # the same number twice.
             if len(name_length) > 1:
                 total = sum(name_length.values())
-                logging.info(f"    {total:15,d}  bp total")
+                log.info(f"    {total:15,d}  bp total")
 
     def log_scaffold_length(self, name, length):
-        logging.info(f"    {length:15,d}  {name}")
+        log.info(f"    {length:15,d}  {name}")
 
     def log_sanity_checks(self, hap_asm: dict[str | None, Assembly]) -> None:
         for check in (
@@ -229,16 +228,16 @@ class AssemblyStats:
         ):
             if msg_list := check(hap_asm):
                 for msg in msg_list:
-                    logging.warning(msg)
+                    log.warning(msg)
 
     def check_consistent_autosome_count(
         self, hap_asm: dict[str | None, Assembly]
-    ) -> str | None:
+    ) -> list[str] | None:
         chr_counts = {}
         for hap, asm in hap_asm.items():
             ranked_names_lengths = self.get_assembly_scaffold_lengths(hap, asm)
             if autosomes := ranked_names_lengths.get(1):
-                chr_counts[hap if hap else "Primary"] = len(autosomes)
+                chr_counts[hap or "Primary"] = len(autosomes)
 
         if len(chr_counts) > 1:
             distinct_counts = set(chr_counts.values())
@@ -251,7 +250,7 @@ class AssemblyStats:
 
     def check_for_large_haplotigs(
         self, hap_asm: dict[str | None, Assembly]
-    ) -> str | None:
+    ) -> list[str] | None:
         htigs = hap_asm.get("Haplotig")
         if not htigs:
             return None
@@ -280,4 +279,4 @@ class AssemblyStats:
                     f"Haplotig {ht.name} ({ht.original_name}) is {ht_len:,d} bp"
                     f" which is longer than the shortest chromosome ({shortest:,d} bp)"
                 )
-        return msg_list if msg_list else None
+        return msg_list or None

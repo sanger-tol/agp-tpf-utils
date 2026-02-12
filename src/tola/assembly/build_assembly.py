@@ -270,7 +270,14 @@ class BuildAssembly(Assembly):
 
     def assembly_with_scaffolds_in_map_order(self) -> AssemblyDict:
         scaffolds, assemblies = self.__build_name_and_sort_assemblies()
-        return {"map-order": Assembly("Pretext", scaffolds=scaffolds)}
+        for asm_name, assembly in assemblies.items():
+            if asm_name is None:
+                continue
+            suffix = "_" + asm_name
+            for scaffold in assembly.scaffolds:
+                scaffold.name = scaffold.name + suffix
+                scaffold.haplotype = asm_name
+        return {None: Assembly("Pretext", scaffolds=scaffolds)}
 
     def assemblies_with_scaffolds_fused(self) -> AssemblyDict:
         _, assemblies = self.__build_name_and_sort_assemblies()

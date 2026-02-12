@@ -8,6 +8,7 @@ import click
 import yaml
 
 from tola.assembly.assembly import Assembly
+from tola.assembly.assembly_stats import AssemblyStats
 from tola.assembly.build_assembly import AssemblyDict, BuildAssembly
 from tola.assembly.build_utils import ChrNamerError, TaggingError
 from tola.assembly.format import format_agp, format_tpf
@@ -175,6 +176,15 @@ def ul(txt):
     show_default=True,
     help="Output a single assembly in the order of input Pretext map AGP.",
 )
+@click.option(
+    "--default-assembly-name",
+    "default_asm_name",
+    type=str,
+    help="""
+        Default name for a non-haplotype assembly. Defaults to 'map-order' if
+        the '--keep-map-order' option is given.
+        """,
+)
 def cli(
     assembly_file,
     pretext_file,
@@ -184,8 +194,12 @@ def cli(
     log_level,
     write_log,
     keep_map_order,
+    default_asm_name,
 ):
     logfile = setup_logging(log_level, output_file, write_log, clobber)
+
+    if keep_map_order and not default_asm_name:
+        default_asm_name = "map-order"
 
     asm, fai = parse_assembly_file(assembly_file, "TPF")
     input_asm = IndexedAssembly.new_from_assembly(asm)
@@ -228,7 +242,7 @@ def cli(
 
         # Rename assemblies for output files
         out_assemblies: AssemblyDict = name_assemblies(
-            out_assemblies, out_root, asm_version
+            out_assemblies, out_root, asm_version, default_asm_name
         )
 
         write_assemblies(fai, out_fmt, out_dir, suffix, out_assemblies, clobber)
@@ -280,6 +294,7 @@ def name_assemblies(
     asm_dict: AssemblyDict,
     root: str,
     version: str,
+    default_asm_name: str,
 ) -> AssemblyDict:
     """Rename assemblies for their output files"""
 
@@ -320,7 +335,11 @@ def name_assemblies(
         other_asm = []
         for asm_key, asm in asm_dict.items():
             if asm_key is None:
-                asm.name = f"{root}.{version}.primary"
+                asm.name = (
+                    f"{root}.{version}.{default_asm_name}"
+                    if default_asm_name
+                    else f"{root}.{version}.primary"
+                )
                 ret_asm[None] = asm
             elif asm_key == "Haplotig":
                 new_key = "additional_haplotigs"
@@ -433,7 +452,12 @@ def write_assembly(
         out_fh.write(str(out_asm))
 
 
-def write_chr_report_csv(output_file, stats, out_assemblies: AssemblyDict, clobber):
+def write_chr_report_csv(
+    output_file: Path,
+    stats: AssemblyStats,
+    out_assemblies: AssemblyDict,
+    clobber: bool,
+):
     csv = stats.chromosomes_report_csv(out_assemblies)
     if not csv:
         return
