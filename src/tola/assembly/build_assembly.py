@@ -1,13 +1,12 @@
 import logging
 import math
-from collections.abc import Iterator
+from typing import TypeAlias
 
 from tola.assembly.assembly import Assembly
 from tola.assembly.assembly_stats import AssemblyStats
 from tola.assembly.build_utils import (
     ChrNamer,
     FoundFragment,
-    OverhangPremise,
     OverhangResolver,
     ScaffoldNamer,
 )
@@ -18,6 +17,9 @@ from tola.assembly.overlap_result import OverlapResult
 from tola.assembly.scaffold import Scaffold
 
 log = logging.getLogger(__name__)
+
+
+AssemblyDict: TypeAlias = dict[str | None, Assembly]
 
 
 class BuildAssembly(Assembly):
@@ -42,8 +44,8 @@ class BuildAssembly(Assembly):
         self.default_gap = default_gap
         self.found_fragments = {}
         self.fragments_found_more_than_once = {}
-        self.scaffold_namer = ScaffoldNamer()
-        self.assembly_stats = AssemblyStats()
+        self.scaffold_namer: ScaffoldNamer = ScaffoldNamer()
+        self.assembly_stats: AssemblyStats = AssemblyStats()
         if autosome_prefix:
             self.autosome_prefix = autosome_prefix
 
@@ -266,19 +268,17 @@ class BuildAssembly(Assembly):
                 new_scffld.haplotype = scaffold_namer.current_haplotype
                 self.add_scaffold(new_scffld)
 
-    def assembly_with_scaffolds_in_map_order(self) -> dict[None, Assembly]:
-        scaffolds, _ = self.__build_name_and_sort_assemblies()
-        return {
-            None: Assembly("Pretext", scaffolds=scaffolds)
-        }
+    def assembly_with_scaffolds_in_map_order(self) -> AssemblyDict:
+        scaffolds, assemblies = self.__build_name_and_sort_assemblies()
+        return {"map-order": Assembly("Pretext", scaffolds=scaffolds)}
 
-    def assemblies_with_scaffolds_fused(self) -> dict[str | None, Assembly]:
+    def assemblies_with_scaffolds_fused(self) -> AssemblyDict:
         _, assemblies = self.__build_name_and_sort_assemblies()
         return assemblies
 
     def __build_name_and_sort_assemblies(
         self,
-    ) -> tuple[list[Scaffold], dict[str | None, Assembly]]:
+    ) -> tuple[list[Scaffold], AssemblyDict]:
         chr_namer = ChrNamer(chr_prefix=self.autosome_prefix)
 
         scaffolds = self.scaffolds_fused_by_name()

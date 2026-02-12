@@ -1,6 +1,8 @@
 import io
+from collections.abc import Generator
+from typing import Self
 
-from tola.assembly.fragment import Fragment
+from tola.assembly.fragment import Fragment, Junction
 from tola.assembly.gap import Gap
 
 
@@ -20,11 +22,11 @@ class Scaffold:
             self.rows = [*rows]
         else:
             self.rows = []
-        self.tag = tag
-        self.haplotype = haplotype
-        self.rank = rank
-        self.original_name = original_name
-        self.original_tags = original_tags
+        self.tag: str | None = tag
+        self.haplotype: str | None = haplotype
+        self.rank: int = rank
+        self.original_name: str | None = original_name
+        self.original_tags: set[str] | None = original_tags
 
     def __repr__(self):
         txt = io.StringIO()
@@ -59,54 +61,57 @@ class Scaffold:
         self.rows.append(row)
 
     @property
-    def length(self):
+    def length(self) -> int:
         return sum(r.length for r in self.rows)
 
     @property
-    def fragments_length(self):
+    def fragments_length(self) -> int:
         return sum(f.length for f in self.fragments())
 
     @property
-    def gaps_length(self):
+    def gaps_length(self) -> int:
         return sum(g.length for g in self.gaps())
 
     @property
-    def last_row_is_fragment(self):
+    def last_row_is_fragment(self) -> bool:
         if self.rows:
             return isinstance(self.rows[-1], Fragment)
         else:
             return False
 
-    def fragments(self):
+    def fragments(self) -> Generator[Fragment]:
         for row in self.rows:
             if isinstance(row, Fragment):
                 yield row
 
-    def idx_fragments(self):
+    def idx_fragments(self) -> Generator[tuple[int, Fragment]]:
         for i, row in enumerate(self.rows):
             if isinstance(row, Fragment):
                 yield i, row
 
-    def gaps(self):
+    def gaps(self) -> Generator[Fragment]:
         for row in self.rows:
             if isinstance(row, Gap):
                 yield row
 
-    def idx_gaps(self):
+    def idx_gaps(self) -> Generator[tuple[int, Gap]]:
         for i, row in enumerate(self.rows):
             if isinstance(row, Gap):
                 yield i, row
 
-    def fragment_tags(self):
+    def fragment_tags(self) -> set[str]:
         tag_set = set()
         for frag in self.fragments():
             for t in frag.tags:
                 tag_set.add(t)
         return tag_set
 
-    def reverse(self):
+    def reverse(self) -> Self:
         new = self.__class__(
             self.name,
+            tag=self.tag,
+            haplotype=self.haplotype,
+            rank=self.rank,
             original_name=self.original_name,
             original_tags=self.original_tags,
         )
@@ -121,7 +126,7 @@ class Scaffold:
             self.add_row(gap)
         self.rows.extend(othr.rows)
 
-    def fragment_junction_set(self):
+    def fragment_junction_set(self) -> set[Junction]:
         junctions = set()
         itr = self.fragments()
 
@@ -130,12 +135,8 @@ class Scaffold:
         except StopIteration:
             return junctions
 
-        while True:
-            try:
-                this = next(itr)
-                junctions.add(prev.junction_tuple(this))
-                prev = this
-            except StopIteration:
-                break
+        for this in itr:
+            junctions.add(prev.junction_tuple(this))
+            prev = this
 
         return junctions

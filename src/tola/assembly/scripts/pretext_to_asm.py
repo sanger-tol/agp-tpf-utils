@@ -8,7 +8,7 @@ import click
 import yaml
 
 from tola.assembly.assembly import Assembly
-from tola.assembly.build_assembly import BuildAssembly
+from tola.assembly.build_assembly import AssemblyDict, BuildAssembly
 from tola.assembly.build_utils import ChrNamerError, TaggingError
 from tola.assembly.format import format_agp, format_tpf
 from tola.assembly.gap import Gap
@@ -227,7 +227,9 @@ def cli(
         write_info_yaml(output_file, stats, out_assemblies, clobber)
 
         # Rename assemblies for output files
-        out_assemblies = name_assemblies(out_assemblies, out_root, asm_version)
+        out_assemblies: AssemblyDict = name_assemblies(
+            out_assemblies, out_root, asm_version
+        )
 
         write_assemblies(fai, out_fmt, out_dir, suffix, out_assemblies, clobber)
         write_chr_csv_files(out_dir, stats, out_assemblies, clobber)
@@ -275,10 +277,10 @@ def setup_logging(log_level, output_file, write_log, clobber):
 
 
 def name_assemblies(
-    asm_dict: dict[str | None, Assembly],
+    asm_dict: AssemblyDict,
     root: str,
     version: str,
-) -> dict[str | None, Assembly]:
+) -> AssemblyDict:
     """Rename assemblies for their output files"""
 
     ret_asm = {}
@@ -382,14 +384,27 @@ def parse_output_file(file):
     return out_fmt, file.parent, out_root, version, sfx
 
 
-def write_assemblies(fai, out_fmt, out_dir, suffix, out_assemblies, clobber):
+def write_assemblies(
+    fai: FastaIndex | None,
+    out_fmt: str,
+    out_dir: Path,
+    suffix: str,
+    out_assemblies: AssemblyDict,
+    clobber: bool,
+):
     for asm in out_assemblies.values():
         crtd = ".curated" if asm.curated else ""
         output_file = out_dir / f"{asm.name}{crtd}{suffix}"
         write_assembly(fai, asm, output_file, out_fmt, clobber)
 
 
-def write_assembly(fai, out_asm, output_file, out_fmt, clobber):
+def write_assembly(
+    fai: FastaIndex | None,
+    out_asm: Assembly,
+    output_file: Path | None,
+    out_fmt: str | None,
+    clobber: bool,
+):
     if output_file:
         mode = "b" if out_fmt == "FASTA" else ""
         out_fh = get_output_filehandle(output_file, clobber, mode)
@@ -402,7 +417,7 @@ def write_assembly(fai, out_asm, output_file, out_fmt, clobber):
     elif out_fmt == "AGP":
         format_agp(out_asm, out_fh)
     elif out_fmt == "FASTA":
-        if not fai:
+        if fai is None:
             log.error("Cannot write FASTA output file without FASTA input!")
             sys.exit(1)
         stream = FastaStream(out_fh, fai)
@@ -418,7 +433,7 @@ def write_assembly(fai, out_asm, output_file, out_fmt, clobber):
         out_fh.write(str(out_asm))
 
 
-def write_chr_report_csv(output_file, stats, out_assemblies, clobber):
+def write_chr_report_csv(output_file, stats, out_assemblies: AssemblyDict, clobber):
     csv = stats.chromosomes_report_csv(out_assemblies)
     if not csv:
         return
@@ -427,7 +442,7 @@ def write_chr_report_csv(output_file, stats, out_assemblies, clobber):
         csv_fh.write(csv)
 
 
-def write_chr_csv_files(out_dir, stats, out_assemblies, clobber):
+def write_chr_csv_files(out_dir, stats, out_assemblies: AssemblyDict, clobber):
     for asm in out_assemblies.values():
         if not asm.curated:
             continue
@@ -437,7 +452,7 @@ def write_chr_csv_files(out_dir, stats, out_assemblies, clobber):
                 csv_fh.write(chr_names)
 
 
-def write_info_yaml(output_file, stats, out_assemblies, clobber):
+def write_info_yaml(output_file, stats, out_assemblies: AssemblyDict, clobber):
     asm_stats = stats.per_assembly_stats
     info = {"assemblies": asm_stats}
     if len(asm_stats) > 1:
@@ -454,7 +469,7 @@ def write_info_yaml(output_file, stats, out_assemblies, clobber):
         yaml_fh.write(yaml.safe_dump(info, sort_keys=False))
 
 
-def get_output_filehandle(path, clobber, mode=""):
+def get_output_filehandle(path: Path, clobber: bool, mode: str = ""):
     op = "Overwrote" if path.exists() else "Created"
     try:
         out_fh = path.open("w" + mode if clobber else "x" + mode)
@@ -466,7 +481,7 @@ def get_output_filehandle(path, clobber, mode=""):
 
 
 def parse_assembly_file(
-    path: Path, default_format: str = None
+    path: Path, default_format: str | None = None
 ) -> tuple[Assembly, FastaIndex | None]:
     fmt = format_from_file_extn(path, default_format)
     if fmt == "AGP":

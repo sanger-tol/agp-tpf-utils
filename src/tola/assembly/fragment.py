@@ -1,3 +1,8 @@
+from typing import TypeAlias
+
+Junction: TypeAlias = tuple[str | int, str | int, str | int, str | int]
+
+
 class Fragment:
     __slots__ = "_name", "_start", "_end", "_strand", "_tags"
 
@@ -45,7 +50,7 @@ class Fragment:
     def key_tuple(self) -> tuple[str, int, int]:
         return self._name, self._start, self._end
 
-    def junction_tuple(self, othr) -> tuple:
+    def junction_tuple(self, othr) -> Junction:
         """
         Encodes the positions of two adjacent Fragments in a Scaffold, with
         reverse strand ends encoded by flipping the order of the name and

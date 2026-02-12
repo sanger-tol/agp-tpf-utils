@@ -129,7 +129,7 @@ def lowercase_and_dash_to_underscore():
     )
 
 
-def format_from_file_extn(pth, default=None):
+def format_from_file_extn(pth, default=None) -> str | None:
     """
     Guess the file format from the extension, or return the supplied default
     """

@@ -2,6 +2,7 @@ import io
 import re
 import textwrap
 
+from tola.assembly.fragment import Junction
 from tola.assembly.scaffold import Scaffold
 
 
@@ -9,12 +10,12 @@ class Assembly:
     def __init__(
         self, name, header=None, scaffolds=None, bp_per_texel=None, curated=False
     ):
-        self.name = str(name)
-        self.scaffolds = scaffolds if scaffolds else []
-        self.header = header if header else []
-        self.curated = curated
+        self.name: str = str(name)
+        self.scaffolds: list[Scaffold] = scaffolds if scaffolds else []
+        self.header: list[str] = header if header else []
+        self.curated: bool = curated
         if bp_per_texel:
-            self.bp_per_texel = bp_per_texel
+            self.bp_per_texel: float = bp_per_texel
 
     def __repr__(self):
         txt = io.StringIO()
@@ -98,13 +99,13 @@ class Assembly:
             for i, x in enumerate(re.split(r"(I+V?|\d+)", obj.name))
         )
 
-    def fragment_junction_set(self):
-        junctions = set()
+    def fragment_junction_set(self) -> set[Junction]:
+        junctions: set[Junction] = set()
         for scffld in self.scaffolds:
             junctions |= scffld.fragment_junction_set()
         return junctions
 
-    def fragment_junctions_by_asm_prefix(self):
+    def fragment_junctions_by_asm_prefix(self) -> dict[str, set[Junction]]:
         prefix_junctions = {}
         for scffld in self.scaffolds:
             try:

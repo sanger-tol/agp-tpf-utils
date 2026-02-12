@@ -15,6 +15,8 @@ from tola.assembly.parser import parse_agp
 from tola.assembly.scaffold import Scaffold
 from tola.fasta.simple import FastaSeq, revcomp_bytes_io
 
+log = logging.getLogger(__name__)
+
 
 class IndexUsageError(Exception):
     """Unexpected usage of FastaIndex"""
@@ -76,12 +78,12 @@ class FastaIndex:
         if not fasta_file.exists():
             missing = str(fasta_file)
             raise FileNotFoundError(missing)
-        self.fasta_file = fasta_file
-        self.buffer_size = buffer_size
-        self.fai_file = Path(str(fasta_file) + ".fai")
-        self.agp_file = Path(str(fasta_file) + ".agp")
-        self.index = None
-        self.assembly = None
+        self.fasta_file: Path = fasta_file
+        self.buffer_size: int = buffer_size
+        self.fai_file: Path = fasta_file.with_name(f"{fasta_file.name}.fai")
+        self.agp_file: Path = fasta_file.with_name(f"{fasta_file.name}.agp")
+        self.index: dict[str, FastaInfo] = None
+        self.assembly: Assembly = None
 
     def auto_load(self):
         if self.check_for_index_files():
@@ -100,7 +102,7 @@ class FastaIndex:
             if not idx_file.exists():
                 return False
             if not idx_file.stat().st_mtime > fasta_mtime:
-                logging.warning(
+                log.warning(
                     f"Index file '{idx_file}' is older than"
                     f" FASTA file '{self.fasta_file}'"
                 )
@@ -132,7 +134,7 @@ class FastaIndex:
             msg = "No index data to write to FAI file"
             raise IndexUsageError(msg)
         if self.fai_file.exists():
-            logging.warning(f"Overwriting FAI index file '{self.fai_file}'")
+            log.warning(f"Overwriting FAI index file '{self.fai_file}'")
         with self.fai_file.open("w") as idx_fh:
             for name, info in idx_dict.items():
                 idx_fh.write(info.fai_row(name))
@@ -149,7 +151,7 @@ class FastaIndex:
             msg = "No assembly data to write to AGP file"
             raise IndexUsageError(msg)
         if self.agp_file.exists():
-            logging.warning(f"Overwriting AGP assembly file '{self.agp_file}'")
+            log.warning(f"Overwriting AGP assembly file '{self.agp_file}'")
         with self.agp_file.open("w") as agp_fh:
             format_agp(asm, agp_fh)
 

@@ -5,6 +5,7 @@ Utility objects used by BuildAssembly
 import logging
 import re
 import textwrap
+from abc import ABC, abstractmethod
 
 from tola.assembly.fragment import Fragment
 from tola.assembly.overlap_result import OverlapResult
@@ -476,7 +477,7 @@ class FoundFragment:
         self.scaffolds.remove(scaffold)
 
 
-class OverhangPremise:
+class OverhangPremise(ABC):
     """
     Stores a "what-if" for removal of a terminal (start or end) Fragment. Used
     to decide which OverlapResult to remove a Fragment from, where the
@@ -497,6 +498,32 @@ class OverhangPremise:
             f"   error delta: {self.overhang_error_delta_if_applied:12_d}\n\n"
             + textwrap.indent(f"{self.scaffold}\n", "  ")
         )
+
+    @property
+    @abstractmethod
+    def bait_overlap(self) -> int:
+        """
+        The overlap between the bait and the `Fragment` on this end of the
+        `OverlapResult`.  (`0` if they don't overlap.)
+        """
+
+    @property
+    @abstractmethod
+    def overhang_if_applied(self) -> int:
+        """
+        Overhang of the `Fragment` at this end of the `OverlapResult` beyond
+        the `bait` that would be left if `Fragment` at this end was removed.
+        Value is negative if removing the `Fragment` would leave an
+        underhang.
+        """
+
+    @property
+    @abstractmethod
+    def overhang_error_delta_if_applied(self) -> int:
+        """
+        Change (positive or negative) in the absolute size of the overhang
+        (or underhang) if this `OverhangPremise` were applied.
+        """
 
     def improves(self, err_length) -> bool:
         if len(self.scaffold.rows) == 1:
@@ -557,7 +584,7 @@ class OverhangResolver:
     the OverlapPremises which were applied.
     """
 
-    def __init__(self, error_length=None):
+    def __init__(self, error_length: int):
         self.premises_by_fragment_key: dict[
             tuple[str, int, int], list[OverhangPremise]
         ] = {}
