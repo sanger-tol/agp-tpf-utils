@@ -55,3 +55,6 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "{test_*,*_test,conftest}.py" = ["S101"]
+
+[tool.ty.environment]
+python = "./venv"

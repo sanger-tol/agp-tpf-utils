@@ -11,14 +11,14 @@ bChlMac1-pretext-to-tpf.hap1.3.primary
       1,275,074,175  bp sequence (minus gaps)
   Autosomes:
     n = 36
-        215,692,358  SUPER_1
+        215,692,358  SUPER_1_Hap1
                 ...  ...
-            292,585  SUPER_36
+            292,585  SUPER_36_Hap1
       1,086,170,135  bp total
   Named:
     n = 2
-         54,806,811  SUPER_W
-         84,787,122  SUPER_Z
+         54,806,811  SUPER_W_Hap1
+         84,787,122  SUPER_Z_Hap1
         139,593,933  bp total
   Unplaced:
     n = 289
@@ -31,9 +31,9 @@ bChlMac1-pretext-to-tpf.hap2.3.primary
       1,105,489,405  bp sequence (minus gaps)
   Autosomes:
     n = 35
-        214,587,655  SUPER_1
+        214,587,655  SUPER_1_Hap2
                 ...  ...
-            301,782  SUPER_33
+            301,782  SUPER_33_Hap2
       1,053,693,360  bp total
   Unplaced:
     n = 305

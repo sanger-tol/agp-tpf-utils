@@ -7,10 +7,14 @@ from tola.assembly.assembly import Assembly
 log = logging.getLogger(__name__)
 
 
+class AssemblyStatsError(Exception):
+    """Error from AssemblyStats"""
+
+
 class AssemblyStats:
     def __init__(self, autosome_prefix: str = "SUPER_") -> None:
         self.autosome_prefix = autosome_prefix
-        self.input_assembly = None
+        self.input_assembly: Assembly | None = None
         self.cuts = 0
         self.breaks = 0
         self.joins = 0
@@ -18,6 +22,9 @@ class AssemblyStats:
         self.assembly_scaffold_lengths = {}
 
     def make_stats(self, output_assemblies: dict[str | None, Assembly]) -> None:
+        if not self.input_assembly:
+            msg = "Missing input_assembly attribute"
+            raise AssemblyStatsError(msg)
         input_junction_sets = self.input_assembly.fragment_junctions_by_asm_prefix()
         input_set = set()
         for junc_set in input_junction_sets.values():

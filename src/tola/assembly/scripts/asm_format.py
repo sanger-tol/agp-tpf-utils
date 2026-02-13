@@ -1,6 +1,6 @@
 import pathlib
-import re
 import sys
+from typing import TextIO
 
 import click
 
@@ -10,8 +10,10 @@ from tola.fasta.index import FastaIndex
 
 
 @click.command(
-    help="""Parse and reformat ToL AGP and TPF files. Parses the files
-      provided on the comamnd line, or STDIN if none are given.""",
+    help="""
+      Parse and reformat ToL AGP and TPF files. Parses the files provided on
+      the comamnd line, or STDIN if none are given.
+    """,
 )
 @click.argument(
     "input_files",
@@ -30,8 +32,10 @@ from tola.fasta.index import FastaIndex
         ["AGP", "TPF", "FASTA"],
         case_sensitive=False,
     ),
-    help="""Format of input. Automatically determined from each input file's
-      extension, or defaults to 'AGP'""",
+    help="""
+      Format of input. Automatically determined from each input file's
+      extension, or defaults to 'AGP'.
+    """,
 )
 @click.option(
     "--output-file",
@@ -40,8 +44,10 @@ from tola.fasta.index import FastaIndex
         path_type=pathlib.Path,
         exists=False,
     ),
-    help="""Output file. Format is guessed from extension. If no output file
-      is given, ouput is printed to STDOUT""",
+    help="""
+      Output file. Format is guessed from extension. If no output file is
+      given, ouput is printed to STDOUT.
+    """,
 )
 @click.option(
     "--format",
@@ -51,15 +57,17 @@ from tola.fasta.index import FastaIndex
         ["AGP", "TPF", "STR", "REPR"],
         case_sensitive=False,
     ),
-    help="""Format of output. Automatically determined from output file extension,
-      or defaults to 'AGP'. 'STR' is a human-readable format, and 'REPR' is the
-      parsed assembly object's data structure.""",
+    help="""
+      Format of output. Automatically determined from output file extension,
+      or defaults to 'AGP'. 'STR' is a human-readable format, and 'REPR' is
+      the parsed assembly object's data structure.
+    """,
 )
 @click.option(
     "--name",
     "-n",
     "assembly_name",
-    help="""Name of the assembly. Defaults to the file name or 'stdin'""",
+    help="Name of the assembly. Defaults to the file name or 'stdin'.",
 )
 @click.option(
     "--qc-overlaps/--no-qc-overlaps",
@@ -116,7 +124,7 @@ def cli(
 
 
 def process_file(in_file, in_fmt, asm_name, out_fh, out_fmt, qc_overlaps):
-    in_fh = in_file if in_file is sys.stdin else in_file.open("r")
+    in_fh: TextIO = in_file if in_file is sys.stdin else in_file.open("r")
 
     if in_fmt == "AGP":
         asm = parse_agp(in_fh, asm_name)
