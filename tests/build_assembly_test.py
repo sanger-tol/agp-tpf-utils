@@ -14,11 +14,11 @@ from tola.assembly.scaffold import Scaffold
 
 
 def test_multi_chr_list():
-    assert ChrGroup.multi_chr_list("SUPER_3", 1) == ["SUPER_3"]
-    assert ChrGroup.multi_chr_list("SUPER_3", 3) == [
-        "SUPER_3A",
-        "SUPER_3B",
-        "SUPER_3C",
+    assert ChrGroup.multi_chr_list("SUPER_3", 1, "_HAP2") == ["SUPER_3_HAP2"]
+    assert ChrGroup.multi_chr_list("SUPER_3", 3, "_HAP1") == [
+        "SUPER_3A_HAP1",
+        "SUPER_3B_HAP1",
+        "SUPER_3C_HAP1",
     ]
 
 
@@ -34,12 +34,12 @@ def list_chr_naming_tests():
             ],
             "expected": {
                 "Hap1": [
-                    ("SUPER_1A", "Hap1", 2_000_000, "S1"),
-                    ("SUPER_1B", "Hap1", 1_000_000, "S2"),
+                    ("SUPER_1A_Hap1", "Hap1", 2_000_000, "S1"),
+                    ("SUPER_1B_Hap1", "Hap1", 1_000_000, "S2"),
                 ],
                 "Hap3": [
-                    ("SUPER_1A", "Hap3", 1_000_000, "S3"),
-                    ("SUPER_1B", "Hap3", 2_000_000, "S4"),
+                    ("SUPER_1A_Hap3", "Hap3", 1_000_000, "S3"),
+                    ("SUPER_1B_Hap3", "Hap3", 2_000_000, "S4"),
                 ],
             },
         },
@@ -53,13 +53,13 @@ def list_chr_naming_tests():
             ],
             "expected": {
                 "Hap1": [
-                    ("SUPER_1", "Hap1", 3_000_000, "S1"),
-                    ("SUPER_1_unloc_1", "Hap1", 12_000, "S1"),
-                    ("SUPER_2", "Hap1", 2_000_000, "S2"),
-                    ("SUPER_3", "Hap1", 1_000_000, "S4"),
+                    ("SUPER_1_Hap1", "Hap1", 3_000_000, "S1"),
+                    ("SUPER_1_Hap1_unloc_1", "Hap1", 12_000, "S1"),
+                    ("SUPER_2_Hap1", "Hap1", 2_000_000, "S2"),
+                    ("SUPER_3_Hap1", "Hap1", 1_000_000, "S4"),
                 ],
                 "Hap3": [
-                    ("SUPER_2", "Hap3", 2_000_000, "S3"),
+                    ("SUPER_2_Hap3", "Hap3", 2_000_000, "S3"),
                 ],
             },
         },
@@ -99,18 +99,18 @@ def list_chr_naming_tests():
             ],
             "expected": {
                 "Hap1": [
-                    ("SUPER_1", "Hap1", 40_000_000, "S6"),
-                    ("SUPER_2", "Hap1", 20_000_000, "S4"),
-                    ("SUPER_3", "Hap1", 10_000_000, "S1"),
+                    ("SUPER_1_Hap1", "Hap1", 40_000_000, "S6"),
+                    ("SUPER_2_Hap1", "Hap1", 20_000_000, "S4"),
+                    ("SUPER_3_Hap1", "Hap1", 10_000_000, "S1"),
                 ],
                 "Hap2": [
-                    ("SUPER_1", "Hap2", 2_000_000, "S7"),
-                    ("SUPER_2", "Hap2", 10_000_000, "S5"),
-                    ("SUPER_2_unloc_1", "Hap2", 19_000, "S5"),
-                    ("SUPER_2_unloc_2", "Hap2", 10_000, "S5"),
-                    ("SUPER_3A", "Hap2", 7_000_000, "S2"),
-                    ("SUPER_3B", "Hap2", 6_000_000, "S3"),
-                    ("SUPER_3B_unloc_1", "Hap2", 12_000, "S3"),
+                    ("SUPER_1_Hap2", "Hap2", 2_000_000, "S7"),
+                    ("SUPER_2_Hap2", "Hap2", 10_000_000, "S5"),
+                    ("SUPER_2_Hap2_unloc_1", "Hap2", 19_000, "S5"),
+                    ("SUPER_2_Hap2_unloc_2", "Hap2", 10_000, "S5"),
+                    ("SUPER_3A_Hap2", "Hap2", 7_000_000, "S2"),
+                    ("SUPER_3B_Hap2", "Hap2", 6_000_000, "S3"),
+                    ("SUPER_3B_Hap2_unloc_1", "Hap2", 12_000, "S3"),
                 ],
             },
         },

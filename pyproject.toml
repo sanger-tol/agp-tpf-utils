@@ -57,4 +57,4 @@ ignore = [
 "{test_*,*_test,conftest}.py" = ["S101"]
 
 [tool.ty.environment]
-python = "./venv"
+python = ".venv"

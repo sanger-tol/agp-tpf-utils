@@ -165,10 +165,8 @@ Our TPF files are highly diverged from the
 In your cloned copy of the git repository:
 
 ```sh
-python3 -m venv --prompt asm-utils venv
-source venv/bin/activate
-pip install --upgrade pip
-pip install --editable . 'tola-agp-tpf-utils[devel]'
+uv sync
+source .venv/bin/activate
 ```
 
 An alias such as this:

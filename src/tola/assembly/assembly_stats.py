@@ -2,7 +2,7 @@ import csv
 import io
 import logging
 
-from tola.assembly.assembly import Assembly
+from tola.assembly.assembly import Assembly, AssemblyDict
 
 log = logging.getLogger(__name__)
 
@@ -21,10 +21,13 @@ class AssemblyStats:
         self.per_assembly_stats = {}
         self.assembly_scaffold_lengths = {}
 
-    def make_stats(self, output_assemblies: dict[str | None, Assembly]) -> None:
+    def make_stats(self, output_assemblies: AssemblyDict) -> None:
         if not self.input_assembly:
             msg = "Missing input_assembly attribute"
             raise AssemblyStatsError(msg)
+
+        # These stats are going to be wrong if re-curating assemblies with
+        # Fragment names beginning with "SUPER_".
         input_junction_sets = self.input_assembly.fragment_junctions_by_asm_prefix()
         input_set = set()
         for junc_set in input_junction_sets.values():
@@ -103,12 +106,16 @@ class AssemblyStats:
         return ranked_names_lengths
 
     def get_assembly_scaffold_lengths(self, asm_key: str | None, asm: Assembly):
-        return self.assembly_scaffold_lengths.setdefault(
-            asm_key, self.build_assembly_scaffold_lengths(asm)
-        )
+        scaff_lengths = self.assembly_scaffold_lengths.get(asm_key)
+        if not scaff_lengths:
+            scaff_lengths = self.assembly_scaffold_lengths[asm_key] = (
+                self.build_assembly_scaffold_lengths(asm)
+            )
+        return scaff_lengths
 
-    def chromosome_name_csv(self, asm: Assembly):
+    def chromosome_name_csv(self, haplotype: str, asm: Assembly):
         prefix = self.autosome_prefix
+        suffix = f"_{haplotype}" if haplotype else None
         last_orig = None
         chr_name = None
 
@@ -122,13 +129,15 @@ class AssemblyStats:
                 else:
                     localised = "yes"
                     chr_name = name.replace(prefix, "", 1)
+                    if suffix:
+                        chr_name = chr_name.replace(suffix, "", 1)
                     last_orig = orig
                 csv_str.write(",".join((name, chr_name, localised)))
                 csv_str.write("\n")
 
         return csv_str.getvalue() if csv_str.tell() else None
 
-    def chromosomes_report_csv(self, hap_asm: dict[str | None, Assembly]):
+    def chromosomes_report_csv(self, hap_asm: AssemblyDict):
         csv_str = io.StringIO()
         # Would prefer to use quoting=csv.QUOTE_STRINGS but it was introduced
         # only in Python 3.12
@@ -150,6 +159,7 @@ class AssemblyStats:
         chr_name = None
         last_orig = None
         for hap, asm in hap_asm.items():
+            suffix = f"_{hap}" if hap else None
             for scffld in asm.scaffolds:
                 if scffld.rank in (1, 2):
                     name = scffld.name
@@ -161,6 +171,8 @@ class AssemblyStats:
                         localised = "true"
                         last_orig = orig
                         chr_name = name.replace(prefix, "", 1)
+                        if suffix:
+                            chr_name = chr_name.replace(suffix, "", 1)
                     csvr.writerow(
                         (
                             scffld.haplotype or hap or "Primary",

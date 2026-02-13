@@ -1,8 +1,7 @@
 import logging
 import math
-from typing import TypeAlias
 
-from tola.assembly.assembly import Assembly
+from tola.assembly.assembly import Assembly, AssemblyDict
 from tola.assembly.assembly_stats import AssemblyStats
 from tola.assembly.build_utils import (
     ChrNamer,
@@ -17,9 +16,6 @@ from tola.assembly.overlap_result import OverlapResult
 from tola.assembly.scaffold import Scaffold
 
 log = logging.getLogger(__name__)
-
-
-AssemblyDict: TypeAlias = dict[str | None, Assembly]
 
 
 class BuildAssembly(Assembly):
@@ -269,14 +265,7 @@ class BuildAssembly(Assembly):
                 self.add_scaffold(new_scffld)
 
     def assembly_with_scaffolds_in_map_order(self) -> AssemblyDict:
-        scaffolds, assemblies = self.__build_name_and_sort_assemblies()
-        for asm_name, assembly in assemblies.items():
-            if asm_name is None:
-                continue
-            suffix = "_" + asm_name
-            for scaffold in assembly.scaffolds:
-                scaffold.name = scaffold.name + suffix
-                scaffold.haplotype = asm_name
+        scaffolds, _ = self.__build_name_and_sort_assemblies()
         return {None: Assembly("Pretext", scaffolds=scaffolds)}
 
     def assemblies_with_scaffolds_fused(self) -> AssemblyDict:
@@ -293,6 +282,7 @@ class BuildAssembly(Assembly):
         assemblies = {}
         for scffld in scaffolds:
             curated = True
+            hap = None
             if tag := scffld.tag:
                 # Set assembly name from tag, which will be one of:
                 #   Contaminant | FalseDuplicate | Haplotig
@@ -310,7 +300,9 @@ class BuildAssembly(Assembly):
                 # Add autosome to the ChrNamer
                 chr_namer.add_scaffold(asm_key, scffld)
             elif scffld.rank == 2:
-                chr_namer.add_chr_prefix(scffld)
+                chr_namer.add_chr_prefix(scffld, hap)
+            elif hap is not None:
+                chr_namer.add_haplotype_prefix(scffld, hap)
 
         # ChrNamer names autosome chromosomes by size
         chr_namer.name_chromosomes()

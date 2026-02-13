@@ -51,7 +51,7 @@ class ScaffoldNamer:
         "Unloc",
     }
 
-    def make_scaffold_name(self, scaffold: Scaffold, fragment_tags=None) -> None:
+    def make_scaffold_name(self, scaffold: Scaffold, fragment_tags=None):
         """
         Using the tags from Pretext in the Scaffold, work out what the
         haplotype is, if it has been named, and what its rank is.
@@ -72,7 +72,7 @@ class ScaffoldNamer:
                 self.target_tags = True
             elif tag == "Primary":
                 primary_tag = True
-            elif re.fullmatch(r"([A-Z]\d*|[IVX_]+|\d+[A-Z]+)", tag):
+            elif re.fullmatch(r"([A-Z]\d*[A-Z]?|[IVX_]+|\d+[A-Z]+)", tag):
                 # This tag looks like a chromosome name, e.g. "X1", "I_II", "2RL"
                 if scaffold_name and tag != scaffold_name:
                     msg = (
@@ -137,7 +137,7 @@ class ScaffoldNamer:
         fragment: Fragment,
         scaffold_tags: set[str],
         original_name: str,
-    ) -> None:
+    ):
         name = self.current_scaffold_name
         rank = self.current_rank
         if "Contaminant" in fragment.tags or (
@@ -187,14 +187,14 @@ class ScaffoldNamer:
         self.unloc_n += 1
         return f"{self.current_scaffold_name}_unloc_{self.unloc_n}"
 
-    def rename_haplotigs_by_size(self) -> None:
+    def rename_haplotigs_by_size(self):
         self.rename_by_size(self.haplotig_scaffolds)
 
-    def rename_unlocs_by_size(self) -> None:
+    def rename_unlocs_by_size(self):
         for unloc_list in self.unloc_scaffolds:
             self.rename_by_size(unloc_list)
 
-    def rename_by_size(self, scaffolds: list[Scaffold]) -> None:
+    def rename_by_size(self, scaffolds: list[Scaffold]):
         if not scaffolds:
             return
         names = [s.name for s in scaffolds]
@@ -238,17 +238,17 @@ class ChrGroup:
         return length
 
     @staticmethod
-    def multi_chr_list(chr_name, multi_count):
+    def multi_chr_list(chr_name, multi_count, hap_suffix):
         """
         Adds the suffix "A", "B", "C" etc... to the supplied chromosome name
         for when there are multiple chromosomes in a group.
         """
         if multi_count == 1:
-            return [chr_name]
+            return [chr_name + hap_suffix]
         else:
             chr_list = []
             for ltr in range(ord("A"), ord("A") + multi_count):
-                chr_list.append(chr_name + chr(ltr))
+                chr_list.append(chr_name + chr(ltr) + hap_suffix)
             return chr_list
 
     def max_hap_set_count(self):
@@ -265,8 +265,13 @@ class ChrGroup:
               "Scaffold_10_unloc_2" > "SUPER_9A_unloc_2"
               "Scaffold_11"         > "SUPER_9B"
         """
-        for hap_set in self.data.values():
-            chr_names = self.multi_chr_list(chr_prefix + str(chr_n), len(hap_set))
+        for hap_name, hap_set in self.data.items():
+            hap_suffix = (
+                "" if (hap_name is None or hap_name == "Primary") else f"_{hap_name}"
+            )
+            chr_names = self.multi_chr_list(
+                chr_prefix + str(chr_n), len(hap_set), hap_suffix
+            )
             for orig, scffld_list in hap_set.items():
                 this_chr = chr_names.pop(0)
                 for scffld in scffld_list:
@@ -297,10 +302,10 @@ class ChrNamer:
         self.haplotypes_seen = {}
         self.groups = None
 
-    def add_scaffold(self, hap, scffld):
+    def add_scaffold(self, haplotype, scffld):
         # A dict is used to store the haplotypes seen since order is
         # significant and sets do not preserve order.
-        haplotype = str(hap)
+        # haplotype = str(hap)
         self.haplotypes_seen[haplotype] = True
         self.scaffolds.append((haplotype, scffld))
 
@@ -309,9 +314,20 @@ class ChrNamer:
         self.groups.append(grp)
         return grp
 
-    def add_chr_prefix(self, scffld):
+    def add_chr_prefix(self, scffld: Scaffold, haplotype: str | None):
         prefix = self.chr_prefix
         if not scffld.name.startswith(prefix):
+            scffld.name = prefix + scffld.name
+        if haplotype and haplotype != "Primary":
+            suffix = "_" + haplotype
+            if not scffld.name.lower().endswith(suffix.lower()):
+                scffld.name = scffld.name + suffix
+
+    def add_haplotype_prefix(self, scffld: Scaffold, haplotype: str):
+        if haplotype == "Primary":
+            return
+        prefix = haplotype + "_"
+        if not scffld.name.lower().startswith(prefix.lower()):
             scffld.name = prefix + scffld.name
 
     def name_chromosomes(self):
@@ -403,7 +419,7 @@ class ChrNamer:
         tbl = TerminalTable()
         hdr = tbl.new_header()
         for hap in self.haplotypes_seen:
-            hdr.new_cell().new_line(hap, bold)
+            hdr.new_cell().new_line(str(hap), bold)
 
         ignore = set(self.haplotypes_seen)
         ignore.add("Cut")
@@ -470,10 +486,10 @@ class FoundFragment:
     def scaffold_count(self):
         return len(self.scaffolds)
 
-    def add_scaffold(self, scaffold: Scaffold) -> None:
+    def add_scaffold(self, scaffold: Scaffold):
         self.scaffolds.append(scaffold)
 
-    def remove_scaffold(self, scaffold: Scaffold) -> None:
+    def remove_scaffold(self, scaffold: Scaffold):
         self.scaffolds.remove(scaffold)
 
 
@@ -553,7 +569,7 @@ class StartOverhangPremise(OverhangPremise):
             self.scaffold.start_overhang
         )
 
-    def apply(self) -> None:
+    def apply(self):
         self.scaffold.discard_start()
 
 
@@ -572,7 +588,7 @@ class EndOverhangPremise(OverhangPremise):
             self.scaffold.end_overhang
         )
 
-    def apply(self) -> None:
+    def apply(self):
         self.scaffold.discard_end()
 
 
@@ -590,7 +606,7 @@ class OverhangResolver:
         ] = {}
         self.error_length = error_length
 
-    def add_overhang_premise(self, fragment: Fragment, scffld: OverlapResult) -> None:
+    def add_overhang_premise(self, fragment: Fragment, scffld: OverlapResult):
         if scffld.rows[0] is fragment:
             premise = StartOverhangPremise(scffld, fragment)
         elif scffld.rows[-1] is fragment:

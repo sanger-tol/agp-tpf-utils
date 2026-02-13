@@ -1,6 +1,7 @@
 import io
 import re
 import textwrap
+from typing import TypeAlias
 
 from tola.assembly.fragment import Junction
 from tola.assembly.scaffold import Scaffold
@@ -100,7 +101,7 @@ class Assembly:
         )
 
     def fragment_junction_set(self) -> set[Junction]:
-        junctions: set[Junction] = set()
+        junctions = set()
         for scffld in self.scaffolds:
             junctions |= scffld.fragment_junction_set()
         return junctions
@@ -146,3 +147,6 @@ class Assembly:
         for i in range(0, lgth):
             for j in range(i + 1, lgth):
                 compare_func(frags[i], frags[j])
+
+
+AssemblyDict: TypeAlias = dict[str | None, Assembly]

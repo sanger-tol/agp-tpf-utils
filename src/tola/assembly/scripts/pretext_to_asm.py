@@ -7,9 +7,9 @@ from pathlib import Path
 import click
 import yaml
 
-from tola.assembly.assembly import Assembly
+from tola.assembly.assembly import Assembly, AssemblyDict
 from tola.assembly.assembly_stats import AssemblyStats
-from tola.assembly.build_assembly import AssemblyDict, BuildAssembly
+from tola.assembly.build_assembly import BuildAssembly
 from tola.assembly.build_utils import ChrNamerError, TaggingError
 from tola.assembly.format import format_agp, format_tpf
 from tola.assembly.gap import Gap
@@ -181,8 +181,8 @@ def ul(txt):
     "default_asm_name",
     type=str,
     help="""
-        Default name for a non-haplotype assembly. Defaults to 'map-order' if
-        the '--keep-map-order' option is given.
+        Name for output files which are not split per haplotype. Defaults
+        to 'map-order' if the '--keep-map-order' option is given.
         """,
 )
 def cli(
@@ -466,11 +466,16 @@ def write_chr_report_csv(
         csv_fh.write(csv)
 
 
-def write_chr_csv_files(out_dir, stats, out_assemblies: AssemblyDict, clobber):
-    for asm in out_assemblies.values():
+def write_chr_csv_files(
+    out_dir: Path,
+    stats: AssemblyStats,
+    out_assemblies: AssemblyDict,
+    clobber: bool,
+):
+    for hap, asm in out_assemblies.items():
         if not asm.curated:
             continue
-        if chr_names := stats.chromosome_name_csv(asm):
+        if chr_names := stats.chromosome_name_csv(hap, asm):
             csv_file = out_dir / f"{asm.name}.chromosome.list.csv"
             with get_output_filehandle(csv_file, clobber) as csv_fh:
                 csv_fh.write(chr_names)
