@@ -1,10 +1,14 @@
 import csv
 import io
 import logging
+from typing import TypeAlias
 
 from tola.assembly.assembly import Assembly, AssemblyDict
 
 log = logging.getLogger(__name__)
+
+
+RankedNameLengths: TypeAlias = dict[int, dict[str, int]]
 
 
 class AssemblyStatsError(Exception):
@@ -12,19 +16,25 @@ class AssemblyStatsError(Exception):
 
 
 class AssemblyStats:
-    def __init__(self, autosome_prefix: str = "SUPER_") -> None:
+    def __init__(self, autosome_prefix: str = "SUPER_"):
         self.autosome_prefix = autosome_prefix
         self.input_assembly: Assembly | None = None
         self.cuts = 0
-        self.breaks = 0
-        self.joins = 0
+        self.breaks = None
+        self.joins = None
+        self.interventions_per_gbp = None
+        self.percent_assembly_in_chromosomes = None
         self.per_assembly_stats = {}
         self.assembly_scaffold_lengths = {}
 
-    def make_stats(self, output_assemblies: AssemblyDict) -> None:
+    def make_stats(self, output_assemblies: AssemblyDict):
         if not self.input_assembly:
             msg = "Missing input_assembly attribute"
             raise AssemblyStatsError(msg)
+        self.__build_junction_stats(output_assemblies)
+        self.__build_length_stats(output_assemblies)
+
+    def __build_junction_stats(self, output_assemblies: AssemblyDict):
 
         # These stats are going to be wrong if re-curating assemblies with
         # Fragment names beginning with "SUPER_".
@@ -63,6 +73,25 @@ class AssemblyStats:
                     "manual_joins": len((junc_set - input_asm_set) & total_joins),
                 }
 
+    def __build_length_stats(self, output_assemblies: AssemblyDict):
+        input_asm_length = self.input_assembly.fragments_length
+
+        # Calculate the number of breaks and joins made per Gbp of the input assembly
+        self.interventions_per_gbp = round(
+            (self.breaks + self.joins) / (input_asm_length / 1e9), 3
+        )
+
+        # Calculate the percentage of the assembly that was placed in chromosomes
+        tier_1_and_2_length = 0
+        for hap, asm in output_assemblies.items():
+            ranked_scffld_lengths = self.get_assembly_scaffold_lengths(hap, asm)
+            for rank in (1, 2):
+                if scffld_lengths := ranked_scffld_lengths.get(rank):
+                    tier_1_and_2_length += sum(scffld_lengths.values())
+        self.percent_assembly_in_chromosomes = round(
+            100 * (tier_1_and_2_length / input_asm_length), 1
+        )
+
     def log_curation_stats(self):
         cut_plural = "cut in a contig" if self.cuts == 1 else "cuts in contigs"
         break_plural = "break at a gap" if self.breaks == 1 else "breaks at gaps"
@@ -71,6 +100,10 @@ class AssemblyStats:
             f"Curation made {self.cuts} {cut_plural}, {self.breaks}"
             f" {break_plural} and {self.joins} {join_plural}"
         )
+        log.info(
+            f"Assembly placed in chromosomes = {self.percent_assembly_in_chromosomes}%"
+        )
+        log.info(f"Interventions per Gbp = {self.interventions_per_gbp}")
 
     def ranked_scaffolds(self, asm: Assembly):
         ranked_scaffolds = {}
@@ -79,7 +112,7 @@ class AssemblyStats:
             ranked_scaffolds.setdefault(rank, []).append(scffld)
         return ranked_scaffolds
 
-    def build_assembly_scaffold_lengths(self, asm: Assembly):
+    def build_assembly_scaffold_lengths(self, asm: Assembly) -> RankedNameLengths:
         ranked_scaffolds = self.ranked_scaffolds(asm)
 
         ranked_names_lengths = {}
@@ -105,7 +138,11 @@ class AssemblyStats:
 
         return ranked_names_lengths
 
-    def get_assembly_scaffold_lengths(self, asm_key: str | None, asm: Assembly):
+    def get_assembly_scaffold_lengths(
+        self,
+        asm_key: str | None,
+        asm: Assembly,
+    ) -> RankedNameLengths:
         scaff_lengths = self.assembly_scaffold_lengths.get(asm_key)
         if not scaff_lengths:
             scaff_lengths = self.assembly_scaffold_lengths[asm_key] = (
@@ -250,7 +287,7 @@ class AssemblyStats:
                     log.warning(msg)
 
     def check_consistent_autosome_count(
-        self, hap_asm: dict[str | None, Assembly]
+        self, hap_asm: AssemblyDict
     ) -> list[str] | None:
         chr_counts = {}
         for hap, asm in hap_asm.items():
@@ -267,9 +304,7 @@ class AssemblyStats:
                 ]
         return None
 
-    def check_for_large_haplotigs(
-        self, hap_asm: dict[str | None, Assembly]
-    ) -> list[str] | None:
+    def check_for_large_haplotigs(self, hap_asm: AssemblyDict) -> list[str] | None:
         htigs = hap_asm.get("Haplotig")
         if not htigs:
             return None

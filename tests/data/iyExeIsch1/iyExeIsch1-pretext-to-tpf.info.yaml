@@ -3,3 +3,5 @@ assemblies:
     manual_breaks: 29
     manual_joins: 81
 manual_haplotig_removals: 0
+percent_assembly_in_chromosomes: 98.8
+interventions_per_gbp: 387.452

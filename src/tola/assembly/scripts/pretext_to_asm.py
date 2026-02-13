@@ -481,7 +481,7 @@ def write_chr_csv_files(
                 csv_fh.write(chr_names)
 
 
-def write_info_yaml(output_file, stats, out_assemblies: AssemblyDict, clobber):
+def write_info_yaml(output_file, stats: AssemblyStats, out_assemblies: AssemblyDict, clobber):
     asm_stats = stats.per_assembly_stats
     info = {"assemblies": asm_stats}
     if len(asm_stats) > 1:
@@ -492,6 +492,8 @@ def write_info_yaml(output_file, stats, out_assemblies: AssemblyDict, clobber):
     if h_asm := out_assemblies.get("Haplotig"):
         haplotig_count = len(h_asm.scaffolds)
     info["manual_haplotig_removals"] = haplotig_count
+    info["percent_assembly_in_chromosomes"] = stats.percent_assembly_in_chromosomes
+    info["interventions_per_gbp"] = stats.interventions_per_gbp
 
     yaml_file = output_file.with_name(output_file.stem + ".info.yaml")
     with get_output_filehandle(yaml_file, clobber) as yaml_fh:
