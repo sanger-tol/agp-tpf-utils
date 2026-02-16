@@ -172,7 +172,7 @@ source .venv/bin/activate
 An alias such as this:
 
 ```sh
-alias atu="cd $HOME/git/agp-tpf-utils && source ./venv/bin/activate"
+alias atu="cd $HOME/git/agp-tpf-utils && source .venv/bin/activate"
 ```
 
 in your shell's `.*rc` file (*e.g.* `~/.bashrc` for `bash` or `~/.zshrc` for
