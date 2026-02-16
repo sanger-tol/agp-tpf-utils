@@ -6,10 +6,10 @@ import pytest
 
 from tola.assembly.assembly import Assembly
 from tola.assembly.build_assembly import BuildAssembly
-from tola.assembly.build_utils import ChrGroup, ChrNamer, ScaffoldNamer, TaggingError
 from tola.assembly.fragment import Fragment
 from tola.assembly.gap import Gap
 from tola.assembly.indexed_assembly import IndexedAssembly
+from tola.assembly.naming_utils import ChrGroup, ChrNamer, ScaffoldNamer, TaggingError
 from tola.assembly.scaffold import Scaffold
 
 

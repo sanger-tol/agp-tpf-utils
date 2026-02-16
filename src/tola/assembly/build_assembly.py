@@ -3,15 +3,11 @@ import math
 
 from tola.assembly.assembly import Assembly, AssemblyDict
 from tola.assembly.assembly_stats import AssemblyStats
-from tola.assembly.build_utils import (
-    ChrNamer,
-    FoundFragment,
-    OverhangResolver,
-    ScaffoldNamer,
-)
+from tola.assembly.build_utils import FoundFragment, OverhangResolver
 from tola.assembly.fragment import Fragment
 from tola.assembly.gap import Gap
 from tola.assembly.indexed_assembly import IndexedAssembly
+from tola.assembly.naming_utils import ChrNamer, ScaffoldNamer
 from tola.assembly.overlap_result import OverlapResult
 from tola.assembly.scaffold import Scaffold
 

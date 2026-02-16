@@ -10,10 +10,10 @@ import yaml
 from tola.assembly.assembly import Assembly, AssemblyDict
 from tola.assembly.assembly_stats import AssemblyStats
 from tola.assembly.build_assembly import BuildAssembly
-from tola.assembly.build_utils import ChrNamerError, TaggingError
 from tola.assembly.format import format_agp, format_tpf
 from tola.assembly.gap import Gap
 from tola.assembly.indexed_assembly import IndexedAssembly
+from tola.assembly.naming_utils import ChrNamerError, TaggingError
 from tola.assembly.parser import format_from_file_extn, parse_agp, parse_tpf
 from tola.fasta.index import FastaIndex
 from tola.fasta.stream import FastaStream
