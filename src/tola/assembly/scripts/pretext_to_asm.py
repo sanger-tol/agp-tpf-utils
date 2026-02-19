@@ -94,6 +94,7 @@ def ul(txt):
         exists=True,
         readable=True,
         resolve_path=True,
+        dir_okay=False,
     ),
     required=True,
     help="""Assembly before curation, usually a FASTA file.
@@ -109,6 +110,7 @@ def ul(txt):
         path_type=Path,
         exists=True,
         readable=True,
+        dir_okay=False,
     ),
     required=True,
     help="Assembly file from Pretext, which is usually an AGP.",
