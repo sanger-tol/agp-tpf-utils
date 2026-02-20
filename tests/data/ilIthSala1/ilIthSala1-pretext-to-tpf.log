@@ -184,7 +184,7 @@ cut into:
 
 
 ilIthSala1-pretext-to-tpf.hap1.1.primary
-        504,003,295  bp sequence (minus gaps)
+        503,456,315  bp sequence (minus gaps)
   Autosomes:
     n = 38
          14,311,964  SUPER_1_HAP1
@@ -197,14 +197,14 @@ ilIthSala1-pretext-to-tpf.hap1.1.primary
          22,375,193  SUPER_Z_HAP1
          37,053,436  bp total
   Unplaced:
-    n = 791
+    n = 790
             651,870  HAP1_SCAFFOLD_54
                 ...  ...
              16,408  HAP1_SCAFFOLD_864
-         92,524,843  bp total
+         91,977,863  bp total
 
 ilIthSala1-pretext-to-tpf.hap2.1.primary
-        389,828,879  bp sequence (minus gaps)
+        390,375,859  bp sequence (minus gaps)
   Autosomes:
     n = 38
          13,185,411  SUPER_3_HAP2
@@ -212,11 +212,11 @@ ilIthSala1-pretext-to-tpf.hap2.1.primary
           5,064,735  SUPER_36_HAP2
         347,504,210  bp total
   Unplaced:
-    n = 1041
-            543,105  HAP2_SCAFFOLD_55
+    n = 1042
+            546,980  HAP2_HAP1_SCAFFOLD_60
                 ...  ...
               5,267  HAP2_SCAFFOLD_1115
-         42,324,669  bp total
+         42,871,649  bp total
 
 ilIthSala1-pretext-to-tpf.1.haplotigs
             309,695  bp sequence (minus gaps)
