@@ -31,6 +31,7 @@ class BuildAssembly(Assembly):
         default_gap=None,
         bp_per_texel=None,
         autosome_prefix=None,
+        max_contig_length=2_000_000_000,
     ):
         super().__init__(name, header, scaffolds, bp_per_texel)
         self.default_gap = default_gap
@@ -40,6 +41,7 @@ class BuildAssembly(Assembly):
         self.assembly_stats: AssemblyStats = AssemblyStats()
         if autosome_prefix:
             self.autosome_prefix = autosome_prefix
+        self.max_contig_length = max_contig_length
 
     @property
     def autosome_prefix(self):
@@ -288,17 +290,21 @@ class BuildAssembly(Assembly):
                 asm_key = hap
             else:
                 asm_key = None
-            new_asm = assemblies.setdefault(
-                asm_key, Assembly(self.name, curated=curated)
-            )
-            new_asm.add_scaffold(scffld)
-            if scffld.rank == 1:
-                # Add autosome to the ChrNamer
-                chr_namer.add_scaffold(asm_key, scffld)
-            elif scffld.rank == 2:
-                chr_namer.add_chr_prefix(scffld, hap)
-            elif hap is not None:
-                chr_namer.add_haplotype_prefix(scffld, hap)
+
+            if not (new_asm := assemblies.get(asm_key)):
+                new_asm = Assembly(self.name, curated=curated)
+                assemblies[asm_key] = new_asm
+
+            for cut_scffld in self.cut_scaffold_if_too_long(scffld):
+                new_asm.add_scaffold(cut_scffld)
+
+                if cut_scffld.rank == 1:
+                    # Add autosome to the ChrNamer
+                    chr_namer.add_scaffold(asm_key, cut_scffld)
+                elif cut_scffld.rank == 2:
+                    chr_namer.add_chr_prefix(cut_scffld, hap)
+                elif hap is not None:
+                    chr_namer.add_haplotype_prefix(cut_scffld, hap)
 
         # ChrNamer names autosome chromosomes by size
         chr_namer.name_chromosomes()
@@ -310,6 +316,113 @@ class BuildAssembly(Assembly):
         self.assembly_stats.make_stats(assemblies)
 
         return scaffolds, assemblies
+
+    def cut_scaffold_if_too_long(self, scffld: Scaffold) -> list[Scaffold]:
+        whole = scffld.length
+        pieces = math.ceil(whole / self.max_contig_length)
+
+        if pieces == 1:
+            return [scffld]
+
+        # If, for example, we need to cut the scaffold into 3 pieces, this
+        # loop will take the first 1/3 off the scaffold, then 1/2 of what's
+        # remaining.
+        cut_parts = []
+        to_cut = scffld
+        for div in range(pieces, 1, -1):
+            cut_at = whole // div
+            gap_i = self.index_of_nearest_gap_to_ideal_cut_site(to_cut, cut_at)
+            rows = to_cut.rows
+            # First part is everything up to, but not including, the gap
+            cut_parts.append(Scaffold(to_cut.name, rows[:gap_i]))
+            # Second part is everything after the gap
+            to_cut = Scaffold(to_cut.name, rows[gap_i + 1 :])
+        cut_parts.append(to_cut)
+
+        # Add suffix "_1", "_2" etc... to cut scaffolds
+        for i, part in enumerate(cut_parts):
+            part.name = f"{part.name}_{i + 1}"
+
+        # Format report of cuts made
+        whole_str = f"{whole:,d}"
+        wl = len(whole_str)
+        nl = len(scffld.name) + 4
+        log.info(
+            f"Cut {scffld.name:<{nl}}  {whole:{wl},d} bp (including gaps) into:\n"
+            + "".join(
+                [f"    {x.name:<{nl}}  {x.length:{wl},d} bp\n" for x in cut_parts]
+            )
+        )
+
+        return cut_parts
+
+    def index_of_nearest_gap_to_ideal_cut_site(self, to_cut: Scaffold, cut_at: int):
+        # Make a temporary `IndexedAssembly` to use it's code to search for an
+        # row which overlaps out cut coordiante.
+        idx_asm = IndexedAssembly(
+            f"Temporary Assembly for cutting '{to_cut.name}' at {cut_at:_d}",
+            scaffolds=[to_cut],
+        )
+
+        # Find the row which overlaps the ideal cut site
+        ovr_i_j = idx_asm.overlapping_indices_by_scaffold_start_end(
+            to_cut, cut_at, cut_at
+        )
+        if not ovr_i_j:
+            msg = (
+                f"Failed to find an element at {cut_at:_d}"
+                f" within '{to_cut.name}' of length {to_cut.length:_d}"
+            )
+            raise ValueError(msg)
+
+        ovr_i = ovr_i_j[0]
+        rows = to_cut.rows
+        ele = rows[ovr_i]
+        if not isinstance(ele, Gap):
+            # This isn't a gap, so we need to find the nearest
+            gap_i_before = None
+            for i in range(ovr_i, 0, -1):
+                if isinstance(rows[i], Gap):
+                    gap_i_before = i
+                    break
+
+            gap_i_after = None
+            for i in range(ovr_i, len(rows)):
+                if isinstance(rows[i], Gap):
+                    gap_i_after = i
+                    break
+
+            if gap_i_before is None and gap_i_after is None:
+                msg = (
+                    f"Failed to find gap before or after {cut_at:_d} in '{to_cut.name}'"
+                )
+                raise ValueError(msg)
+
+            if gap_i_before is None:
+                ovr_i = gap_i_after
+            elif gap_i_after is None:
+                ovr_i = gap_i_before
+            else:
+                length_before = 0
+                length_after = 0
+                for i, this_row in enumerate(rows):
+                    if i < gap_i_before:
+                        length_before += this_row.length
+
+                    if i < gap_i_after:
+                        length_after += this_row.length
+                    else:
+                        break
+
+                # Choose the gap before or after, whichever is nearest to the
+                # ideal cut point.
+                ovr_i = (
+                    gap_i_before
+                    if abs(cut_at - length_before) < abs(cut_at - length_after)
+                    else gap_i_after
+                )
+
+        return ovr_i
 
     def scaffolds_fused_by_name(self) -> list[Scaffold]:
         gap = self.default_gap

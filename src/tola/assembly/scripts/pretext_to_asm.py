@@ -3,6 +3,7 @@ import os
 import re
 import sys
 from pathlib import Path
+from typing import no_type_check
 
 import click
 import yaml
@@ -187,6 +188,18 @@ def ul(txt):
         to 'map-order' if the '--keep-map-order' option is given.
         """,
 )
+@click.option(
+    "--max-contig-length",
+    "max_contig_length",
+    type=int,
+    help=f"""
+        Maximum length for a single contig.  If a contig exceeds this size, it
+        will be broken at gaps into a number of pieces such that each is less
+        than this number.  The pieces will have the suffixes '_1', '_2'
+        {it("etc...")} added to their names.  [default: 2 Gbp]
+        """,
+    default=2_000_000_000,
+)
 def cli(
     assembly_file,
     pretext_file,
@@ -197,6 +210,7 @@ def cli(
     write_log,
     keep_map_order,
     default_asm_name,
+    max_contig_length,
 ):
     logfile = setup_logging(log_level, output_file, write_log, clobber)
 
@@ -218,6 +232,7 @@ def cli(
         "stdout",
         default_gap=Gap(200, "scaffold"),
         autosome_prefix=autosome_prefix,
+        max_contig_length=max_contig_length,
     )
     build_asm.remap_to_input_assembly(prtxt_asm, input_asm)
 
@@ -306,9 +321,9 @@ def name_assemblies(
     # has been curated. One of the painted chromosomes in the curated
     # haplotype has been tagged with 'Primary'
     if asm_dict.get("Primary"):
-        # <ToLID>.1.primary.curated.fa  <- Sequence from "Hap1" tagged scaffolds)
+        # <ToLID>.1.primary.curated.fa  <- Sequence from "Hap1" tagged scaffolds
         # <ToLID>.1.primary.chromosome.list.csv
-        # <ToLID>.1.all_haplotigs.curated.fa  <- Sequence from "Hap2" tagged scaffolds)
+        # <ToLID>.1.all_haplotigs.curated.fa  <- Sequence from "Hap2" tagged scaffolds
         other_asm = []
         for asm_key, asm in asm_dict.items():
             if asm_key == "Primary":
@@ -332,8 +347,8 @@ def name_assemblies(
     elif asm_dict.get(None):
         # <ToLID>.1.primary.curated.fa
         # <ToLID>.1.primary.chromosome.list.csv
-        # <ToLID>.1.additional_haplotigs.curated.fa <- Sequence from "Haplotig"
-        #                                              tagged scaffolds
+        # <ToLID>.1.additional_haplotigs.curated.fa  <- Sequence from "Haplotig"
+        #                                               tagged scaffolds
         other_asm = []
         for asm_key, asm in asm_dict.items():
             if asm_key is None:
@@ -483,7 +498,12 @@ def write_chr_csv_files(
                 csv_fh.write(chr_names)
 
 
-def write_info_yaml(output_file, stats: AssemblyStats, out_assemblies: AssemblyDict, clobber):
+def write_info_yaml(
+    output_file,
+    stats: AssemblyStats,
+    out_assemblies: AssemblyDict,
+    clobber,
+):
     asm_stats = stats.per_assembly_stats
     info = {"assemblies": asm_stats}
     if len(asm_stats) > 1:

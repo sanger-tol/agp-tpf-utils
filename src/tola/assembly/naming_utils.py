@@ -396,6 +396,7 @@ class ChrNamer:
             #           },
             #       }
             #   )
+
             group.add_scaffold_to_haplotype(haplotype, scffld)
             last_haplotype = haplotype
             last_orig = orig

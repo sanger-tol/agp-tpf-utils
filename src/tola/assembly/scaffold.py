@@ -10,7 +10,7 @@ class Scaffold:
     def __init__(
         self,
         name,
-        rows=None,
+        rows: list[Fragment | Gap] | None = None,
         tag=None,
         haplotype=None,
         rank=0,
@@ -21,7 +21,7 @@ class Scaffold:
         if rows:
             self.rows = [*rows]
         else:
-            self.rows = []
+            self.rows: list[Fragment | Gap] = []
         self.tag: str | None = tag
         self.haplotype: str | None = haplotype
         self.rank: int = rank
@@ -57,7 +57,7 @@ class Scaffold:
             txt.write(f"  {row.length:14_d}  {row}\n")
         return txt.getvalue()
 
-    def add_row(self, row):
+    def add_row(self, row: Fragment | Gap):
         self.rows.append(row)
 
     @property

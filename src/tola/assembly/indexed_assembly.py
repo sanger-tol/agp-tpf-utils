@@ -64,9 +64,10 @@ class IndexedAssembly(Assembly):
             raise ValueError(msg)
 
         idx = self.overlap_index_by_name(scffld.name)
-        i_ovr, j_ovr = self.get_overlap_fragment_indices(idx, bait.start, bait.end)
-        if i_ovr is None or j_ovr is None:
+        rng = self.__get_overlap_fragment_indices(idx, bait.start, bait.end)
+        if rng is None:
             return None
+        i_ovr, j_ovr = rng
 
         # Walk start and end pointers back to ignore Gaps on the ends
         while isinstance(scffld.rows[i_ovr], Gap):
@@ -87,9 +88,9 @@ class IndexedAssembly(Assembly):
             rows=overlaps,
         )
 
-    def get_overlap_fragment_indices(
+    def __get_overlap_fragment_indices(
         self, idx: list[int], start: int, end: int
-    ) -> tuple[int | None, int | None]:
+    ) -> tuple[int, int] | None:
         """
         Perfoms a binary search through the index `idx` (a list of
         `Fragment | Gap` end positions), returning the start and end indices
@@ -116,7 +117,7 @@ class IndexedAssembly(Assembly):
                 break
 
         if ovr is None:
-            return None, None
+            return None
 
         # The span of overlapping entries may extend to the left or right
         # of "ovr"
@@ -132,3 +133,12 @@ class IndexedAssembly(Assembly):
             j_ovr = j
 
         return i_ovr, j_ovr
+
+    def overlapping_indices_by_scaffold_start_end(
+        self, scaffold: Scaffold, start: int, end: int
+    ) -> tuple[int, int] | None:
+        """
+        Get the start and end index
+        """
+        idx = self.overlap_index_by_name(scaffold.name)
+        return self.__get_overlap_fragment_indices(idx, start, end)
