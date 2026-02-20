@@ -1,6 +1,8 @@
 from tola.assembly.assembly import Assembly
+from tola.assembly.fragment import Fragment
 from tola.assembly.gap import Gap
 from tola.assembly.overlap_result import OverlapResult
+from tola.assembly.scaffold import Scaffold
 
 
 class IndexedAssembly(Assembly):
@@ -14,14 +16,14 @@ class IndexedAssembly(Assembly):
                 self.add_scaffold(scffld)
 
     @classmethod
-    def new_from_assembly(cls, asm):
-        return cls(asm.name, asm.header, asm.scaffolds)
+    def new_from_assembly(cls, asm: Assembly):
+        return cls(asm.name, header=asm.header, scaffolds=asm.scaffolds)
 
     @property
     def scaffolds(self):
         return self._scaffold_dict.values()
 
-    def add_scaffold(self, scffld):
+    def add_scaffold(self, scffld: Scaffold):
         if self._scaffold_dict.get(scffld.name):
             msg = f"Already have Scaffold named '{scffld.name}'"
             raise ValueError(msg)
@@ -37,14 +39,19 @@ class IndexedAssembly(Assembly):
         self._scaffold_dict[scffld.name] = scffld
         self._scaffold_index[scffld.name] = idx
 
-    def scaffold_by_name(self, name):
+    def scaffold_by_name(self, name: str) -> Scaffold:
         if scffld := self._scaffold_dict.get(name):
             return scffld
-        else:
-            msg = f"No such Scaffold '{name}' in Assembly '{self.name}'"
-            raise ValueError(msg)
+        msg = f"No such Scaffold '{name}' in Assembly '{self.name}'"
+        raise ValueError(msg)
 
-    def find_overlaps(self, bait):
+    def overlap_index_by_name(self, name: str) -> list[int]:
+        if idx := self._scaffold_index.get(name):
+            return idx
+        msg = f"Scaffold '{name}' is not indexed."
+        raise ValueError(msg)
+
+    def find_overlaps(self, bait: Fragment) -> OverlapResult | None:
         """
         Given a Fragment bait, returns an OverlapResult (a subclass of
         Scaffold) with rows from the Scaffold within the IndexedAssembly
@@ -56,48 +63,10 @@ class IndexedAssembly(Assembly):
             msg = f"Scaffold '{scffld.name}' is empty"
             raise ValueError(msg)
 
-        idx = self._scaffold_index.get(bait.name)
-        if not idx:
-            msg = f"Scaffold '{scffld.name}' is not indexed."
-            raise ValueError(msg)
-
-        bait_start = bait.start
-        bait_end = bait.end
-
-        # Binary search: a = left; m = midpoint; z = right
-        a = 0
-        z = len(idx)
-        ovr = None
-        while a < z:
-            m = a + ((z - a) // 2)
-            scffld_start = 1 if m == 0 else 1 + idx[m - 1]
-            scffld_end = idx[m]
-            if scffld_end < bait_start:
-                # Scaffold row at "m" is to the left of the bait
-                a = m + 1
-            elif scffld_start > bait_end:
-                # Scaffold row at "m" is to the right of the bait
-                z = m
-            else:
-                # Must be overlapping
-                ovr = m
-                break
-
-        if ovr is None:
+        idx = self.overlap_index_by_name(scffld.name)
+        i_ovr, j_ovr = self.get_overlap_fragment_indices(idx, bait.start, bait.end)
+        if i_ovr is None or j_ovr is None:
             return None
-
-        # The span of overlapping entries may extend to the left or right
-        # of "ovr"
-        i_ovr = j_ovr = ovr
-        for i in range(ovr - 1, -1, -1):  # if ovr == 4, range will be [3, 2, 1, 0]
-            if idx[i] < bait_start:
-                break
-            i_ovr = i
-        for j in range(ovr + 1, len(idx)):
-            s_start = 1 if j == 0 else 1 + idx[j - 1]
-            if s_start > bait_end:
-                break
-            j_ovr = j
 
         # Walk start and end pointers back to ignore Gaps on the ends
         while isinstance(scffld.rows[i_ovr], Gap):
@@ -117,3 +86,49 @@ class IndexedAssembly(Assembly):
             end=overlap_end,
             rows=overlaps,
         )
+
+    def get_overlap_fragment_indices(
+        self, idx: list[int], start: int, end: int
+    ) -> tuple[int | None, int | None]:
+        """
+        Perfoms a binary search through the index `idx` (a list of
+        `Fragment | Gap` end positions), returning the start and end indices
+        of the overlapping range.
+        """
+
+        # Binary search: a = left; m = midpoint; z = right
+        a = 0
+        z = len(idx)
+        ovr = None
+        while a < z:
+            m = a + ((z - a) // 2)
+            scffld_start = 1 if m == 0 else 1 + idx[m - 1]
+            scffld_end = idx[m]
+            if scffld_end < start:
+                # Scaffold row at "m" is to the left of the bait
+                a = m + 1
+            elif scffld_start > end:
+                # Scaffold row at "m" is to the right of the bait
+                z = m
+            else:
+                # Must be overlapping
+                ovr = m
+                break
+
+        if ovr is None:
+            return None, None
+
+        # The span of overlapping entries may extend to the left or right
+        # of "ovr"
+        i_ovr = j_ovr = ovr
+        for i in range(ovr - 1, -1, -1):  # if ovr == 4, range will be [3, 2, 1, 0]
+            if idx[i] < start:
+                break
+            i_ovr = i
+        for j in range(ovr + 1, len(idx)):
+            s_start = 1 if j == 0 else 1 + idx[j - 1]
+            if s_start > end:
+                break
+            j_ovr = j
+
+        return i_ovr, j_ovr
