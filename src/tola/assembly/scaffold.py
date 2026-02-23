@@ -16,6 +16,8 @@ class Scaffold:
         rank=0,
         original_name=None,
         original_tags: set[str] | None = None,
+        localised: bool = False,
+        chr_name: str | None = None,
     ):
         self.name = str(name)
         if rows:
@@ -27,6 +29,24 @@ class Scaffold:
         self.rank: int = rank
         self.original_name: str | None = original_name
         self.original_tags: set[str] | None = original_tags
+        self.localised = localised
+        self.chr_name = chr_name
+
+    def clone_empty(self) -> 'Scaffold':
+        """
+        Clones a `Scaffold` or derived class, returning a base `Scaffold` with
+        all of its attributes apart from `rows`.
+        """
+        return Scaffold(
+            self.name,
+            tag=self.tag,
+            haplotype=self.haplotype,
+            rank=self.rank,
+            original_name=self.original_name,
+            original_tags=self.original_tags,
+            localised=self.localised,
+            chr_name=self.chr_name,
+        )
 
     def __repr__(self):
         txt = io.StringIO()

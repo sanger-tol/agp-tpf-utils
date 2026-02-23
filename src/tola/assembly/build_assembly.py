@@ -333,10 +333,15 @@ class BuildAssembly(Assembly):
             cut_at = whole // div
             gap_i = self.index_of_nearest_gap_to_ideal_cut_site(to_cut, cut_at)
             rows = to_cut.rows
+
             # First part is everything up to, but not including, the gap
-            cut_parts.append(Scaffold(to_cut.name, rows[:gap_i]))
+            cut = to_cut.clone_empty()
+            cut.rows = rows[:gap_i]
+            cut_parts.append(cut)
+
             # Second part is everything after the gap
-            to_cut = Scaffold(to_cut.name, rows[gap_i + 1 :])
+            to_cut = to_cut.clone_empty()
+            to_cut.rows = rows[gap_i + 1 :]
         cut_parts.append(to_cut)
 
         # Add suffix "_1", "_2" etc... to cut scaffolds
@@ -393,6 +398,7 @@ class BuildAssembly(Assembly):
                     break
 
             if gap_i_before is None and gap_i_after is None:
+                ### Make a cut here ###
                 msg = (
                     f"Failed to find gap before or after {cut_at:_d} in '{to_cut.name}'"
                 )
@@ -403,22 +409,16 @@ class BuildAssembly(Assembly):
             elif gap_i_after is None:
                 ovr_i = gap_i_before
             else:
-                length_before = 0
-                length_after = 0
-                for i, this_row in enumerate(rows):
-                    if i < gap_i_before:
-                        length_before += this_row.length
-
-                    if i < gap_i_after:
-                        length_after += this_row.length
-                    else:
-                        break
+                length_before = (
+                    idx_asm.start_end_of_row(to_cut.name, gap_i_before)[0] - 1
+                )
+                length_after = idx_asm.start_end_of_row(to_cut.name, gap_i_after)[0] - 1
 
                 # Choose the gap before or after, whichever is nearest to the
                 # ideal cut point.
                 ovr_i = (
                     gap_i_before
-                    if abs(cut_at - length_before) < abs(cut_at - length_after)
+                    if abs(cut_at - length_before) < abs(length_after - cut_at)
                     else gap_i_after
                 )
 
@@ -426,24 +426,18 @@ class BuildAssembly(Assembly):
 
     def scaffolds_fused_by_name(self) -> list[Scaffold]:
         gap = self.default_gap
-        hap_name_scaffold: dict[tuple[str, str], Scaffold] = {}
+        hap_name_scaffold: dict[tuple[str | None, str], Scaffold] = {}
         for scffld in self.scaffolds:
             if not scffld.rows:
                 # discard_overhanging_fragments() may have removed the only
                 # row from an OverlapResult
                 continue
 
-            build_scffld = hap_name_scaffold.setdefault(
-                (scffld.haplotype, scffld.name),
-                Scaffold(
-                    scffld.name,
-                    tag=scffld.tag,
-                    haplotype=scffld.haplotype,
-                    rank=scffld.rank,
-                    original_name=scffld.original_name,
-                    original_tags=scffld.original_tags,
-                ),
-            )
+            idx = scffld.haplotype, scffld.name
+            build_scffld = hap_name_scaffold.get(idx)
+            if not build_scffld:
+                hap_name_scaffold[idx] = build_scffld = scffld.clone_empty()
+
             if isinstance(scffld, OverlapResult):
                 build_scffld.append_scaffold(scffld.to_scaffold(), gap)
             else:

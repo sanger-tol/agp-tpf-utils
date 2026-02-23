@@ -51,6 +51,11 @@ class IndexedAssembly(Assembly):
         msg = f"Scaffold '{name}' is not indexed."
         raise ValueError(msg)
 
+    def start_end_of_row(self, name: str, index: int) -> tuple[int, int]:
+        idx = self.overlap_index_by_name(name)
+        start = 1 if index == 0 else 1 + idx[index - 1]
+        return start, idx[index]
+
     def find_overlaps(self, bait: Fragment) -> OverlapResult | None:
         """
         Given a Fragment bait, returns an OverlapResult (a subclass of

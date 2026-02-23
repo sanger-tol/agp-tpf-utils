@@ -9,18 +9,19 @@ class OverlapResult(Scaffold):
     def __init__(
         self,
         bait,
-        rows,
         start,
         end,
+        rows,
         name=None,
-        tag=None,
-        haplotype=None,
-        rank=None,
-        original_name=None,
+        **args,
     ):
         if not name:
             name = f"matches to {bait.name} {bait.start} to {bait.end}"
-        super().__init__(name, rows, tag, haplotype, rank, original_name)
+        super().__init__(
+            name,
+            rows,
+            **args,
+        )
         self.bait = bait
         self.start = start
         self.end = end
@@ -174,12 +175,8 @@ class OverlapResult(Scaffold):
         raise NotImplementedError
 
     def to_scaffold(self) -> Scaffold:
-        scffld = Scaffold(
-            self.name,
-            self.rows,
-            original_name=self.original_name,
-            original_tags=self.original_tags,
-        )
+        scffld = self.clone_empty()
+        scffld.rows = self.rows
         if self.bait.strand == -1:
             return scffld.reverse()
         else:

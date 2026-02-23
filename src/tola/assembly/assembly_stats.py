@@ -151,25 +151,18 @@ class AssemblyStats:
         return scaff_lengths
 
     def chromosome_name_csv(self, haplotype: str, asm: Assembly):
-        prefix = self.autosome_prefix
-        suffix = f"_{haplotype}" if haplotype else None
-        last_orig = None
-        chr_name = None
-
         csv_str = io.StringIO()
         for scffld in asm.scaffolds:
             if scffld.rank in (1, 2):
-                name = scffld.name
-                orig = scffld.original_name
-                if last_orig and orig == last_orig:
-                    localised = "no"
-                else:
-                    localised = "yes"
-                    chr_name = name.replace(prefix, "", 1)
-                    if suffix:
-                        chr_name = chr_name.replace(suffix, "", 1)
-                    last_orig = orig
-                csv_str.write(",".join((name, chr_name, localised)))
+                csv_str.write(
+                    ",".join(
+                        (
+                            scffld.name,
+                            scffld.chr_name,
+                            "yes" if scffld.localised else "no",
+                        )
+                    )
+                )
                 csv_str.write("\n")
 
         return csv_str.getvalue() if csv_str.tell() else None
@@ -192,30 +185,15 @@ class AssemblyStats:
         )
         head_pos = csv_str.tell()
 
-        prefix = self.autosome_prefix
-        chr_name = None
-        last_orig = None
         for hap, asm in hap_asm.items():
-            suffix = f"_{hap}" if hap else None
             for scffld in asm.scaffolds:
                 if scffld.rank in (1, 2):
-                    name = scffld.name
-                    orig = scffld.original_name
-                    if last_orig and orig == last_orig:
-                        # Unlocs share the same original_name
-                        localised = "false"
-                    else:
-                        localised = "true"
-                        last_orig = orig
-                        chr_name = name.replace(prefix, "", 1)
-                        if suffix:
-                            chr_name = chr_name.replace(suffix, "", 1)
                     csvr.writerow(
                         (
                             scffld.haplotype or hap or "Primary",
-                            name,
-                            chr_name,
-                            localised,
+                            scffld.name,
+                            scffld.chr_name,
+                            "true" if scffld.localised else "false",
                             scffld.original_name,
                             scffld.length,
                             scffld.fragments_length,

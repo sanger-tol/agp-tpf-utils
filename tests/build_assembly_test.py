@@ -14,12 +14,8 @@ from tola.assembly.scaffold import Scaffold
 
 
 def test_multi_chr_list():
-    assert ChrGroup.multi_chr_list("SUPER_3", 1, "_HAP2") == ["SUPER_3_HAP2"]
-    assert ChrGroup.multi_chr_list("SUPER_3", 3, "_HAP1") == [
-        "SUPER_3A_HAP1",
-        "SUPER_3B_HAP1",
-        "SUPER_3C_HAP1",
-    ]
+    assert ChrGroup.multi_chr_list("3", 1) == ["3"]
+    assert ChrGroup.multi_chr_list("3", 3) == ["3A", "3B", "3C"]
 
 
 def list_chr_naming_tests():

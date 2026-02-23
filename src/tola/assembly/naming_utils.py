@@ -150,8 +150,12 @@ class ScaffoldNamer:
             if "Painted" not in scaffold_tags:
                 msg = f"Unloc in unpainted scaffold {original_name!r}: {fragment}"
                 raise TaggingError(msg)
+            scaffold.chr_name = name
             name = self.unloc_name()
             self.unloc_scaffolds[-1].append(scaffold)
+        elif "Painted" in scaffold_tags:
+            scaffold.localised = True
+            scaffold.chr_name = name
 
         scaffold.name = name
         scaffold.haplotype = self.current_haplotype
@@ -231,17 +235,17 @@ class ChrGroup:
         return length
 
     @staticmethod
-    def multi_chr_list(chr_name, multi_count, hap_suffix):
+    def multi_chr_list(chr_name, multi_count):
         """
         Adds the suffix "A", "B", "C" etc... to the supplied chromosome name
         for when there are multiple chromosomes in a group.
         """
         if multi_count == 1:
-            return [chr_name + hap_suffix]
+            return [chr_name]
         else:
             chr_list = []
             for ltr in range(ord("A"), ord("A") + multi_count):
-                chr_list.append(chr_name + chr(ltr) + hap_suffix)
+                chr_list.append(chr_name + chr(ltr))
             return chr_list
 
     def max_hap_set_count(self):
@@ -262,13 +266,15 @@ class ChrGroup:
             hap_suffix = (
                 "" if (hap_name is None or hap_name == "Primary") else f"_{hap_name}"
             )
-            chr_names = self.multi_chr_list(
-                chr_prefix + str(chr_n), len(hap_set), hap_suffix
-            )
+            chr_names = self.multi_chr_list(str(chr_n), len(hap_set))
             for orig, scffld_list in hap_set.items():
                 this_chr = chr_names.pop(0)
                 for scffld in scffld_list:
-                    scffld.name = scffld.name.replace(orig, this_chr)
+                    scffld.name = scffld.name.replace(
+                        orig,
+                        chr_prefix + this_chr + hap_suffix,
+                    )
+                    scffld.chr_name = this_chr
 
 
 class ChrNamerError(Exception):
@@ -293,7 +299,7 @@ class ChrNamer:
         self.chr_prefix = chr_prefix
         self.scaffolds = []
         self.haplotypes_seen = {}
-        self.groups = None
+        self.groups: list[ChrGroup] | None = None
 
     def add_scaffold(self, haplotype, scffld):
         # A dict is used to store the haplotypes seen since order is
