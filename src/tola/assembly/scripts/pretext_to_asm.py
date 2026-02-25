@@ -3,7 +3,6 @@ import os
 import re
 import sys
 from pathlib import Path
-from typing import no_type_check
 
 import click
 import yaml
@@ -201,16 +200,16 @@ def ul(txt):
     default=2_000_000_000,
 )
 def cli(
-    assembly_file,
-    pretext_file,
-    output_file,
-    autosome_prefix,
-    clobber,
-    log_level,
-    write_log,
-    keep_map_order,
-    default_asm_name,
-    max_contig_length,
+    assembly_file: Path,
+    pretext_file: Path,
+    output_file: Path,
+    autosome_prefix: str,
+    clobber: bool,
+    log_level: str,
+    write_log: bool,
+    keep_map_order: bool,
+    default_asm_name: str,
+    max_contig_length: int,
 ):
     logfile = setup_logging(log_level, output_file, write_log, clobber)
 
@@ -230,7 +229,6 @@ def cli(
 
     build_asm = BuildAssembly(
         "stdout",
-        default_gap=Gap(200, "scaffold"),
         autosome_prefix=autosome_prefix,
         max_contig_length=max_contig_length,
     )

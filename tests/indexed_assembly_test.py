@@ -1,6 +1,7 @@
 import random
 
 import pytest
+
 from tola.assembly.assembly import Assembly
 from tola.assembly.fragment import Fragment
 from tola.assembly.gap import Gap
@@ -161,9 +162,9 @@ def make_random_assembly(
     g1 = Gap(200, "scaffold")
     for sn in range(1, scaffolds + 1):
         s = Scaffold(f"scaffold_{sn}")
-        for rn in range(random.randint(1, rows)):
+        for rn in range(random.randint(1, rows)):  # noqa: S311
             # Maybe add a Gap, but not on the first row
-            if rn != 0 and random.random() <= gap_threshold:
+            if rn != 0 and random.random() <= gap_threshold:  # noqa: S311
                 s.add_row(g1)
 
             # Add a Fragment
@@ -171,8 +172,8 @@ def make_random_assembly(
                 Fragment(
                     f"s{sn}_fragment_{rn}",
                     1,
-                    random.randint(1, fragment_length),
-                    1 if random.random() < 0.8 else -1,
+                    random.randint(1, fragment_length),  # noqa: S311
+                    1 if random.random() < 0.8 else -1,  # noqa: S311
                 )
             )
         a1.add_scaffold(s)

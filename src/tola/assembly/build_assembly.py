@@ -14,6 +14,13 @@ from tola.assembly.scaffold import Scaffold
 log = logging.getLogger(__name__)
 
 
+class LongScaffoldCuttingError(Exception):
+    """
+    Error when cutting a `Scaffold` longer than
+    `BuildAssembly.max_contig_length`.
+    """
+
+
 class BuildAssembly(Assembly):
     """
     Class for building an Assembly from a Pretext Assembly and the
@@ -34,7 +41,7 @@ class BuildAssembly(Assembly):
         max_contig_length=2_000_000_000,
     ):
         super().__init__(name, header, scaffolds, bp_per_texel)
-        self.default_gap = default_gap
+        self.default_gap = Gap(200, "scaffold") if default_gap is None else default_gap
         self.found_fragments = {}
         self.fragments_found_more_than_once = {}
         self.scaffold_namer: ScaffoldNamer = ScaffoldNamer()
@@ -359,11 +366,19 @@ class BuildAssembly(Assembly):
             )
         )
 
+        for part in cut_parts:
+            if part.length > self.max_contig_length:
+                msg = (
+                    f"Scaffold '{part.name}' length = {part.length:,d} is longer"
+                    f" than max contig length {self.max_contig_length:,d}"
+                )
+                raise LongScaffoldCuttingError(msg)
+
         return cut_parts
 
     def index_of_nearest_gap_to_ideal_cut_site(self, to_cut: Scaffold, cut_at: int):
-        # Make a temporary `IndexedAssembly` to use it's code to search for an
-        # row which overlaps out cut coordiante.
+        # Make a temporary `IndexedAssembly` to efficiently search for an row
+        # which overlaps the cut coordinate.
         idx_asm = IndexedAssembly(
             f"Temporary Assembly for cutting '{to_cut.name}' at {cut_at:_d}",
             scaffolds=[to_cut],
@@ -375,10 +390,10 @@ class BuildAssembly(Assembly):
         )
         if not ovr_i_j:
             msg = (
-                f"Failed to find an element at {cut_at:_d}"
-                f" within '{to_cut.name}' of length {to_cut.length:_d}"
+                f"Failed to find an element at {cut_at:,d}"
+                f" within '{to_cut.name}' of length {to_cut.length:,d}"
             )
-            raise ValueError(msg)
+            raise LongScaffoldCuttingError(msg)
 
         ovr_i = ovr_i_j[0]
         rows = to_cut.rows
@@ -398,11 +413,13 @@ class BuildAssembly(Assembly):
                     break
 
             if gap_i_before is None and gap_i_after is None:
-                ### Make a cut here ###
+                # If this ever happens we could implement cutting here
                 msg = (
-                    f"Failed to find gap before or after {cut_at:_d} in '{to_cut.name}'"
+                    "Failed to find a gap before or"
+                    f" after {cut_at:,d} in '{to_cut.name}'\n"
+                    "Maybe implement cutting?"
                 )
-                raise ValueError(msg)
+                raise LongScaffoldCuttingError(msg)
 
             if gap_i_before is None:
                 ovr_i = gap_i_after

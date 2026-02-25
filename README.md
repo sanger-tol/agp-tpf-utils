@@ -75,7 +75,7 @@ FASTA and AGP formats. The input and output file formats are determined from
 the extensions of the files. FASTA input and output uses the `.fai` index
 format, as produced by
 [`faidx`](http://www.htslib.org/doc/samtools-faidx.html), and uses a streaming
-strategy with a 250 KB buffer to keep memory usage low no matter how large
+strategy with a 250 kB buffer to keep memory usage low no matter how large
 the chromosome.
 
 ## File Formats
@@ -136,8 +136,8 @@ contain:
 
 ### TPF
 
-Our TPF files are highly diverged from the
-[original specification](https://www.ncbi.nlm.nih.gov/projects/genome/assembly/TPF_Specification_v1.4_20110215.pdf).
+Our TPF files are quite diverged from the
+[original specification](https://www.ncbi.nlm.nih.gov/projects/genome/assembly/grc/TPF_Specification_v1.8_20131106.docx).
 
 - We incorporate assembly coordinates, which was not the purpose of TPF files.
 - We do not necessarily include any `##` header lines, which were mandatory in
@@ -153,9 +153,7 @@ Our TPF files are highly diverged from the
         contain a single chromosome, but we put a whole genome into a single
         file, and this column groups the fragments into chromosomes /
         scaffolds.
-    - **column 4** which in the original specification was used for
-        indicating `CONTAINED` or `CONTAINED_TURNOUT` clones now holds
-        assembly strand information, either `PLUS` or `MINUS`.
+    - **column 4** holds assembly strand information, either `PLUS` or `MINUS`.
 - **Gaps**
     - **column 2** is `TYPE-2`, which meant a gap between two clones
     - **column 3** length, using our default of 200 bp.
@@ -182,12 +180,10 @@ in your shell's `.*rc` file (*e.g.* `~/.bashrc` for `bash` or `~/.zshrc` for
 
 Some changes, such as adding a new command line script to
 [`pyproject.toml`](pyproject.toml), require the development environment to be
-reinstalled:
+reinstalled, in which case just re-run:
 
 ```sh
-pip uninstall tola-agp-tpf-utils
-pip install --editable . 'tola-agp-tpf-utils[devel]'
-hash -r
+uv sync
 ```
 
 ## Running Tests

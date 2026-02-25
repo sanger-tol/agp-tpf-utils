@@ -5,7 +5,7 @@ import sys
 import pytest
 
 from tola.assembly.assembly import Assembly
-from tola.assembly.build_assembly import BuildAssembly
+from tola.assembly.build_assembly import BuildAssembly, LongScaffoldCuttingError
 from tola.assembly.fragment import Fragment
 from tola.assembly.gap import Gap
 from tola.assembly.indexed_assembly import IndexedAssembly
@@ -183,6 +183,114 @@ def test_no_coord_changes():
     ba1.remap_to_input_assembly(p1, ia1)
     a2 = ba1.assemblies_with_scaffolds_fused()[None]
     assert str(ia1).replace("IndexedAssembly", "Assembly") == str(a2)
+
+
+def test_cut_long_scaffold():
+    start = Fragment("start", 1, 1_000_000_000, 1)
+    middle = Fragment("middle", 1, 1000, 1)
+    end = Fragment("end", 1, 999_999_000, 1)
+    gap = Gap(10, "scaffold")
+
+    ba = BuildAssembly("Scissors", max_contig_length=2_000_000_000)
+
+    big_scffld_1 = Scaffold(
+        "too_big",
+        rows=[start, gap, middle, gap, end],
+    )
+    parts_1 = ba.cut_scaffold_if_too_long(big_scffld_1)
+    assert repr(parts_1) == repr(
+        [
+            Scaffold(
+                name="too_big_1",
+                rows=[start],
+            ),
+            Scaffold(
+                name="too_big_2",
+                rows=[middle, gap, end],
+            ),
+        ]
+    )
+
+    big_scffld_2 = Scaffold(
+        "too_big",
+        rows=[end, gap, middle, gap, start],
+    )
+    parts_2 = ba.cut_scaffold_if_too_long(big_scffld_2)
+    assert repr(parts_2) == repr(
+        [
+            Scaffold(
+                name="too_big_1",
+                rows=[end, gap, middle],
+            ),
+            Scaffold(
+                name="too_big_2",
+                rows=[start],
+            ),
+        ]
+    )
+
+    big_scffld_3 = Scaffold(
+        "too_big",
+        rows=[start, gap, start],
+    )
+    parts_3 = ba.cut_scaffold_if_too_long(big_scffld_3)
+    assert repr(parts_3) == repr(
+        [
+            Scaffold(
+                name="too_big_1",
+                rows=[start],
+            ),
+            Scaffold(
+                name="too_big_2",
+                rows=[start],
+            ),
+        ]
+    )
+
+    big_scffld_4 = Scaffold(
+        "too_big",
+        rows=[end, gap, end],
+    )
+    parts_4 = ba.cut_scaffold_if_too_long(big_scffld_4)
+    assert repr(parts_4) == repr(
+        [
+            Scaffold(
+                name="too_big",
+                rows=[end, gap, end],
+            ),
+        ]
+    )
+
+    big_scffld_5 = Scaffold(
+        "too_big",
+        rows=[end, middle, gap, middle, gap, end],
+    )
+    parts_5 = ba.cut_scaffold_if_too_long(big_scffld_5)
+    assert repr(parts_5) == repr(
+        [
+            Scaffold(
+                name="too_big_1",
+                rows=[end, middle],
+            ),
+            Scaffold(
+                name="too_big_2",
+                rows=[middle, gap, end],
+            ),
+        ]
+    )
+
+    huge = Fragment("contiguous", 1, 2_000_000_001, 1)
+    with pytest.raises(
+        LongScaffoldCuttingError,
+        match="Failed to find a gap before or after",
+    ):
+        ba.cut_scaffold_if_too_long(Scaffold("no_gaps", [huge]))
+
+    with pytest.raises(
+        LongScaffoldCuttingError,
+        match="longer than max contig length",
+    ):
+        ba.cut_scaffold_if_too_long(Scaffold("gap but too ", [huge, gap, middle]))
 
 
 def test_shuffled_assembly(seed="Shuffled assembly"):
