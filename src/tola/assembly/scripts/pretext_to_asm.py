@@ -199,6 +199,12 @@ def ul(txt):
         """,
     default=2_000_000_000,
 )
+@click.option(
+    "--no-max-contig-length",
+    flag_value=True,
+    default=False,
+    help="Turns off splitting on --max-contig-length",
+)
 def cli(
     assembly_file: Path,
     pretext_file: Path,
@@ -210,6 +216,7 @@ def cli(
     keep_map_order: bool,
     default_asm_name: str,
     max_contig_length: int,
+    no_max_contig_length: bool,
 ):
     logfile = setup_logging(log_level, output_file, write_log, clobber)
 
@@ -230,7 +237,7 @@ def cli(
     build_asm = BuildAssembly(
         "stdout",
         autosome_prefix=autosome_prefix,
-        max_contig_length=max_contig_length,
+        max_contig_length=None if no_max_contig_length else max_contig_length,
     )
     build_asm.remap_to_input_assembly(prtxt_asm, input_asm)
 

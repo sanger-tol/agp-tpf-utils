@@ -302,7 +302,13 @@ class BuildAssembly(Assembly):
                 new_asm = Assembly(self.name, curated=curated)
                 assemblies[asm_key] = new_asm
 
-            for cut_scffld in self.cut_scaffold_if_too_long(scffld):
+            cut_scaffolds: list[Scaffold]
+            if self.max_contig_length is not None:
+                cut_scaffolds = self.cut_scaffold_if_too_long(scffld)
+            else:
+                cut_scaffolds = [scffld]
+
+            for cut_scffld in cut_scaffolds:
                 new_asm.add_scaffold(cut_scffld)
 
                 if cut_scffld.rank == 1:
