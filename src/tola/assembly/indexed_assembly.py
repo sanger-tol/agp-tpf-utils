@@ -74,10 +74,16 @@ class IndexedAssembly(Assembly):
             return None
         i_ovr, j_ovr = rng
 
-        # Walk start and end pointers back to ignore Gaps on the ends
+        # Walk start and end pointers inwards to ignore any Gaps on the ends
+        # of the match.
+        last_i = len(scffld.rows) - 1
         while isinstance(scffld.rows[i_ovr], Gap):
+            if i_ovr == last_i:
+                return None
             i_ovr += 1
         while isinstance(scffld.rows[j_ovr], Gap):
+            if j_ovr == 0:
+                return None
             j_ovr -= 1
         if not i_ovr <= j_ovr:
             return None

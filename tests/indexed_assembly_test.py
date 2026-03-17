@@ -54,6 +54,45 @@ def test_create():
         x = i3.find_overlaps(Fragment("scaffold_1", 1, 100, 1))
 
 
+def test_gaps_at_scaffold_ends():
+    frag = Fragment("ctg_1", 1, 1000, 1)
+    ia1 = IndexedAssembly(
+        "gaps at ends",
+        scaffolds=[
+            Scaffold(
+                "scffld_1",
+                rows=[
+                    Gap(200, "scaffold"),
+                    frag,
+                    Gap(50, "scaffold"),
+                ],
+            ),
+        ],
+    )
+    found1 = ia1.find_overlaps(Fragment("scffld_1", 1, 1250, 1))
+    assert found1.rows == [frag]
+
+    found2 = ia1.find_overlaps(Fragment("scffld_1", 1, 2, 1))
+    assert found2 is None
+
+    ia2 = IndexedAssembly(
+        "all gaps",
+        scaffolds=[
+            Scaffold(
+                "scffld_1",
+                rows=[
+                    Gap(200, "scaffold"),
+                    Gap(100, "scaffold"),
+                    Gap(50, "scaffold"),
+                ],
+            ),
+        ],
+    )
+
+    found3 = ia2.find_overlaps(Fragment("scffld_1", 1, 350, 1))
+    assert found3 is None
+
+
 def test_find_overlapping():
     """
     IndexedAssembly: Random assembly
