@@ -26,6 +26,7 @@ class ScaffoldNamer:
         self.current_rank = None
         self.current_haplotype = None
         self.haplotig_n = 0
+        self.false_dup_n = 0
         self.haplotig_scaffolds = []
         self.primary_haplotype = None
         self.target_tags = False
@@ -139,6 +140,7 @@ class ScaffoldNamer:
             scaffold.tag = "Contaminant"
             rank = 3
         if "FalseDuplicate" in fragment.tags:
+            name = self.false_duplicate_name()
             scaffold.tag = "FalseDuplicate"
             rank = 3
         elif "Haplotig" in fragment.tags:
@@ -179,6 +181,10 @@ class ScaffoldNamer:
     def haplotig_name(self) -> str:
         self.haplotig_n += 1
         return f"H_{self.haplotig_n}"
+
+    def false_duplicate_name(self) -> str:
+        self.false_dup_n += 1
+        return f"False_Duplicate_{self.false_dup_n}"
 
     def unloc_name(self) -> str:
         self.unloc_n += 1

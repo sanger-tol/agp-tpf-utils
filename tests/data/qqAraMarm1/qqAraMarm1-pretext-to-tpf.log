@@ -1,0 +1,65 @@
+Pretext resolution = 151,570 bp per texel
+
+Contig:
+       19,979,134  HAP1_SCAFFOLD_8:82156241-102135374(+)
+cut into:
+       10,149,729  HAP1_SCAFFOLD_8:82156241-92305969(+) Cut HAP1
+        9,829,405  HAP1_SCAFFOLD_8:92305970-102135374(+) Cut
+
+Contig:
+        1,004,965  HAP1_SCAFFOLD_11:38844749-39849713(+)
+cut into:
+          714,953  HAP1_SCAFFOLD_11:38844749-39559701(+) Cut
+          290,012  HAP1_SCAFFOLD_11:39559702-39849713(+) Cut FalseDuplicate
+
+
+qqAraMarm1-pretext-to-tpf.hap1.1.primary
+      2,482,613,532  bp sequence (minus gaps)
+  Autosomes:
+    n = 11
+        212,981,410  SUPER_1_HAP1
+                ...  ...
+        146,423,055  SUPER_11_HAP1
+      2,104,853,232  bp total
+  Named:
+    n = 2
+        147,785,980  SUPER_X1_HAP1
+        158,199,718  SUPER_X2_HAP1
+        305,985,698  bp total
+  Unplaced:
+    n = 410
+          2,487,000  HAP1_SCAFFOLD_16
+                ...  ...
+              1,000  HAP1_SCAFFOLD_462
+         71,774,602  bp total
+
+qqAraMarm1-pretext-to-tpf.hap2.1.primary
+      2,483,213,154  bp sequence (minus gaps)
+  Autosomes:
+    n = 11
+        213,391,075  SUPER_1_HAP2
+                ...  ...
+        146,628,711  SUPER_11_HAP2
+      2,095,430,920  bp total
+  Named:
+    n = 2
+        148,470,828  SUPER_X1_HAP2
+        156,211,396  SUPER_X2_HAP2
+        304,682,224  bp total
+  Unplaced:
+    n = 430
+          2,661,000  HAP2_SCAFFOLD_14
+                ...  ...
+              1,000  HAP2_SCAFFOLD_451
+         83,100,010  bp total
+
+qqAraMarm1-pretext-to-tpf.1.falseduplicates
+            728,113  bp sequence (minus gaps)
+    n = 2
+            438,101  False_Duplicate_1
+            290,012  False_Duplicate_2
+            728,113  bp total
+
+Curation made 2 cuts in contigs, 11 breaks at gaps and 29 joins
+Assembly placed in chromosomes = 96.9%
+Interventions per Gbp = 8.054
