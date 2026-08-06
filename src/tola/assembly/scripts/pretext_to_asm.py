@@ -296,6 +296,7 @@ def setup_logging(log_level, output_file, write_log, clobber):
         logfile = output_file.with_suffix(".log")
         conf["filename"] = logfile
         conf["filemode"] = "w" if clobber else "x"
+
     try:
         logging.basicConfig(**conf)
     except FileExistsError:

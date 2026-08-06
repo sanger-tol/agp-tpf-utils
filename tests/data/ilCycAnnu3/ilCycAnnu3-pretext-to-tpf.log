@@ -1,0 +1,132 @@
+Pretext resolution = 8,357 bp per texel
+
+Contig:
+          222,143  SUPER_6_HAP1:143732-365874(+)
+cut into:
+          207,256  SUPER_6_HAP1:143732-350987(+) Cut
+           14,887  SUPER_6_HAP1:350988-365874(+) Cut Haplotig
+
+Contig:
+          129,991  SUPER_9_HAP1:9658788-9788778(+)
+cut into:
+          118,731  SUPER_9_HAP1:9658788-9777518(+) Cut
+           11,260  SUPER_9_HAP1:9777519-9788778(+) Cut Haplotig
+
+Contig:
+          185,081  SUPER_13_HAP1:6938784-7123864(+)
+cut into:
+           14,118  SUPER_13_HAP1:6938784-6952901(+) Cut Haplotig
+          170,963  SUPER_13_HAP1:6952902-7123864(+) Cut
+
+Contig:
+           49,489  SUPER_14_HAP1:4861366-4910854(+)
+cut into:
+           19,037  SUPER_14_HAP1:4861366-4880402(+) Cut Haplotig
+           30,452  SUPER_14_HAP1:4880403-4910854(+) Cut
+
+Contig:
+          568,024  SUPER_15_HAP1:162548-730571(+)
+cut into:
+           21,303  SUPER_15_HAP1:162548-183850(+) Cut Haplotig
+          546,721  SUPER_15_HAP1:183851-730571(+) Cut
+
+Contig:
+        1,094,556  SUPER_17_HAP1:5904911-6999466(+)
+cut into:
+           20,098  SUPER_17_HAP1:5904911-5925008(+) Cut FalseDuplicate
+        1,074,458  SUPER_17_HAP1:5925009-6999466(+) Cut
+
+Contig:
+          203,874  SUPER_18_HAP1:6145833-6349706(+)
+cut into:
+           21,525  SUPER_18_HAP1:6145833-6167357(+) Cut Haplotig
+          182,349  SUPER_18_HAP1:6167358-6349706(+) Cut
+
+Contig:
+          192,681  SUPER_18_HAP1:6349807-6542487(+)
+cut into:
+           18,116  SUPER_18_HAP1:6349807-6367922(+) Cut Haplotig
+          174,565  SUPER_18_HAP1:6367923-6542487(+) Cut
+
+Contig:
+          195,000  SUPER_24_HAP1:3274682-3469681(+)
+cut into:
+          168,342  SUPER_24_HAP1:3274682-3443023(+) Cut
+           26,658  SUPER_24_HAP1:3443024-3469681(+) Cut FalseDuplicate
+
+Contig:
+          488,118  SUPER_24_HAP1:1525149-2013266(+)
+cut into:
+           12,512  SUPER_24_HAP1:1525149-1537660(+) Cut FalseDuplicate
+          475,606  SUPER_24_HAP1:1537661-2013266(+) Cut
+
+Contig:
+           69,368  SUPER_24_HAP1:3205114-3274481(+)
+cut into:
+           20,632  SUPER_24_HAP1:3205114-3225745(+) Cut FalseDuplicate
+           48,736  SUPER_24_HAP1:3225746-3274481(+) Cut
+
+Contig:
+           77,218  SUPER_28_HAP1:1-77218(+)
+cut into:
+           33,427  SUPER_28_HAP1:1-33427(+) Cut
+           43,791  SUPER_28_HAP1:33428-77218(+) Cut Haplotig
+
+Contig:
+          153,843  SUPER_30_HAP1:1479744-1633586(+)
+cut into:
+           16,133  SUPER_30_HAP1:1479744-1495876(+) Cut Haplotig
+          137,710  SUPER_30_HAP1:1495877-1633586(+) Cut
+
+Contig:
+          461,903  SUPER_Z_HAP1:11357785-11819687(+)
+cut into:
+           24,249  SUPER_Z_HAP1:11357785-11382033(+) Cut Unloc
+          437,654  SUPER_Z_HAP1:11382034-11819687(+) Cut Z
+
+Contig:
+           78,149  HAP1_SCAFFOLD_19:1-78149(+)
+cut into:
+           41,784  HAP1_SCAFFOLD_19:1-41784(+) Cut
+           36,365  HAP1_SCAFFOLD_19:41785-78149(+) Cut
+
+
+ilCycAnnu3-pretext-to-tpf.hap1.1.primary
+        272,997,247  bp sequence (minus gaps)
+  Autosomes:
+    n = 30
+         11,207,562  SUPER_1_HAP1
+                ...  ...
+          3,634,598  SUPER_30_HAP1
+        251,842,704  bp total
+  Named:
+    n = 2
+          5,547,710  SUPER_W_HAP1
+         13,442,206  SUPER_Z_HAP1
+         18,989,916  bp total
+  Unplaced:
+    n = 94
+             65,986  HAP1_SCAFFOLD_1
+                ...  ...
+              8,368  HAP1_SCAFFOLD_336
+          2,164,627  bp total
+
+ilCycAnnu3-pretext-to-tpf.1.haplotigs
+            681,115  bp sequence (minus gaps)
+    n = 14
+            181,461  H_1
+                ...  ...
+             11,260  H_14
+            681,115  bp total
+
+ilCycAnnu3-pretext-to-tpf.1.falseduplicates
+             79,900  bp sequence (minus gaps)
+    n = 4
+             26,658  False_Duplicate_2
+                ...  ...
+             12,512  False_Duplicate_3
+             79,900  bp total
+
+Curation made 15 cuts in contigs, 17 breaks at gaps and 26 joins
+Assembly placed in chromosomes = 98.9%
+Interventions per Gbp = 157.073

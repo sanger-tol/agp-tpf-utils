@@ -166,7 +166,10 @@ class ScaffoldNamer:
         scaffold.original_tags = scaffold_tags
 
     def haplotype_from_first_row_name(self, scaffold):
-        if m := re.search(r"^([^_]+)_.+_\d+$", scaffold.rows[0].name):
+        first_name = scaffold.rows[0].name
+        if (m := re.search(r"^SUPER_\w+_(\w+)$", first_name)) or (
+            m := re.search(r"^([^_]+)_.+_\d+$", first_name)
+        ):
             return self.get_set_haplotype(m.group(1))
         else:
             return None
@@ -313,6 +316,7 @@ class ChrNamer:
         # haplotype = str(hap)
         self.haplotypes_seen[haplotype] = True
         self.scaffolds.append((haplotype, scffld))
+        log.debug(f"Added to {haplotype = } scaffold = {scffld.name}")
 
     def new_group(self):
         grp = ChrGroup(self.haplotypes_seen)
@@ -348,10 +352,14 @@ class ChrNamer:
 
     def check_for_painted_scaffolds_missing_haplotype_tag(self):
         if len(self.haplotypes_seen) > 1 and None in self.haplotypes_seen:
+            seen = list(self.haplotypes_seen)
             untagged = "".join(
                 [f"  {scffld.name}\n" for hap, scffld in self.scaffolds if hap is None]
             )
-            msg = f"Haplotype tag missing from Painted scaffolds:\n{untagged}"
+            msg = (
+                f"Haplotype tag missing from Painted scaffolds:\n{untagged}\n"
+                f"Haplotypes: {seen!r}"
+            )
             raise TaggingError(msg)
 
     def build_groups(self):
