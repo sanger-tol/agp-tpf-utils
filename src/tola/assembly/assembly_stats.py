@@ -119,7 +119,7 @@ class AssemblyStats:
         for rank, scaffolds in ranked_scaffolds.items():
             name_length = {}
 
-            if rank == 3:
+            if rank == 4:
                 for scffld in scaffolds:
                     name_length[scffld.name] = scffld.fragments_length
             else:
@@ -211,7 +211,8 @@ class AssemblyStats:
         rank_label = {
             1: "Autosomes",
             2: "Named",
-            3: "Unplaced",
+            3: "Organelles",
+            4: "Unplaced",
         }
         for rank, name_length in ranked_names_lengths.items():
             # Does this assembly have autosomes or named chromosomes?
@@ -303,7 +304,7 @@ class AssemblyStats:
             return None
 
         msg_list = []
-        ht_names_lengths = self.get_assembly_scaffold_lengths("Haplotig", htigs)[3]
+        ht_names_lengths = self.get_assembly_scaffold_lengths("Haplotig", htigs)[4]
         for ht in htigs.scaffolds:
             ht_len = ht_names_lengths[ht.name]
             if ht_len > shortest:

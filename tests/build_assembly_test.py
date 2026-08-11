@@ -419,7 +419,7 @@ def make_random_assembly(
     g1 = Gap(200, "scaffold")
     for sn in range(1, scaffolds + 1):
         s = Scaffold(f"scaffold_{sn}")
-        s.rank = 3
+        s.rank = 4
         p = 0
         for rn in range(random.randint(1, rows)):  # noqa: S311
             # Don't add a Gap if it's the first row

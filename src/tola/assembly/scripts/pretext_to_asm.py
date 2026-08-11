@@ -338,7 +338,7 @@ def name_assemblies(
                 other_asm.append(asm)
                 continue
             else:
-                asm.name = f"{root}.{version}.{asm_key.lower()}s"
+                asm.name = f"{root}.{version}.{asm_key.lower()}s"  # ty: ignore[unresolved-attribute]
             ret_asm[asm_key] = asm
         if other_asm:
             # Join the other haplotypes in the other assemblies for an
@@ -381,9 +381,9 @@ def name_assemblies(
         # <ToLID>.hap2.1.primary.chromosome.list.csv
         for asm_key, asm in asm_dict.items():
             if asm.curated:
-                asm.name = f"{root}.{asm_key.lower()}.{version}.primary"
+                asm.name = f"{root}.{asm_key.lower()}.{version}.primary"  # ty: ignore[unresolved-attribute]
             else:
-                asm.name = f"{root}.{version}.{asm_key.lower()}s"
+                asm.name = f"{root}.{version}.{asm_key.lower()}s"  # ty: ignore[unresolved-attribute]
             ret_asm[asm_key] = asm
 
     return ret_asm

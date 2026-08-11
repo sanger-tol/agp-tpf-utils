@@ -113,7 +113,7 @@ class ScaffoldNamer:
                 # Unpainted scaffolds keep the name they have in the input
                 # assembly
                 scaffold_name = scaffold.rows[0].name
-                rank = 3
+                rank = 4
 
         if prim := self.primary_haplotype:
             self.current_haplotype = "Primary" if haplotype == prim else haplotype
@@ -138,15 +138,15 @@ class ScaffoldNamer:
             self.target_tags and "Target" not in scaffold_tags
         ):
             scaffold.tag = "Contaminant"
-            rank = 3
+            rank = 4
         if "FalseDuplicate" in fragment.tags:
             name = self.false_duplicate_name()
             scaffold.tag = "FalseDuplicate"
-            rank = 3
+            rank = 4
         elif "Haplotig" in fragment.tags:
             name = self.haplotig_name()
             scaffold.tag = "Haplotig"
-            rank = 3
+            rank = 4
             self.haplotig_scaffolds.append(scaffold)
         elif "Unloc" in fragment.tags:
             if "Painted" not in scaffold_tags:

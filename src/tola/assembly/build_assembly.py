@@ -247,7 +247,7 @@ class BuildAssembly(Assembly):
                 if not found_frags.get(frag.key_tuple):
                     if not new_scffld:
                         new_scffld = Scaffold(scffld.name)
-                        new_scffld.rank = 3
+                        new_scffld.rank = 4
                     if last_added_i is not None and last_added_i != i - 1:
                         # Last added row was not the previous row in the
                         # scaffold

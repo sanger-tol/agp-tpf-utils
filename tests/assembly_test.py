@@ -54,7 +54,7 @@ def test_smart_sort():
             Scaffold(
                 name="scaffold_222",
                 rows=[Fragment("scaffold_222", 1, 12_000, 1)],
-                rank=3,
+                rank=4,
             ),
             Scaffold(
                 name="X",
