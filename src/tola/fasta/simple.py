@@ -17,7 +17,7 @@ def revcomp_bytes_io(seq: io.BytesIO):
 class FastaSeq:
     __slots__ = "name", "description", "sequence"
 
-    def __init__(self, name: str, sequence: bytes, description: str = None):
+    def __init__(self, name: str, sequence: bytes, description: str | None = None):
         self.name = name
         self.sequence = sequence
         self.description = description

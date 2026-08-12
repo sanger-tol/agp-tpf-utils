@@ -3,6 +3,7 @@ import os
 import re
 import sys
 from pathlib import Path
+from typing import IO, Any
 
 import click
 import yaml
@@ -11,12 +12,11 @@ from tola.assembly.assembly import Assembly, AssemblyDict
 from tola.assembly.assembly_stats import AssemblyStats
 from tola.assembly.build_assembly import BuildAssembly
 from tola.assembly.format import format_agp, format_tpf
-from tola.assembly.gap import Gap
 from tola.assembly.indexed_assembly import IndexedAssembly
 from tola.assembly.naming_utils import ChrNamerError, TaggingError
 from tola.assembly.parser import format_from_file_extn, parse_agp, parse_tpf
 from tola.fasta.index import FastaIndex
-from tola.fasta.stream import FastaStream
+from tola.fasta.stream import FastaCollection, FastaStream
 
 log = logging.getLogger(__name__)
 
@@ -208,7 +208,7 @@ def ul(txt):
 def cli(
     assembly_file: Path,
     pretext_file: Path,
-    output_file: Path,
+    output_file: Path | None,
     autosome_prefix: str,
     clobber: bool,
     log_level: str,
@@ -226,6 +226,8 @@ def cli(
     asm, fai = parse_assembly_file(assembly_file, "TPF")
     input_asm = IndexedAssembly.new_from_assembly(asm)
     prtxt_asm, _ = parse_assembly_file(pretext_file, "AGP")
+
+    fai_coll = FastaCollection(fai) if fai else None
 
     # Trap "-a" and "-p" arguments being switched
     if not prtxt_asm.bp_per_texel:
@@ -267,12 +269,12 @@ def cli(
             out_assemblies, out_root, asm_version, default_asm_name
         )
 
-        write_assemblies(fai, out_fmt, out_dir, suffix, out_assemblies, clobber)
+        write_assemblies(fai_coll, out_fmt, out_dir, suffix, out_assemblies, clobber)
         write_chr_csv_files(out_dir, stats, out_assemblies, clobber)
         write_chr_report_csv(output_file, stats, out_assemblies, clobber)
     else:
         for asm in out_assemblies.values():
-            write_assembly(fai, asm, None, None, clobber)
+            write_assembly(fai_coll, asm, None, None, clobber)
 
     for asm_key, out_asm in out_assemblies.items():
         stats.log_assembly_chromosomes(asm_key, out_asm)
@@ -427,7 +429,7 @@ def parse_output_file(file):
 
 
 def write_assemblies(
-    fai: FastaIndex | None,
+    fai_coll: FastaCollection | None,
     out_fmt: str,
     out_dir: Path,
     suffix: str,
@@ -437,11 +439,11 @@ def write_assemblies(
     for asm in out_assemblies.values():
         crtd = ".curated" if asm.curated else ""
         output_file = out_dir / f"{asm.name}{crtd}{suffix}"
-        write_assembly(fai, asm, output_file, out_fmt, clobber)
+        write_assembly(fai_coll, asm, output_file, out_fmt, clobber)
 
 
 def write_assembly(
-    fai: FastaIndex | None,
+    fai_coll: FastaCollection | None,
     out_asm: Assembly,
     output_file: Path | None,
     out_fmt: str | None,
@@ -459,10 +461,10 @@ def write_assembly(
     elif out_fmt == "AGP":
         format_agp(out_asm, out_fh)
     elif out_fmt == "FASTA":
-        if fai is None:
+        if fai_coll is None:
             log.error("Cannot write FASTA output file without FASTA input!")
             sys.exit(1)
-        stream = FastaStream(out_fh, fai)
+        stream = FastaStream(out_fh, fai_coll)
         stream.write_assembly(out_asm)
 
         # Save a .agp file alongside the .fa / .fasta
@@ -528,7 +530,7 @@ def write_info_yaml(
         yaml_fh.write(yaml.safe_dump(info, sort_keys=False))
 
 
-def get_output_filehandle(path: Path, clobber: bool, mode: str = ""):
+def get_output_filehandle(path: Path, clobber: bool, mode: str = "") -> IO[Any]:
     op = "Overwrote" if path.exists() else "Created"
     try:
         out_fh = path.open("w" + mode if clobber else "x" + mode)

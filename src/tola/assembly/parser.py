@@ -8,7 +8,7 @@ from tola.assembly.gap import Gap
 from tola.assembly.scaffold import Scaffold
 
 
-def parse_agp(file, name) -> Assembly:
+def parse_agp(file, name, source: str | None = None) -> Assembly:
     asm = Assembly(name)
     scaffold = None
     scaffold_name = ""
@@ -53,13 +53,14 @@ def parse_agp(file, name) -> Assembly:
                     strand=strand_dict[fields[8]],
                     # Tenth fields onwards added as tags metadata
                     tags=tuple(fields[9:]),
+                    source=source,
                 ),
             )
 
     return asm
 
 
-def parse_tpf(file, name) -> Assembly:
+def parse_tpf(file, name, source: str | None = None) -> Assembly:
     asm = Assembly(name)
     scaffold = None
     scaffold_name = ""
@@ -109,6 +110,7 @@ def parse_tpf(file, name) -> Assembly:
                         start=m.group(2),
                         end=m.group(3),
                         strand=strand_dict[fields[3]],
+                        source=source,
                     ),
                 )
             else:

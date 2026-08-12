@@ -19,6 +19,7 @@ def test_multi_chr_list():
 
 
 def list_chr_naming_tests():
+    inp_exp_exc = []
     for test_data in [
         {
             # Changed to allow consecutive chromosomes in the first haplotype
@@ -111,11 +112,14 @@ def list_chr_naming_tests():
             },
         },
     ]:
-        yield (
-            test_data["input"],
-            test_data.get("expected", {}),
-            test_data.get("exception"),
+        inp_exp_exc.append(
+            (
+                test_data["input"],
+                test_data.get("expected", {}),
+                test_data.get("exception"),
+            )
         )
+    return inp_exp_exc
 
 
 @pytest.mark.parametrize("input_data,expected,exception", list_chr_naming_tests())

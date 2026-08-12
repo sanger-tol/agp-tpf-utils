@@ -36,9 +36,7 @@ def test_parse_output_file():
 
 def list_example_assemblies():
     data_dir = Path(__file__).parent / "data"
-    for xd in data_dir.iterdir():
-        if xd.is_dir():
-            yield xd
+    return [xd for xd in data_dir.iterdir() if xd.is_dir()]
 
 
 @pytest.mark.parametrize("specimen_dir", list_example_assemblies())

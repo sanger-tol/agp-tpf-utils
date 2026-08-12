@@ -4,14 +4,15 @@ Junction: TypeAlias = tuple[str | int, str | int, str | int, str | int]
 
 
 class Fragment:
-    __slots__ = "_name", "_start", "_end", "_strand", "_tags"
+    __slots__ = "_name", "_start", "_end", "_strand", "_tags", "_source"
 
-    def __init__(self, name, start, end, strand, tags=()):
+    def __init__(self, name, start, end, strand, tags=(), *, source: str | None = None):
         self._name = str(name)
         self._start = int(start)
         self._end = int(end)
         self._strand = int(strand)
         self._tags = tags
+        self._source = source
 
         if self.strand not in (0, 1, -1):
             msg = f"strand '{self.strand}' should be one of: 0, 1, -1"
@@ -39,8 +40,12 @@ class Fragment:
 
     @property
     def tags(self):
-        """tuple of tags data, empty if there is none"""
+        """tuple of tags data, empty if there are none"""
         return self._tags
+
+    @property
+    def source(self):
+        return self._source
 
     @property
     def length(self):
@@ -97,15 +102,18 @@ class Fragment:
             return self.attr_values() == othr.attr_values()
 
     def __str__(self):
-        return f"{self.name}:{self.start}-{self.end}({self.strand_str})" + (
-            (" " + " ".join(self.tags)) if self.tags else ""
+        return (
+            f"{self.name}:{self.start}-{self.end}({self.strand_str})"
+            + ((" " + " ".join(self.tags)) if self.tags else "")
+            + (f" source={self.source!r}" if self.source else "")
         )
 
     def __repr__(self):
         return (
             f"{self.__class__.__name__}(name='{self.name}',"
             f" start={self.start}, end={self.end}, strand={self.strand}"
-            + (f", tags={self.tags})" if self.tags else ")")
+            + (f", tags={self.tags!r})" if self.tags else ")")
+            + (f" source={self.source!r}" if self.source else "")
         )
 
     def overlaps(self, othr):
@@ -130,8 +138,8 @@ class Fragment:
         return bool(self.end + 1 == othr.start or othr.end + 1 == self.start)
 
     def gap_between(self, othr):
-        """ Returns `None` if no gap, zero if Fragments abut, and the length
-            of the gap otherwise. """
+        """Returns `None` if no gap, zero if Fragments abut, and the length
+        of the gap otherwise."""
         if self.name != othr.name:
             return None
 

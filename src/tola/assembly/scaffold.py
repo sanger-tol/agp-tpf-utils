@@ -11,6 +11,7 @@ class Scaffold:
         self,
         name,
         rows: list[Fragment | Gap] | None = None,
+        *,
         tag=None,
         haplotype=None,
         rank=0,
@@ -18,6 +19,7 @@ class Scaffold:
         original_tags: set[str] | None = None,
         localised: bool = False,
         chr_name: str | None = None,
+        circular: bool = False,
     ):
         self.name = str(name)
         if rows:
@@ -31,6 +33,7 @@ class Scaffold:
         self.original_tags: set[str] | None = original_tags
         self.localised = localised
         self.chr_name = chr_name
+        self.circular = circular
 
     def clone_empty(self) -> 'Scaffold':
         """
@@ -46,6 +49,7 @@ class Scaffold:
             original_tags=self.original_tags,
             localised=self.localised,
             chr_name=self.chr_name,
+            circular=self.circular,
         )
 
     def __repr__(self):
@@ -109,7 +113,7 @@ class Scaffold:
             if isinstance(row, Fragment):
                 yield i, row
 
-    def gaps(self) -> Generator[Fragment]:
+    def gaps(self) -> Generator[Gap]:
         for row in self.rows:
             if isinstance(row, Gap):
                 yield row

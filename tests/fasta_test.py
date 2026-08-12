@@ -3,16 +3,15 @@ import pathlib
 
 import pytest
 
+from tola.assembly.assembly import Assembly
 from tola.fasta.index import FastaIndex, index_fasta_file
 from tola.fasta.simple import FastaSeq, reverse_complement
-from tola.fasta.stream import FastaStream
+from tola.fasta.stream import FastaCollection, FastaStream
 
 
 def list_fasta_files():
     fasta_dir = pathlib.Path(__file__).parent / "fasta"
-    for ff in fasta_dir.iterdir():
-        if ff.suffix == ".fa":
-            yield ff
+    return [ff for ff in fasta_dir.iterdir() if ff.suffix == ".fa"]
 
 
 @pytest.mark.parametrize("fasta_file", list_fasta_files())
@@ -70,9 +69,10 @@ def test_stream_fetch(buf_size):
     fai = FastaIndex(fasta_file, buffer_size=buf_size)
     fai.load_index()
     fai.load_assembly()
+    coll = FastaCollection(fai)
 
     out = io.BytesIO()
-    fst = FastaStream(out, fai, gap_character=b"n")
+    fst = FastaStream(out, coll, gap_character=b"n")
     fst.write_assembly(fai.assembly)
     fst_bytes = out.getvalue()
 
@@ -87,9 +87,47 @@ def test_stream_fetch(buf_size):
 
     # Test reverse-complement of assembly
     rev_out = io.BytesIO()
-    rev_fst = FastaStream(rev_out, fai, gap_character=b"n")
+    rev_fst = FastaStream(rev_out, coll, gap_character=b"n")
     for scffld in fai.assembly.scaffolds:
         scffld_rev = scffld.reverse()
         rev_fst.write_scaffold(scffld_rev)
     rev_fst_bytes = rev_out.getvalue()
     assert rev_ref_bytes.decode() == rev_fst_bytes.decode()
+
+
+def test_multi_file_collection():
+    fasta_dir = pathlib.Path(__file__).parent / "fasta"
+
+    fa1 = FastaIndex(fasta_dir / "test.fa")
+    fa1.load_index()
+    fa1.load_assembly()
+
+    fa2 = FastaIndex(fasta_dir / "test_other.fa")
+    fa2.load_index()
+    fa2.load_assembly()
+
+    coll = FastaCollection()
+    coll.add_faidx(fa1)
+    coll.add_faidx(fa2, "othr")
+
+    ref_io = io.BytesIO()
+    for seq in (
+        fa1.get_fasta_seq("RAND-011"),
+        fa2.get_fasta_seq("RAND-003"),  # From second index
+        fa1.get_fasta_seq("RAND-090"),
+    ):
+        ref_io.write(seq.fasta_bytes())
+    ref_str = ref_io.getvalue().decode()
+
+    new_asm = Assembly(name="test-mixed")
+    new_asm.add_scaffold(fa1.assembly.scaffolds[10])
+    new_asm.add_scaffold(fa2.assembly.scaffolds[2])
+    new_asm.add_scaffold(fa1.assembly.scaffolds[89])
+
+    new_out = io.BytesIO()
+    fst = FastaStream(new_out, coll, gap_character=b"n")
+    fst.write_assembly(new_asm)
+    new_str = new_out.getvalue().decode()
+    assert new_str == ref_str
+
+

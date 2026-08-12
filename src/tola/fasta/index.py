@@ -55,7 +55,7 @@ class FastaInfo:
             + ")"
         )
 
-    def fai_row(self, name):
+    def fai_row(self, name) -> str:
         """Returns a row for a Fasta Index (.fai) file."""
         numbers = "\t".join(
             str(x)
@@ -74,6 +74,7 @@ class FastaIndex:
         self,
         fasta_file: Path,
         buffer_size: int = 250_000,
+        source: str | None = None,
     ):
         if not fasta_file.exists():
             missing = str(fasta_file)
@@ -82,8 +83,9 @@ class FastaIndex:
         self.buffer_size: int = buffer_size
         self.fai_file: Path = fasta_file.with_name(f"{fasta_file.name}.fai")
         self.agp_file: Path = fasta_file.with_name(f"{fasta_file.name}.agp")
-        self.index: dict[str, FastaInfo] = None
-        self.assembly: Assembly = None
+        self.index: dict[str, FastaInfo] | None = None
+        self.assembly: Assembly | None = None
+        self.source = source
 
     def auto_load(self):
         if self.check_for_index_files():
@@ -92,7 +94,7 @@ class FastaIndex:
         else:
             self.run_indexing()
 
-    def check_for_index_files(self):
+    def check_for_index_files(self) -> bool:
         """
         Check that the .agp and fai files exist and are newer than the FASTA
         sequence file.
@@ -109,7 +111,7 @@ class FastaIndex:
                 return False
         return True
 
-    def load_index(self):
+    def load_index(self) -> None:
         if self.index:
             msg = "Index FAI already loaded"
             raise IndexUsageError(msg)
@@ -128,7 +130,7 @@ class FastaIndex:
                 )
         self.index = idx_dict
 
-    def write_index(self):
+    def write_index(self) -> None:
         idx_dict = self.index
         if not idx_dict:
             msg = "No index data to write to FAI file"
@@ -139,13 +141,15 @@ class FastaIndex:
             for name, info in idx_dict.items():
                 idx_fh.write(info.fai_row(name))
 
-    def load_assembly(self):
+    def load_assembly(self) -> None:
         if self.assembly:
             msg = "Assembly AGP already loaded"
             raise IndexUsageError(msg)
-        self.assembly = parse_agp(self.agp_file.open(), self.fasta_file.name)
+        self.assembly = parse_agp(
+            self.agp_file.open(), self.fasta_file.name, source=self.source
+        )
 
-    def write_assembly(self):
+    def write_assembly(self) -> None:
         asm = self.assembly
         if not asm:
             msg = "No assembly data to write to AGP file"
@@ -155,7 +159,7 @@ class FastaIndex:
         with self.agp_file.open("w") as agp_fh:
             format_agp(asm, agp_fh)
 
-    def run_indexing(self):
+    def run_indexing(self) -> None:
         idx_dict, assembly = index_fasta_file(self.fasta_file, self.buffer_size)
         self.index = idx_dict
         self.assembly = assembly
