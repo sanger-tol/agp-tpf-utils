@@ -16,17 +16,18 @@ class FastaCollection:
     multiple source FASTA files.
     """
 
-    def __init__(self, fai: FastaIndex | None = None, source: str | None = None):
+    def __init__(self, fai: FastaIndex | None = None):
         self.__source_idx: dict[str | None, FastaIndex] = {}
         if fai:
-            self.add_faidx(fai, source)
+            self.add_faidx(fai)
 
-    def add_faidx(self, idx: FastaIndex, source: str | None = None):
+    def add_faidx(self, idx: FastaIndex) -> None:
         """
         Add a new `FastaIndex` under `source`.  Raises a
         `FastaCollectionError` exception if an entry already exists for
         `source`.
         """
+        source = idx.source
         if self.__source_idx.get(source):
             msg = f"Already have a FastaIndex for source = '{source}'"
             raise FastaCollectionError(msg)

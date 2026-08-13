@@ -1,0 +1,24 @@
+# Built from FASTA file '/Users/jgrg/git/agp-tpf-utils/tests/fasta/test_other.fa'
+RAND-001	1	52	1	W	RAND-001	1	52	+
+RAND-001	53	53	2	U	1	scaffold	yes	proximity_ligation
+RAND-001	54	209	3	W	RAND-001	54	209	+
+RAND-001	210	210	4	U	1	scaffold	yes	proximity_ligation
+RAND-001	211	225	5	W	RAND-001	211	225	+
+RAND-001	226	226	6	U	1	scaffold	yes	proximity_ligation
+RAND-001	227	253	7	W	RAND-001	227	253	+
+RAND-001	254	254	8	U	1	scaffold	yes	proximity_ligation
+RAND-001	255	290	9	W	RAND-001	255	290	+
+RAND-001	291	291	10	U	1	scaffold	yes	proximity_ligation
+RAND-001	292	335	11	W	RAND-001	292	335	+
+RAND-001	336	336	12	U	1	scaffold	yes	proximity_ligation
+RAND-001	337	378	13	W	RAND-001	337	378	+
+RAND-001	379	379	14	U	1	scaffold	yes	proximity_ligation
+RAND-001	380	498	15	W	RAND-001	380	498	+
+RAND-001	499	499	16	U	1	scaffold	yes	proximity_ligation
+RAND-001	500	599	17	W	RAND-001	500	599	+
+RAND-002	1	24	1	W	RAND-002	1	24	+
+RAND-002	25	25	2	U	1	scaffold	yes	proximity_ligation
+RAND-002	26	238	3	W	RAND-002	26	238	+
+RAND-002	239	239	4	U	1	scaffold	yes	proximity_ligation
+RAND-002	240	287	5	W	RAND-002	240	287	+
+RAND-003	1	160	1	W	RAND-003	1	160	+

@@ -102,13 +102,13 @@ def test_multi_file_collection():
     fa1.load_index()
     fa1.load_assembly()
 
-    fa2 = FastaIndex(fasta_dir / "test_other.fa")
+    fa2 = FastaIndex(fasta_dir / "test_other.fa", source="othr")
     fa2.load_index()
     fa2.load_assembly()
 
     coll = FastaCollection()
     coll.add_faidx(fa1)
-    coll.add_faidx(fa2, "othr")
+    coll.add_faidx(fa2)
 
     ref_io = io.BytesIO()
     for seq in (
