@@ -1,6 +1,7 @@
 import re
 import string
 from functools import cache
+from typing import TextIO
 
 from tola.assembly.assembly import Assembly
 from tola.assembly.fragment import Fragment
@@ -8,7 +9,11 @@ from tola.assembly.gap import Gap
 from tola.assembly.scaffold import Scaffold
 
 
-def parse_agp(file, name, source: str | None = None) -> Assembly:
+def parse_agp(
+    file: TextIO,
+    name: str,
+    source: str | None = None,
+) -> Assembly:
     asm = Assembly(name)
     scaffold = None
     scaffold_name = ""
@@ -60,7 +65,11 @@ def parse_agp(file, name, source: str | None = None) -> Assembly:
     return asm
 
 
-def parse_tpf(file, name, source: str | None = None) -> Assembly:
+def parse_tpf(
+    file: TextIO,
+    name: str,
+    source: str | None = None,
+) -> Assembly:
     asm = Assembly(name)
     scaffold = None
     scaffold_name = ""

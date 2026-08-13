@@ -1,4 +1,4 @@
-from io import BufferedIOBase
+from typing import BinaryIO
 
 from tola.assembly.assembly import Assembly
 from tola.assembly.gap import Gap
@@ -16,9 +16,9 @@ class FastaCollection:
     multiple source FASTA files.
     """
 
-    def __init__(self, fai: FastaIndex | None = None):
+    def __init__(self, *faidx_list: FastaIndex):
         self.__source_idx: dict[str | None, FastaIndex] = {}
-        if fai:
+        for fai in faidx_list:
             self.add_faidx(fai)
 
     def add_faidx(self, idx: FastaIndex) -> None:
@@ -50,6 +50,12 @@ class FastaCollection:
         return self.__source_idx.get(None) or list(self.__source_idx.values())[0]
 
 
+class FastaStreamError(Exception):
+    """
+    Error writing FASTA stream.
+    """
+
+
 class FastaStream:
     """
     Streams the sequence data for an `Assembly` to `out` fetching the data for
@@ -58,7 +64,7 @@ class FastaStream:
 
     def __init__(
         self,
-        out: BufferedIOBase,
+        out: BinaryIO,
         index_collection: FastaCollection,
         *,
         line_length: int = 60,
@@ -70,7 +76,16 @@ class FastaStream:
         self.gap_character = gap_character
 
     def write_assembly(self, assembly: Assembly):
+        seen = set()
         for scffld in assembly.scaffolds:
+
+            # Check for duplicate Scaffold names
+            sn = scffld.name
+            if sn in seen:
+                msg = f"More than one Scaffold sequence named {sn!r}"
+                raise FastaStreamError(msg)
+            seen.add(sn)
+
             self.write_scaffold(scffld)
 
     def write_scaffold(self, scaffold: Scaffold):

@@ -1,28 +1,44 @@
 import io
-import pathlib
+import tempfile
+from pathlib import Path
 
 import pytest
 
 from tola.assembly.assembly import Assembly
-from tola.fasta.index import FastaIndex, index_fasta_file
+from tola.fasta.index import FastaIndex
+from tola.fasta.parse import index_fasta_file
 from tola.fasta.simple import FastaSeq, reverse_complement
-from tola.fasta.stream import FastaCollection, FastaStream
+from tola.fasta.stream import FastaCollection, FastaStream, FastaStreamError
 
 
 def list_fasta_files():
-    fasta_dir = pathlib.Path(__file__).parent / "fasta"
+    fasta_dir = Path(__file__).parent / "fasta"
     return [ff for ff in fasta_dir.iterdir() if ff.suffix == ".fa"]
 
 
 @pytest.mark.parametrize("fasta_file", list_fasta_files())
 def test_fai(fasta_file):
     idx = FastaIndex(fasta_file)
+
     idx.load_index()
     idx_dict, asm = index_fasta_file(fasta_file)
     assert idx_dict == idx.index
+
     idx.load_assembly()
     asm.header = idx.assembly.header = []
     assert str(asm) == str(idx.assembly)
+
+    # Test writing
+    with tempfile.TemporaryDirectory() as tmp_dir_str:
+        tmp_dir = Path(tmp_dir_str)
+        tmp_fasta = tmp_dir / fasta_file.name
+        tmp_fasta.write_bytes(fasta_file.read_bytes())
+        tmp_idx = FastaIndex(tmp_fasta)
+        tmp_idx.auto_load()
+        assert tmp_idx.index == idx.index
+
+        tmp_idx.assembly.header = []
+        assert str(tmp_idx.assembly) == str(idx.assembly)
 
 
 def test_revcomp():
@@ -53,7 +69,7 @@ def test_stream_fetch(buf_size):
     Tests with small buffer sizes so that the chunking code is exercised.
     """
 
-    fasta_file = pathlib.Path(__file__).parent / "fasta/test.fa"
+    fasta_file = Path(__file__).parent / "fasta/test.fa"
     ref_fai = FastaIndex(fasta_file)
     ref_fai.load_index()
 
@@ -96,38 +112,54 @@ def test_stream_fetch(buf_size):
 
 
 def test_multi_file_collection():
-    fasta_dir = pathlib.Path(__file__).parent / "fasta"
+    fasta_dir = Path(__file__).parent / "fasta"
 
     fa1 = FastaIndex(fasta_dir / "test.fa")
     fa1.load_index()
     fa1.load_assembly()
 
+    # Second FASTA contains sequences with the same name as the first, so it
+    # needs to be loaded with a separate `source` namespace.
     fa2 = FastaIndex(fasta_dir / "test_other.fa", source="othr")
     fa2.load_index()
     fa2.load_assembly()
 
-    coll = FastaCollection()
-    coll.add_faidx(fa1)
-    coll.add_faidx(fa2)
+    coll = FastaCollection(fa1, fa2)
 
+    # Build expected FASTA string using separate `fasta_bytes()` method not
+    # used by `FastaStream`
     ref_io = io.BytesIO()
     for seq in (
         fa1.get_fasta_seq("RAND-011"),
-        fa2.get_fasta_seq("RAND-003"),  # From second index
+        fa2.get_fasta_seq(
+            "RAND-003"
+        ),  # From second index.  Fragments will have `source="othr"`.
         fa1.get_fasta_seq("RAND-090"),
     ):
         ref_io.write(seq.fasta_bytes())
     ref_str = ref_io.getvalue().decode()
 
+    # Copy the same Scaffolds to a new Assembly
     new_asm = Assembly(name="test-mixed")
     new_asm.add_scaffold(fa1.assembly.scaffolds[10])
     new_asm.add_scaffold(fa2.assembly.scaffolds[2])
     new_asm.add_scaffold(fa1.assembly.scaffolds[89])
 
     new_out = io.BytesIO()
-    fst = FastaStream(new_out, coll, gap_character=b"n")
-    fst.write_assembly(new_asm)
+    new_fst = FastaStream(new_out, coll, gap_character=b"n")
+    new_fst.write_assembly(new_asm)
     new_str = new_out.getvalue().decode()
     assert new_str == ref_str
 
-
+    # Test that choosing two sequences with the same name in the same Assembly
+    # raises an exception when writing to FASTA
+    dup_asm = Assembly(name="test-dup")
+    dup_asm.add_scaffold(fa1.assembly.scaffolds[2])
+    dup_asm.add_scaffold(fa2.assembly.scaffolds[2])
+    dup_out = io.BytesIO()
+    dup_fst = FastaStream(dup_out, coll, gap_character=b"n")
+    with pytest.raises(
+        FastaStreamError,
+        match=r"More than one Scaffold sequence named 'RAND-003'",
+    ):
+        dup_fst.write_assembly(dup_asm)

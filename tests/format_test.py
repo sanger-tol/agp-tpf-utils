@@ -1,7 +1,9 @@
 import io
 
+import pytest
+
 from tola.assembly.assembly import Assembly
-from tola.assembly.format import format_agp, format_tpf
+from tola.assembly.format import FormatAssemblyError, format_agp, format_tpf
 from tola.assembly.fragment import Fragment
 from tola.assembly.gap import Gap
 from tola.assembly.scaffold import Scaffold
@@ -49,6 +51,21 @@ def test_format_tpf():
         ?	scaffold_7:11049229141-11049229150	chrX	PLUS
         """,
     )
+
+
+def test_format_dup_error():
+    asm = example_assembly()
+
+    # Duplicate the first scaffold
+    asm.scaffolds.append(asm.scaffolds[0])
+
+    agp = io.StringIO()
+    with pytest.raises(FormatAssemblyError):
+        format_agp(asm, agp)
+
+    tpf = io.StringIO()
+    with pytest.raises(FormatAssemblyError):
+        format_tpf(asm, tpf)
 
 
 def example_assembly():
