@@ -1,0 +1,54 @@
+10x_read_dir: null
+assembled_by_group: ToL
+busco_gene_set_species: null
+busco_lineage: insecta_odb10
+chloro_reference: null
+combine_for_curation: true
+data_location: Sanger RW
+hap1: /lustre/scratch122/tol/data/c/9/c/8/e/3/Eutomostethus_luteiventris/assembly/draft/iyEutLute1.20250917/iyEutLute1.20250917.hap1.fa.gz
+hap2: /lustre/scratch122/tol/data/c/9/c/8/e/3/Eutomostethus_luteiventris/assembly/draft/iyEutLute1.20250917/iyEutLute1.20250917.hap2.fa.gz
+hic: /lustre/scratch122/tol/data/c/9/c/8/e/3/Eutomostethus_luteiventris/assembly/draft/iyEutLute1.20250917/iyEutLute1.20250917.hap1.hic
+hic_kit: Arima2
+hic_map_img: /lustre/scratch122/tol/data/c/9/c/8/e/3/Eutomostethus_luteiventris/assembly/draft/iyEutLute1.20250917/iyEutLute1.20250917.hap1.pretext.png
+hic_read_dir: /lustre/scratch122/tol/data/c/9/c/8/e/3/Eutomostethus_luteiventris/genomic_data/iyEutLute1/hic-arima2
+jira_queue: null
+karyotype: null
+karyotype_source: null
+kmer_spectra_img: /lustre/scratch122/tol/data/c/9/c/8/e/3/Eutomostethus_luteiventris/assembly/draft/iyEutLute1.20250917/iyEutLute1.20250917.hap1.css.spectra-cn.ln.png
+mito: /lustre/scratch122/tol/data/c/9/c/8/e/3/Eutomostethus_luteiventris/assembly/draft/iyEutLute1.20250917/iyEutLute1-MT.fa.gz
+mito_gb: null
+mito_reference: null
+notes:
+- hifiasm was run in hic phasing mode
+- purge_dups was not run on this assembly
+- there is no species karyotype available on GoaT
+- mito assembled with oatk + rotated with mitohifi
+pacbio_read_dir: /lustre/scratch122/tol/data/c/9/c/8/e/3/Eutomostethus_luteiventris/genomic_data/iyEutLute1/pacbio
+pacbio_read_type: hifi
+pipeline:
+- hifiasm (version 0.25.0-r726)
+- oatk (version 1.0)
+- Mitohifi (version 3.2.2)
+- yahs (version 1.2.2)
+plastid: null
+plastid_gb: null
+ploidy: diploid
+pretext: /lustre/scratch122/tol/data/c/9/c/8/e/3/Eutomostethus_luteiventris/assembly/draft/iyEutLute1.20250917/iyEutLute1.20250917.hap1.pretext
+projects:
+- darwin
+species: Eutomostethus luteiventris
+specimen: iyEutLute1
+stats: "merqury QV (CCS): 67.3\nmerqury KMER completeness (CCS): 99.44\nBUSCO: C:99.0%[S:98.8%,D:0.3%],F:0.1%,M:0.9%,n:1367,E:11.0%\n\
+  /lustre/scratch122/tol/data/c/9/c/8/e/3/Eutomostethus_luteiventris/assembly/draft/iyEutLute1.20250917/iyEutLute1.20250917.hap1.fa.gz\n\
+  COMPOSITION\tA = 81322177 (31.0%), C = 49794913 (19.0%), G = 49975870 (19.1%), T\
+  \ = 80870402 (30.9%), N = 2600 (0.0%), CpG = 25117492 (9.6%)\nSCAFFOLD\tsum = 261965962,\
+  \ n = 164, mean = 1597353.42682927, largest = 45950063, smallest = 7525\nSCAFFOLD\t\
+  N50 = 42990815, L50 = 3\nSCAFFOLD\tN60 = 41504052, L60 = 4\nSCAFFOLD\tN70 = 36977813,\
+  \ L70 = 5\nSCAFFOLD\tN80 = 26089541, L80 = 6\nSCAFFOLD\tN90 = 15960679, L90 = 7\n\
+  SCAFFOLD\tN100 = 7525, L100 = 164\nCONTIG\tsum = 261963362, n = 190, mean = 1378754.53684211,\
+  \ largest = 26377460, smallest = 7525\nCONTIG\tN50 = 14992344, L50 = 7\nCONTIG\t\
+  N60 = 10997798, L60 = 9\nCONTIG\tN70 = 7659794, L70 = 12\nCONTIG\tN80 = 6329797,\
+  \ L80 = 16\nCONTIG\tN90 = 3275071, L90 = 21\nCONTIG\tN100 = 7525, L100 = 190\nGAP\t\
+  sum = 2600, n = 26, mean = 100, largest = 100, smallest = 100\n"
+taxonomy_id: '1385253'
+update_to_previous_ticket: true

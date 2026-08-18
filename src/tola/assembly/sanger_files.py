@@ -39,8 +39,10 @@ def find_yaml(search_dir: Path) -> Path:
     if yaml_files:
         log.warning(
             "\n  ".join(
-                f"Found multiple YAML files. Chose '{yaml}' and ignored:",
-                *[f"'{x}'" for x in yaml_files],
+                (
+                    f"Found multiple YAML files. Chose '{yaml}' and ignored:",
+                    *[f"'{x}'" for x in yaml_files],
+                ),
             )
         )
 

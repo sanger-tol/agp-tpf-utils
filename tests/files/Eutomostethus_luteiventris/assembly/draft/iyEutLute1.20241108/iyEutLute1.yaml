@@ -1,0 +1,61 @@
+---
+species: Eutomostethus luteiventris
+specimen: iyEutLute1
+projects:
+  - darwin
+data_location: Sanger RW
+primary: /lustre/scratch122/tol/data/c/9/c/8/e/3/Eutomostethus_luteiventris/assembly/draft/iyEutLute1.20241108/iyEutLute1.20241108.primary.fa.gz
+agp: /lustre/scratch122/tol/data/c/9/c/8/e/3/Eutomostethus_luteiventris/assembly/draft/iyEutLute1.20241108/iyEutLute1.20241108.primary.agp
+primary_contigs: /lustre/scratch122/tol/data/c/9/c/8/e/3/Eutomostethus_luteiventris/assembly/draft/iyEutLute1.20241108/iyEutLute1.20241108.primary_contigs.fa.gz
+haplotigs:
+mito: /lustre/scratch122/tol/data/c/9/c/8/e/3/Eutomostethus_luteiventris/assembly/draft/iyEutLute1.20241108/iyEutLute1-MT.fa.gz
+mito_gb: 
+mito_reference: 
+plastid: 
+plastid_gb: 
+chloro_reference: 
+pacbio_read_dir: /lustre/scratch122/tol/data/c/9/c/8/e/3/Eutomostethus_luteiventris/genomic_data/iyEutLute1/pacbio
+10x_read_dir: 
+hic_read_dir: /lustre/scratch122/tol/data/c/9/c/8/e/3/Eutomostethus_luteiventris/genomic_data/iyEutLute1/hic-arima2
+pacbio_read_type: hifi
+hic_kit: Arima2
+hic: /lustre/scratch122/tol/data/c/9/c/8/e/3/Eutomostethus_luteiventris/assembly/draft/iyEutLute1.20241108/iyEutLute1.20241108.primary.hic
+pretext: /lustre/scratch122/tol/data/c/9/c/8/e/3/Eutomostethus_luteiventris/assembly/draft/iyEutLute1.20241108/iyEutLute1.20241108.primary.pretext
+hic_map_img: /lustre/scratch122/tol/data/c/9/c/8/e/3/Eutomostethus_luteiventris/assembly/draft/iyEutLute1.20241108/iyEutLute1.20241108.primary.pretext.png
+kmer_spectra_img: /lustre/scratch122/tol/data/c/9/c/8/e/3/Eutomostethus_luteiventris/assembly/draft/iyEutLute1.20241108/iyEutLute1.20241108.primary.css.spectra-cn.ln.png
+busco_lineage: insecta_odb10
+busco_gene_set_species: 
+karyotype: 
+karyotype_source: 
+ploidy: haploid
+jira_queue: 
+pipeline:
+  - hifiasm (version 0.19.5-r587)
+  - oatk (version 1.0)
+  - MitoHiFi (version 3)
+  - yahs (version 1.2a.2)
+notes:
+  - purge_dups was not run on this assembly
+  - there is no species karyotype available on GoaT
+  - mitogenome assembled with oatk and rotated with mitohifi
+stats: |
+  merqury QV (CCS): 63.6
+  merqury KMER completeness (CCS): 100.00
+  BUSCO: C:99.8%[S:99.5%,D:0.3%],F:0.1%,M:0.1%,n:1367
+  /lustre/scratch122/tol/data/c/9/c/8/e/3/Eutomostethus_luteiventris/assembly/draft/iyEutLute1.20241108/iyEutLute1.20241108.primary.fa.gz
+  COMPOSITION	A = 83977581 (30.7%), C = 52565625 (19.2%), G = 52659495 (19.2%), T = 84352396 (30.8%), N = 20200 (0.0%), CpG = 26666692 (9.7%)
+  SCAFFOLD	sum = 273575297, n = 159, mean = 1720599.35220126, largest = 50296038, smallest = 7019
+  SCAFFOLD	N50 = 44374973, L50 = 3
+  SCAFFOLD	N60 = 41860083, L60 = 4
+  SCAFFOLD	N70 = 27214328, L70 = 5
+  SCAFFOLD	N80 = 21384439, L80 = 6
+  SCAFFOLD	N90 = 10035908, L90 = 8
+  SCAFFOLD	N100 = 7019, L100 = 159
+  CONTIG	sum = 273555097, n = 260, mean = 1052134.98846154, largest = 16879987, smallest = 7019
+  CONTIG	N50 = 4504252, L50 = 19
+  CONTIG	N60 = 3775354, L60 = 26
+  CONTIG	N70 = 2631304, L70 = 34
+  CONTIG	N80 = 1543616, L80 = 49
+  CONTIG	N90 = 883684, L90 = 71
+  CONTIG	N100 = 7019, L100 = 260
+  GAP	sum = 20200, n = 101, mean = 200, largest = 200, smallest = 200
