@@ -22,6 +22,9 @@ def test_find_yaml(files_dir, latest_yaml):
     yaml = find_yaml(working)
     assert yaml == latest_yaml
 
+    # This might succeed if the repository is located in a directory tree
+    # which has "assembly/branch" somewhere off any of its parent
+    # directories!
     with pytest.raises(AssemblyYamlLocationError):
         find_yaml(files_dir)
 

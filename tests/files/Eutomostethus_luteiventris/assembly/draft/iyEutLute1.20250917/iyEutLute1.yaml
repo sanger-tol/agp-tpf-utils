@@ -5,17 +5,17 @@ busco_lineage: insecta_odb10
 chloro_reference: null
 combine_for_curation: true
 data_location: Sanger RW
-hap1: /lustre/scratch122/tol/data/c/9/c/8/e/3/Eutomostethus_luteiventris/assembly/draft/iyEutLute1.20250917/iyEutLute1.20250917.hap1.fa.gz
-hap2: /lustre/scratch122/tol/data/c/9/c/8/e/3/Eutomostethus_luteiventris/assembly/draft/iyEutLute1.20250917/iyEutLute1.20250917.hap2.fa.gz
-hic: /lustre/scratch122/tol/data/c/9/c/8/e/3/Eutomostethus_luteiventris/assembly/draft/iyEutLute1.20250917/iyEutLute1.20250917.hap1.hic
+hap1: iyEutLute1.20250917.hap1.fa.gz
+hap2: iyEutLute1.20250917.hap2.fa.gz
+hic: iyEutLute1.20250917.hap1.hic
 hic_kit: Arima2
-hic_map_img: /lustre/scratch122/tol/data/c/9/c/8/e/3/Eutomostethus_luteiventris/assembly/draft/iyEutLute1.20250917/iyEutLute1.20250917.hap1.pretext.png
+hic_map_img: iyEutLute1.20250917.hap1.pretext.png
 hic_read_dir: /lustre/scratch122/tol/data/c/9/c/8/e/3/Eutomostethus_luteiventris/genomic_data/iyEutLute1/hic-arima2
 jira_queue: null
 karyotype: null
 karyotype_source: null
-kmer_spectra_img: /lustre/scratch122/tol/data/c/9/c/8/e/3/Eutomostethus_luteiventris/assembly/draft/iyEutLute1.20250917/iyEutLute1.20250917.hap1.css.spectra-cn.ln.png
-mito: /lustre/scratch122/tol/data/c/9/c/8/e/3/Eutomostethus_luteiventris/assembly/draft/iyEutLute1.20250917/iyEutLute1-MT.fa.gz
+kmer_spectra_img: iyEutLute1.20250917.hap1.css.spectra-cn.ln.png
+mito: iyEutLute1-MT.fa.gz
 mito_gb: null
 mito_reference: null
 notes:
@@ -33,13 +33,13 @@ pipeline:
 plastid: null
 plastid_gb: null
 ploidy: diploid
-pretext: /lustre/scratch122/tol/data/c/9/c/8/e/3/Eutomostethus_luteiventris/assembly/draft/iyEutLute1.20250917/iyEutLute1.20250917.hap1.pretext
+pretext: iyEutLute1.20250917.hap1.pretext
 projects:
 - darwin
 species: Eutomostethus luteiventris
 specimen: iyEutLute1
 stats: "merqury QV (CCS): 67.3\nmerqury KMER completeness (CCS): 99.44\nBUSCO: C:99.0%[S:98.8%,D:0.3%],F:0.1%,M:0.9%,n:1367,E:11.0%\n\
-  /lustre/scratch122/tol/data/c/9/c/8/e/3/Eutomostethus_luteiventris/assembly/draft/iyEutLute1.20250917/iyEutLute1.20250917.hap1.fa.gz\n\
+  iyEutLute1.20250917.hap1.fa.gz\n\
   COMPOSITION\tA = 81322177 (31.0%), C = 49794913 (19.0%), G = 49975870 (19.1%), T\
   \ = 80870402 (30.9%), N = 2600 (0.0%), CpG = 25117492 (9.6%)\nSCAFFOLD\tsum = 261965962,\
   \ n = 164, mean = 1597353.42682927, largest = 45950063, smallest = 7525\nSCAFFOLD\t\

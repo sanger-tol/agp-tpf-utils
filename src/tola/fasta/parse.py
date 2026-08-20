@@ -1,3 +1,4 @@
+import gzip
 import re
 import sys
 from io import BytesIO
@@ -80,7 +81,10 @@ def index_fasta_file(
 
     # Reading the file in bytes mode is about 10% faster than text mode, which
     # has the overhead of decoding to UTF-8.
-    with file.open("rb") as fh:
+    with (
+        # Transparently open gzip compressed FASTA files
+        gzip.open(file, "rb") if ".gz" in file.suffix.lower() else file.open("rb")
+    ) as fh:
         for line in fh:
             # ord(">") == 62
             if line[0] == 62:

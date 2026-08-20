@@ -15,6 +15,7 @@ from tola.assembly.format import format_agp, format_tpf
 from tola.assembly.indexed_assembly import IndexedAssembly
 from tola.assembly.naming_utils import ChrNamerError, TaggingError
 from tola.assembly.parser import format_from_file_extn, parse_agp, parse_tpf
+from tola.assembly.sanger_files import AssemblyYaml, find_yaml
 from tola.fasta.index import FastaIndex
 from tola.fasta.stream import FastaCollection, FastaStream
 
@@ -171,6 +172,42 @@ def ul(txt):
     help="Write messages into a '.log' file alongside the output file.",
 )
 @click.option(
+    "--info-yaml",
+    "info_yaml_file",
+    type=click.Path(
+        path_type=Path,
+        exists=True,
+        readable=True,
+        dir_okay=False,
+    ),
+    help="""
+
+      Location of the YAML information file indicating the location of
+      haplotigs and mitochondrion and chloroplast genome assemblies.  These
+      are added to the output assemblies.  Files should be in FASTA format,
+      optionally gzip compressed. Keys used are:
+
+      \b
+        haplotigs  - haplotigs not present in the
+                     curated map
+        mito       - mitochrondrial genome
+        plastid    - chloroplast genome
+      \b
+    """,
+)
+@click.option(
+    "--auto-find-yaml/--no-auto-find-yaml",
+    default=False,
+    show_default=True,
+    envvar="SANGER_AUTO_FIND_YAML",
+    help="""
+      Find the YAML draft assembly information file using the directory
+      structure expected at the Wellcome Sanger Institute, which is
+      any ".yaml" file inside any "assembly/drafts" subdirectory off any
+      parent directory of the "--assembly" input file.
+    """,
+)
+@click.option(
     "--keep-map-order",
     "-k",
     flag_value=True,
@@ -213,12 +250,18 @@ def cli(
     clobber: bool,
     log_level: str,
     write_log: bool,
+    auto_find_yaml: bool,
+    info_yaml_file: Path,
     keep_map_order: bool,
     default_asm_name: str,
     max_contig_length: int,
     no_max_contig_length: bool,
 ):
     logfile = setup_logging(log_level, output_file, write_log, clobber)
+
+    if auto_find_yaml and not info_yaml_file:
+        info_yaml_file = find_yaml(assembly_file.parent)
+    info_yaml = AssemblyYaml(info_yaml_file) if info_yaml_file else None
 
     if keep_map_order and not default_asm_name:
         default_asm_name = "map-order"
@@ -228,12 +271,14 @@ def cli(
     prtxt_asm, _ = parse_assembly_file(pretext_file, "AGP")
 
     fai_coll = FastaCollection(fai) if fai else None
+    if fai_coll:
+        info_yaml.add_indexes_to_collection(fai_coll)
 
     # Trap "-a" and "-p" arguments being switched
     if not prtxt_asm.bp_per_texel:
         exit(
             f"No bp_per_texel value in the PretextView AGP file '{pretext_file}'\n"
-            "(Are the -a, --assembly and -p, --pretext arguments the right way around?)"
+            "(Are the -a/--assembly and -p/--pretext arguments the right way around?)"
         )
 
     build_asm = BuildAssembly(

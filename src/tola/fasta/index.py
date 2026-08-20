@@ -1,3 +1,4 @@
+import gzip
 import logging
 from functools import cached_property
 from io import BytesIO
@@ -40,6 +41,8 @@ class FastaIndex:
             self.load_assembly()
         else:
             self.run_indexing()
+            self.write_index()
+            self.write_assembly()
 
     def check_for_index_files(self) -> bool:
         """
@@ -108,12 +111,11 @@ class FastaIndex:
         idx_dict, assembly = index_fasta_file(self.fasta_file, self.buffer_size)
         self.index = idx_dict
         self.assembly = assembly
-        self.write_index()
-        self.write_assembly()
 
     @cached_property
     def fasta_fileandle(self):
-        return self.fasta_file.open("rb")
+        ff = self.fasta_file
+        return gzip.open(ff, "rb") if ".gz" in ff.suffix.lower() else ff.open("rb")
 
     def get_info(self, name):
         info = self.index.get(name)
