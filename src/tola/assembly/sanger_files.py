@@ -65,7 +65,8 @@ def find_yaml(search_dir: Path, branch_dir: str | Path = "assembly/draft") -> Pa
         log.warning(
             "\n  ".join(
                 (
-                    f"Found multiple YAML files. Chose '{yaml}' and ignored:",
+                    "Found multiple YAML files. Chose",
+                    "'{yaml}'\nIgnored:",
                     *[f"'{x}'" for x in yaml_files],
                 ),
             )
@@ -97,22 +98,25 @@ class AssemblyYaml:
 
     @cached_property
     def mitochondrial_assembly(self) -> Assembly | None:
-        return self.__get_asm_and_name_scaffolds("mito", "MT")
+        return self.__get_asm_and_name_scaffolds("mito", "MT", rank=3)
 
     @cached_property
     def chloroplast_assembly(self) -> Assembly | None:
-        return self.__get_asm_and_name_scaffolds("plastid", "Pltd")
+        return self.__get_asm_and_name_scaffolds("plastid", "Pltd", rank=3)
 
-    def __get_asm_and_name_scaffolds(self, yaml_key, prefix) -> Assembly | None:
+    def __get_asm_and_name_scaffolds(
+        self, yaml_key, prefix, *, rank: int = 4
+    ) -> Assembly | None:
         asm = self.index_fasta(yaml_key)
         if not asm:
             return None
 
         ### Mark linear organelle genomes here? ###
 
-        # Give each scaffold a name
+        # Give each scaffold a name and set its rank
         for i, scffld in enumerate(asm.scaffolds, start=1):
             scffld.name = f"scaffold_{prefix}_{i}"
+            scffld.rank = rank
         return asm
 
     @cached_property

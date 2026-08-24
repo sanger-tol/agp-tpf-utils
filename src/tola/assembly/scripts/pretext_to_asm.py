@@ -293,12 +293,9 @@ def cli(
         "stdout",
         autosome_prefix=autosome_prefix,
         max_contig_length=None if no_max_contig_length else max_contig_length,
+        assembly_yaml=info_yaml,
     )
     build_asm.remap_to_input_assembly(prtxt_asm, input_asm)
-
-    # Add mitochondrial, chloroplast and haplotigs to the assembly
-    if info_yaml:
-        pass
 
     # Build colletion of FASTA indexes for writing assembly
     fai_coll = FastaCollection(fai) if fai else None

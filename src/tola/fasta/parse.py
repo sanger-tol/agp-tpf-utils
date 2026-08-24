@@ -12,7 +12,9 @@ from tola.fasta.info import FastaInfo
 
 
 def index_fasta_file(
-    file: Path, buffer_size: int = 250_000
+    file: Path,
+    buffer_size: int = 250_000,
+    source: str | None = None,
 ) -> tuple[dict[str, FastaInfo], Assembly]:
     name = ""
     seq_length = 0
@@ -48,7 +50,7 @@ def index_fasta_file(
             if start != prev[1]:
                 gap_length = start - prev[1]
                 scffld.add_row(Gap(gap_length, "scaffold"))
-            scffld.add_row(Fragment(name, start + 1, end, 1))
+            scffld.add_row(Fragment(name, start + 1, end, 1, source=source))
             prev = region
         if rem := seq_length - prev[1]:
             scffld.add_row(Gap(rem, "scaffold"))

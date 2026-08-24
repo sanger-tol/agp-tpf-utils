@@ -8,6 +8,15 @@ from tola.assembly.terminal_table import TerminalTable, bold, bold_red
 log = logging.getLogger(__name__)
 
 
+def natural_key(name: str) -> tuple[str | int]:
+    """
+    Splits a string into runs of digits and non-digits, and returns them in a
+    tuple with the digits converted to `int`s.  Use in Python's sorting
+    functions so that, for example "chr10" sorts after "chr2".
+    """
+    return tuple(int(x) if i % 2 else x for i, x in enumerate(re.split(r"(\d+)", name)))  # ty: ignore[invalid-return-type]
+
+
 class TaggingError(Exception):
     """Error in Pretext tags"""
 

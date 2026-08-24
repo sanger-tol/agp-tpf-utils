@@ -108,7 +108,11 @@ class FastaIndex:
             format_agp(self.assembly, agp_fh)
 
     def run_indexing(self) -> None:
-        idx_dict, assembly = index_fasta_file(self.fasta_file, self.buffer_size)
+        idx_dict, assembly = index_fasta_file(
+            self.fasta_file,
+            self.buffer_size,
+            source=self.source,
+        )
         self.index = idx_dict
         self.assembly = assembly
 

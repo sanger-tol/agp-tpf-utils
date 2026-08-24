@@ -2,6 +2,7 @@ from pathlib import Path
 
 import pytest
 
+from tola.assembly.fragment import Fragment
 from tola.assembly.sanger_files import (
     AssemblyYaml,
     AssemblyYamlError,
@@ -47,3 +48,31 @@ def test_decon_file_names(latest_yaml):
     )
     with pytest.raises(AssemblyYamlError):
         yml.decontaminated_file_path(Path("base/mito.txt"), "mito")
+    with pytest.raises(AssemblyYamlError):
+        yml.decontaminated_file_path(Path("base/mito.fax.gz"), "mito")
+
+
+def test_get_mito_assembly(latest_yaml):
+    yml = AssemblyYaml(latest_yaml)
+
+    mito = yml.mitochondrial_assembly
+    assert mito is not None
+    assert len(mito.scaffolds) == 1
+
+    scffld = mito.scaffolds[0]
+    assert scffld.name == "scaffold_MT_1"
+    assert len(scffld.rows) == 1
+
+    frag = scffld.rows[0]
+    assert isinstance(frag, Fragment)
+    assert frag.source == "mito"
+
+
+def test_get_no_pltd_assembly(latest_yaml):
+    yml = AssemblyYaml(latest_yaml)
+
+    pltd = yml.chloroplast_assembly
+    assert pltd is None
+
+
+

@@ -7,8 +7,9 @@ from tola.assembly.build_utils import FoundFragment, OverhangResolver
 from tola.assembly.fragment import Fragment
 from tola.assembly.gap import Gap
 from tola.assembly.indexed_assembly import IndexedAssembly
-from tola.assembly.naming_utils import ChrNamer, ScaffoldNamer
+from tola.assembly.naming_utils import ChrNamer, ScaffoldNamer, natural_key
 from tola.assembly.overlap_result import OverlapResult
+from tola.assembly.sanger_files import AssemblyYaml
 from tola.assembly.scaffold import Scaffold
 
 log = logging.getLogger(__name__)
@@ -39,6 +40,7 @@ class BuildAssembly(Assembly):
         bp_per_texel=None,
         autosome_prefix=None,
         max_contig_length=2_000_000_000,
+        assembly_yaml: AssemblyYaml | None = None,
     ):
         super().__init__(name, header, scaffolds, bp_per_texel)
         self.default_gap = Gap(200, "scaffold") if default_gap is None else default_gap
@@ -49,6 +51,7 @@ class BuildAssembly(Assembly):
         if autosome_prefix:
             self.autosome_prefix = autosome_prefix
         self.max_contig_length = max_contig_length
+        self.assembly_yaml = assembly_yaml
 
     @property
     def autosome_prefix(self):
@@ -322,11 +325,15 @@ class BuildAssembly(Assembly):
         # ChrNamer names autosome chromosomes by size
         chr_namer.name_chromosomes()
 
-        for asm in assemblies.values():
-            # Sort scaffolds by name
-            asm.smart_sort_scaffolds()
-
+        # Compile curation statistics before adding any draft assembly components
         self.assembly_stats.make_stats(assemblies)
+
+        # Inject mitochondrial, chloroplast and additional haplotigs
+        self.__add_draft_assembly_components(assemblies)
+
+        for asm in assemblies.values():
+            # Sort scaffolds by rank and name
+            asm.smart_sort_scaffolds()
 
         return scaffolds, assemblies
 
@@ -467,3 +474,29 @@ class BuildAssembly(Assembly):
                 build_scffld.append_scaffold(scffld)
 
         return list(hap_name_scaffold.values())
+
+    def __add_draft_assembly_components(self, assemblies: AssemblyDict) -> None:
+        """
+        Add mitochondrial and chloroplast genomes to the "first" assembly.
+        """
+        asm_yaml = self.assembly_yaml
+        if not asm_yaml:
+            return
+
+        # If we don't have a primary assembly, use the first
+        # from "hap1", "hap2", etc... sorted naturally
+        by_name = sorted(assemblies, key=natural_key)  # ty: ignore[no-matching-overload]
+        first_asm = (
+            assemblies.get("Primary") or assemblies.get(None) or assemblies[by_name[0]]
+        )
+
+        if mito := asm_yaml.mitochondrial_assembly:
+            first_asm.scaffolds.extend(mito.scaffolds)
+        if pltd := asm_yaml.chloroplast_assembly:
+            first_asm.scaffolds.extend(pltd.scaffolds)
+        if haplotigs := asm_yaml.haplotigs_assembly:
+            hap_asm = assemblies.get("Haplotig")
+            if not hap_asm:
+                hap_asm = Assembly(self.name, curated=False)
+                assemblies["Haplotig"] = hap_asm
+            hap_asm.scaffolds.extend(haplotigs.scaffolds)
