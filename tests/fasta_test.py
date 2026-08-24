@@ -13,10 +13,22 @@ from tola.fasta.stream import FastaCollection, FastaStream, FastaStreamError
 
 def list_fasta_files():
     fasta_dir = Path(__file__).parent / "fasta"
-    return [ff for ff in fasta_dir.iterdir() if ff.suffix == ".fa"]
+    return [
+        ff
+        for ff in fasta_dir.iterdir()
+        if ff.suffixes
+        in (
+            [".fa"],
+            [".fa", ".gz"],
+        )
+    ]
 
 
-@pytest.mark.parametrize("fasta_file", list_fasta_files())
+def path_name(p: Path):
+    return p.name
+
+
+@pytest.mark.parametrize("fasta_file", list_fasta_files(), ids=path_name)
 def test_fai(fasta_file):
     idx = FastaIndex(fasta_file)
 

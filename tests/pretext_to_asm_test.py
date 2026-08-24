@@ -36,10 +36,14 @@ def test_parse_output_file():
 
 def list_example_assemblies():
     data_dir = Path(__file__).parent / "data"
-    return [xd for xd in data_dir.iterdir() if xd.is_dir()]
+    return sorted(xd for xd in data_dir.iterdir() if xd.is_dir())
 
 
-@pytest.mark.parametrize("specimen_dir", list_example_assemblies())
+def dir_name(p: Path):
+    return p.name
+
+
+@pytest.mark.parametrize("specimen_dir", list_example_assemblies(), ids=dir_name)
 def test_assembly(specimen_dir):
     specimen = specimen_dir.name
     version = ""

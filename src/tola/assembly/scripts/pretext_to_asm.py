@@ -15,7 +15,11 @@ from tola.assembly.format import format_agp, format_tpf
 from tola.assembly.indexed_assembly import IndexedAssembly
 from tola.assembly.naming_utils import ChrNamerError, TaggingError
 from tola.assembly.parser import format_from_file_extn, parse_agp, parse_tpf
-from tola.assembly.sanger_files import AssemblyYaml, find_yaml
+from tola.assembly.sanger_files import (
+    AssemblyYaml,
+    AssemblyYamlLocationError,
+    find_yaml,
+)
 from tola.fasta.index import FastaIndex
 from tola.fasta.stream import FastaCollection, FastaStream
 
@@ -259,8 +263,16 @@ def cli(
 ):
     logfile = setup_logging(log_level, output_file, write_log, clobber)
 
-    if auto_find_yaml and not info_yaml_file:
-        info_yaml_file = find_yaml(assembly_file.parent)
+    # Locate and parse the draft assembly YAML file
+    if info_yaml_file:
+        info_yaml_file = info_yaml_file.absolute()
+    elif auto_find_yaml:
+        try:
+            info_yaml_file = find_yaml(assembly_file.parent)
+        except AssemblyYamlLocationError as ayle:
+            for msg in ayle.args:
+                log.error(msg)
+            sys.exit("Error finding draft assembly YAML file")
     info_yaml = AssemblyYaml(info_yaml_file) if info_yaml_file else None
 
     if keep_map_order and not default_asm_name:
@@ -269,10 +281,6 @@ def cli(
     asm, fai = parse_assembly_file(assembly_file, "TPF")
     input_asm = IndexedAssembly.new_from_assembly(asm)
     prtxt_asm, _ = parse_assembly_file(pretext_file, "AGP")
-
-    fai_coll = FastaCollection(fai) if fai else None
-    if fai_coll:
-        info_yaml.add_indexes_to_collection(fai_coll)
 
     # Trap "-a" and "-p" arguments being switched
     if not prtxt_asm.bp_per_texel:
@@ -287,6 +295,15 @@ def cli(
         max_contig_length=None if no_max_contig_length else max_contig_length,
     )
     build_asm.remap_to_input_assembly(prtxt_asm, input_asm)
+
+    # Add mitochondrial, chloroplast and haplotigs to the assembly
+    if info_yaml:
+        pass
+
+    # Build colletion of FASTA indexes for writing assembly
+    fai_coll = FastaCollection(fai) if fai else None
+    if fai_coll and info_yaml:
+        info_yaml.add_indexes_to_collection(fai_coll)
 
     try:
         out_assemblies = (
