@@ -103,15 +103,21 @@ class ScaffoldNamer:
         if not haplotype:
             haplotype = self.haplotype_from_first_row_name(scaffold)
 
-        if primary_tag and not self.primary_haplotype:
-            if not haplotype:
-                msg = (
-                    f"Failed to determine haplotype for Primary"
-                    f" from scaffold:\n\n{scaffold}"
-                )
-                raise TaggingError(msg)
-            self.primary_haplotype = self.get_set_haplotype(haplotype)
-            log.debug(f"Primary haplotype is '{self.primary_haplotype}'")
+        if primary_tag:
+            if self.primary_haplotype:
+                # Subsequent "Primary" tags after the first move the scaffold
+                # into the primary haplotype.
+                haplotype = self.primary_haplotype
+            else:
+                # The first "Primary" tag sets the primary haplotype
+                if not haplotype:
+                    msg = (
+                        f"Failed to determine haplotype for Primary"
+                        f" from scaffold:\n\n{scaffold}"
+                    )
+                    raise TaggingError(msg)
+                self.primary_haplotype = self.get_set_haplotype(haplotype)
+                log.debug(f"Primary haplotype is '{self.primary_haplotype}'")
 
         if not scaffold_name:
             if is_painted:
