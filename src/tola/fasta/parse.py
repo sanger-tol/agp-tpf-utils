@@ -1,8 +1,10 @@
-import gzip
 import re
 import sys
 from io import BytesIO
 from pathlib import Path
+from typing import BinaryIO
+
+from indexed_gzip import IndexedGzipFile
 
 from tola.assembly.assembly import Assembly
 from tola.assembly.fragment import Fragment
@@ -11,11 +13,28 @@ from tola.assembly.scaffold import Scaffold
 from tola.fasta.info import FastaInfo
 
 
+def open_fasta(file: Path) -> BinaryIO | IndexedGzipFile:
+    if file.suffix.lower() == ".gz":
+        maybe_idx = file.with_suffix(".gzidx")
+        idx = str(maybe_idx) if maybe_idx.exists() else None
+        return IndexedGzipFile(str(file), index_file=idx)
+    else:
+        return file.open("rb")
+
+
 def index_fasta_file(
     file: Path,
     buffer_size: int = 250_000,
     source: str | None = None,
+    filehandle: BinaryIO | None = None,
 ) -> tuple[dict[str, FastaInfo], Assembly]:
+
+    # Reading the file in bytes mode is about 10% faster than text mode, which
+    # has the overhead of decoding to UTF-8.
+    if not filehandle:
+        # Transparently open gzip compressed FASTA files
+        filehandle = open_fasta(file)
+
     name = ""
     seq_length = 0
     region_start = None
@@ -81,51 +100,46 @@ def index_fasta_file(
 
         seq_length += len(seq_bytes)
 
-    # Reading the file in bytes mode is about 10% faster than text mode, which
-    # has the overhead of decoding to UTF-8.
-    with (
-        # Transparently open gzip compressed FASTA files
-        gzip.open(file, "rb") if ".gz" in file.suffix.lower() else file.open("rb")
-    ) as fh:
-        for line in fh:
-            # ord(">") == 62
-            if line[0] == 62:
-                # If this isn't the first sequence in the file, store the
-                # accumulated data from the previous sequence.
-                if name:
-                    store_info()
+    filehandle.seek(0)
+    for line in filehandle:
+        # ord(">") == 62
+        if line[0] == 62:
+            # If this isn't the first sequence in the file, store the
+            # accumulated data from the previous sequence.
+            if name:
+                store_info()
 
-                # Get new name by splitting on whitespace beyond the first
-                # character and taking the first element of the array.
-                # (This also allows space characters following the ">"
-                # character of the header.)
-                name = line[1:].split()[0].decode()
-                if not name:
-                    msg = f"Failed to parse sequence name from line:\n{line}"
-                    raise ValueError(msg)
+            # Get new name by splitting on whitespace beyond the first
+            # character and taking the first element of the array.
+            # (This also allows space characters following the ">"
+            # character of the header.)
+            name = line[1:].split()[0].decode()
+            if not name:
+                msg = f"Failed to parse sequence name from line:\n{line}"
+                raise ValueError(msg)
 
-                # Reset variables for new sequence
-                seq_length = 0
-                residues_per_line = 0
-                region_start = 0
-                region_end = None
-                seq_regions = []
+            # Reset variables for new sequence
+            seq_length = 0
+            residues_per_line = 0
+            region_start = 0
+            region_end = None
+            seq_regions = []
 
-                # The first residue of the sequence will be where the file
-                # pointer now is.
-                file_offset = fh.tell()
+            # The first residue of the sequence will be where the file
+            # pointer now is.
+            file_offset = filehandle.tell()
 
-                # We assume each sequence entry will have the same line
-                # endings.  Check for Windows "\r\n" line ending where the
-                # second to last byte will be ord("\r") == 13
-                line_end_bytes = 2 if line[-2] == 13 else 1
-            else:
-                if not residues_per_line:
-                    residues_per_line = len(line) - line_end_bytes
+            # We assume each sequence entry will have the same line
+            # endings.  Check for Windows "\r\n" line ending where the
+            # second to last byte will be ord("\r") == 13
+            line_end_bytes = 2 if line[-2] == 13 else 1
+        else:
+            if not residues_per_line:
+                residues_per_line = len(line) - line_end_bytes
 
-                seq_buffer.write(line[:-line_end_bytes])
-                if seq_buffer.tell() > buffer_size:
-                    process_seq_buffer()
+            seq_buffer.write(line[:-line_end_bytes])
+            if seq_buffer.tell() > buffer_size:
+                process_seq_buffer()
 
     # Store info for the last sequence in the file
     if name:

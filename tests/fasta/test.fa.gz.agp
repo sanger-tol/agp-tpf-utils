@@ -1,4 +1,4 @@
-# Built from FASTA file '/Users/jgrg/git/agp-tpf-utils/tests/fasta/test.fa'
+# Built from FASTA file '/Users/jgrg/git/agp-tpf-utils/tests/fasta/test.fa.gz'
 RAND-001	1	3	1	U	3	scaffold	yes	proximity_ligation
 RAND-001	4	173	2	W	RAND-001	4	173	+
 RAND-001	174	176	3	U	3	scaffold	yes	proximity_ligation

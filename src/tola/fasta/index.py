@@ -1,15 +1,17 @@
-import gzip
 import logging
 from functools import cached_property
 from io import BytesIO
 from pathlib import Path
+from typing import BinaryIO
+
+from indexed_gzip import IndexedGzipFile
 
 from tola.assembly.format import format_agp
 from tola.assembly.fragment import Fragment
 from tola.assembly.gap import Gap
 from tola.assembly.parser import parse_agp
 from tola.fasta.info import FastaInfo
-from tola.fasta.parse import index_fasta_file
+from tola.fasta.parse import index_fasta_file, open_fasta
 from tola.fasta.simple import FastaSeq, revcomp_bytes_io
 
 log = logging.getLogger(__name__)
@@ -33,6 +35,11 @@ class FastaIndex:
         self.buffer_size: int = buffer_size
         self.fai_file: Path = fasta_file.with_name(f"{fasta_file.name}.fai")
         self.agp_file: Path = fasta_file.with_name(f"{fasta_file.name}.agp")
+        self.gzip_index_file: Path | None = (
+            fasta_file.with_suffix(".gzidx")
+            if fasta_file.suffix.lower() == ".gz"
+            else None
+        )
         self.source = source
 
     def auto_load(self):
@@ -43,14 +50,18 @@ class FastaIndex:
             self.run_indexing()
             self.write_index()
             self.write_assembly()
+            self.write_gzip_index()
 
     def check_for_index_files(self) -> bool:
         """
-        Check that the .agp and fai files exist and are newer than the FASTA
-        sequence file.
+        Check that the .agp, .fai, and possibly .gzidx, files exist and are
+        newer than the FASTA sequence file.
         """
         fasta_mtime = self.fasta_file.stat().st_mtime
-        for idx_file in self.fai_file, self.agp_file:
+        for idx_file in self.fai_file, self.agp_file, self.gzip_index_file:
+            if not idx_file:
+                # gzip_index_file may be None
+                continue
             if not idx_file.exists():
                 return False
             if not idx_file.stat().st_mtime > fasta_mtime:
@@ -90,6 +101,18 @@ class FastaIndex:
             for name, info in self.index.items():
                 idx_fh.write(info.fai_row(name))
 
+    def write_gzip_index(self) -> None:
+        gzidx = self.gzip_index_file
+        if not gzidx:
+            return
+        if gzidx.exists():
+            log.warning(f"Overwriting gzip index file '{gzidx}'")
+        gzfh = self.fasta_filehandle
+        log.warning(f"gzip filehandle is at byte {gzfh.tell()}")
+        if isinstance(gzfh, IndexedGzipFile):
+            gzfh.build_full_index()
+            gzfh.export_index(str(gzidx))
+
     def load_assembly(self) -> None:
         if hasattr(self, "assembly"):
             msg = "Assembly AGP already loaded"
@@ -112,14 +135,14 @@ class FastaIndex:
             self.fasta_file,
             self.buffer_size,
             source=self.source,
+            filehandle=self.fasta_filehandle,
         )
         self.index = idx_dict
         self.assembly = assembly
 
     @cached_property
-    def fasta_fileandle(self):
-        ff = self.fasta_file
-        return gzip.open(ff, "rb") if ".gz" in ff.suffix.lower() else ff.open("rb")
+    def fasta_filehandle(self) -> BinaryIO | IndexedGzipFile:
+        return open_fasta(self.fasta_file)
 
     def get_info(self, name):
         info = self.index.get(name)
@@ -197,7 +220,7 @@ class FastaIndex:
         last_offset = end % rpl
 
         # Seek to the first residue
-        fh = self.fasta_fileandle
+        fh = self.fasta_filehandle
         fh.seek(info.file_offset + frst_offset + mll * frst_line)
 
         seq = BytesIO()
