@@ -144,7 +144,11 @@ def format_from_file_extn(pth, default=None) -> str | None:
     """
     Guess the file format from the extension, or return the supplied default
     """
-    if m := re.match(r"\.(agp|tpf|fa(?:sta)?)\w*$", pth.suffix, flags=re.IGNORECASE):
+    if m := re.search(
+        r"\.(agp|tpf|fa(?:sta)?(?:\.gz)?)\w*$",
+        pth.name,
+        flags=re.IGNORECASE,
+    ):
         uc_fmt = m.group(1).upper()
         return "FASTA" if uc_fmt.startswith("FA") else uc_fmt
     else:

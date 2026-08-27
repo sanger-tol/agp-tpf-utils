@@ -484,9 +484,10 @@ class BuildAssembly(Assembly):
 
         # If we don't have a primary assembly, use the first
         # from "hap1", "hap2", etc... sorted naturally
-        by_name = sorted(assemblies, key=natural_key)  # ty: ignore[no-matching-overload]
         first_asm = (
-            assemblies.get("Primary") or assemblies.get(None) or assemblies[by_name[0]]
+            assemblies.get("Primary")
+            or assemblies.get(None)
+            or (sorted(assemblies, key=natural_key))[0]  # ty: ignore[no-matching-overload]
         )
 
         if mito := asm_yaml.mitochondrial_assembly:

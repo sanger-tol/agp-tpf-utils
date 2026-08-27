@@ -1,9 +1,26 @@
 import io
+from pathlib import Path
 
 import pytest
-from tola.assembly.parser import parse_agp, parse_tpf
+
+from tola.assembly.parser import format_from_file_extn, parse_agp, parse_tpf
 
 from .utils import strip_leading_spaces
+
+
+def test_format_from_file_extn():
+    assert format_from_file_extn(Path("fox"), "TPF") == "TPF"
+
+    assert format_from_file_extn(Path("ivy.tpf"), "AGP") == "TPF"
+
+    assert format_from_file_extn(Path("bat.fa"), "TPF") == "FASTA"
+    assert format_from_file_extn(Path("bat.fasta"), "TPF") == "FASTA"
+    assert format_from_file_extn(Path("bat.fa.gz"), "TPF") == "FASTA"
+    assert format_from_file_extn(Path("bat.fasta.gz"), "TPF") == "FASTA"
+
+    assert format_from_file_extn(Path("oak.AGP"), "TPF") == "AGP"
+    assert format_from_file_extn(Path("oak.agp"), "TPF") == "AGP"
+    assert format_from_file_extn(Path("oak.agp_2"), "TPF") == "AGP"
 
 
 def test_parse_agp():

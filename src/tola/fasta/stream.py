@@ -31,6 +31,7 @@ class FastaCollection:
         if self.__source_idx.get(source):
             msg = f"Already have a FastaIndex for source = '{source}'"
             raise FastaCollectionError(msg)
+        import logging; logging.warning(f"Adding {source!r} FastaIndex to FastaCollection")
         self.__source_idx[source] = idx
 
     def get_faidx(self, source: str | None) -> FastaIndex:

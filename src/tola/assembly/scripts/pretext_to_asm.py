@@ -297,11 +297,6 @@ def cli(
     )
     build_asm.remap_to_input_assembly(prtxt_asm, input_asm)
 
-    # Build colletion of FASTA indexes for writing assembly
-    fai_coll = FastaCollection(fai) if fai else None
-    if fai_coll and info_yaml:
-        info_yaml.add_indexes_to_collection(fai_coll)
-
     try:
         out_assemblies = (
             build_asm.assembly_with_scaffolds_in_map_order()
@@ -317,6 +312,11 @@ def cli(
         for msg in te.args:
             log.warning(msg)
         sys.exit("Error in Pretext tags")
+
+    # Build colletion of FASTA indexes for writing assembly
+    fai_coll = FastaCollection(fai) if fai else None
+    if fai_coll and info_yaml:
+        info_yaml.add_indexes_to_collection(fai_coll)
 
     stats = build_asm.assembly_stats
     if output_file:
@@ -388,9 +388,9 @@ def name_assemblies(
     # has been curated. One of the painted chromosomes in the curated
     # haplotype has been tagged with 'Primary'
     if asm_dict.get("Primary"):
-        # <ToLID>.1.primary.curated.fa  <- Sequence from "Hap1" tagged scaffolds
+        # <ToLID>.1.primary.curated.fa    <- Sequence from "Hap1" tagged scaffolds
         # <ToLID>.1.primary.chromosome.list.csv
-        # <ToLID>.1.all_haplotigs.curated.fa  <- Sequence from "Hap2" tagged scaffolds
+        # <ToLID>.1.haplotigs.curated.fa  <- Sequence from "Hap2" tagged scaffolds
         other_asm = []
         for asm_key, asm in asm_dict.items():
             if asm_key == "Primary":
@@ -406,7 +406,7 @@ def name_assemblies(
             # 'all_haplotigs' file
             htigs = merge_assemblies(other_asm)
             htigs.curated = True
-            new_key = "all_haplotigs"
+            new_key = "haplotigs"
             htigs.name = f"{root}.{version}.{new_key}"
             ret_asm[new_key] = htigs
 
@@ -414,8 +414,8 @@ def name_assemblies(
     elif asm_dict.get(None):
         # <ToLID>.1.primary.curated.fa
         # <ToLID>.1.primary.chromosome.list.csv
-        # <ToLID>.1.additional_haplotigs.curated.fa  <- Sequence from "Haplotig"
-        #                                               tagged scaffolds
+        # <ToLID>.1.haplotigs.curated.fa  <- Sequence from "Haplotig"
+        #                                    tagged scaffolds
         other_asm = []
         for asm_key, asm in asm_dict.items():
             if asm_key is None:
@@ -426,7 +426,7 @@ def name_assemblies(
                 )
                 ret_asm[None] = asm
             elif asm_key == "Haplotig":
-                new_key = "additional_haplotigs"
+                new_key = "haplotigs"
                 asm.name = f"{root}.{version}.{new_key}"
                 asm.curated = True
                 ret_asm[new_key] = asm
@@ -556,10 +556,10 @@ def write_chr_csv_files(
     out_assemblies: AssemblyDict,
     clobber: bool,
 ):
-    for hap, asm in out_assemblies.items():
+    for asm in out_assemblies.values():
         if not asm.curated:
             continue
-        if chr_names := stats.chromosome_name_csv(hap, asm):
+        if chr_names := stats.chromosome_name_csv(asm):
             csv_file = out_dir / f"{asm.name}.chromosome.list.csv"
             with get_output_filehandle(csv_file, clobber) as csv_fh:
                 csv_fh.write(chr_names)

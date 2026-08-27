@@ -150,7 +150,7 @@ class AssemblyStats:
             )
         return scaff_lengths
 
-    def chromosome_name_csv(self, haplotype: str, asm: Assembly):
+    def chromosome_name_csv(self, asm: Assembly):
         csv_str = io.StringIO()
         for scffld in asm.scaffolds:
             if scffld.rank in (1, 2):
@@ -161,7 +161,7 @@ class AssemblyStats:
                             scffld.chr_name,
                             "yes" if scffld.localised else "no",
                         )
-                    )
+                    )  # ty: ignore[no-matching-overload]
                 )
                 csv_str.write("\n")
 

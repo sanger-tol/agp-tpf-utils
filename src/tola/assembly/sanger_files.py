@@ -136,7 +136,7 @@ class AssemblyYaml:
 
         # Do we have the "decontaminated" version of the file?
         if not decon_path.exists():
-            msg = "No such FASTA file for {name!r}: '{decon_path}'"
+            msg = f"No such FASTA file for {name!r}: '{decon_path}'"
             raise AssemblyYamlError(msg)
 
         # Index the FASTA with a source namespace
