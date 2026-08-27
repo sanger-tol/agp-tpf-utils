@@ -54,7 +54,7 @@ class FastaIndex:
 
     def check_for_index_files(self) -> bool:
         """
-        Check that the .agp, .fai, and possibly .gzidx, files exist and are
+        Check that the `.agp`, `.fai`, and possibly `.gzidx`, files exist and are
         newer than the FASTA sequence file.
         """
         fasta_mtime = self.fasta_file.stat().st_mtime
@@ -108,7 +108,6 @@ class FastaIndex:
         if gzidx.exists():
             log.warning(f"Overwriting gzip index file '{gzidx}'")
         gzfh = self.fasta_filehandle
-        log.warning(f"gzip filehandle is at byte {gzfh.tell()}")
         if isinstance(gzfh, IndexedGzipFile):
             gzfh.build_full_index()
             gzfh.export_index(str(gzidx))

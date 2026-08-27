@@ -325,15 +325,14 @@ class BuildAssembly(Assembly):
         # ChrNamer names autosome chromosomes by size
         chr_namer.name_chromosomes()
 
-        # Compile curation statistics before adding any draft assembly components
-        self.assembly_stats.make_stats(assemblies)
-
         # Inject mitochondrial, chloroplast and additional haplotigs
         self.__add_draft_assembly_components(assemblies)
 
         for asm in assemblies.values():
             # Sort scaffolds by rank and name
             asm.smart_sort_scaffolds()
+
+        self.assembly_stats.make_stats(assemblies)
 
         return scaffolds, assemblies
 

@@ -22,9 +22,10 @@ dev = [
 
 [project.scripts]
 asm-format = "tola.assembly.scripts.asm_format:cli"
-pretext-to-asm = "tola.assembly.scripts.pretext_to_asm:cli"
-p2asm = "tola.assembly.scripts.pretext_to_asm:cli"
 find-overlaps = "tola.assembly.scripts.find_overlaps:cli"
+index-fasta = "tola.assembly.scripts.index_fasta:cli"
+p2asm = "tola.assembly.scripts.pretext_to_asm:cli"
+pretext-to-asm = "tola.assembly.scripts.pretext_to_asm:cli"
 
 [tool.setuptools.packages.find]
 where = ["src"]
