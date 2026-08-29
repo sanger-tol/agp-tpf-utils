@@ -22,6 +22,12 @@ def open_fasta(file: Path) -> BinaryIO | IndexedGzipFile:
         return file.open("rb")
 
 
+class FastaIndexingError(Exception):
+    """
+    Error parsing and indexing a FASTA file
+    """
+
+
 def index_fasta_file(
     file: Path,
     buffer_size: int = 250_000,
@@ -54,7 +60,7 @@ def index_fasta_file(
 
         if idx_dict.get(name):
             msg = f"More than one sequence named '{name}' in FASTA file '{file}'"
-            raise ValueError(msg)
+            raise FastaIndexingError(msg)
         idx_dict[name] = FastaInfo(
             seq_length,
             file_offset,
@@ -116,7 +122,7 @@ def index_fasta_file(
             name = line[1:].split()[0].decode()
             if not name:
                 msg = f"Failed to parse sequence name from line:\n{line}"
-                raise ValueError(msg)
+                raise FastaIndexingError(msg)
 
             # Reset variables for new sequence
             seq_length = 0
@@ -149,7 +155,7 @@ def index_fasta_file(
         return idx_dict, asm
     else:
         msg = f"No data in FASTA file '{file.absolute()}'"
-        raise ValueError(msg)
+        raise FastaIndexingError(msg)
 
 
 if __name__ == "__main__":
