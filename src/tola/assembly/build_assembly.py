@@ -476,7 +476,9 @@ class BuildAssembly(Assembly):
 
     def __add_draft_assembly_components(self, assemblies: AssemblyDict) -> None:
         """
-        Add mitochondrial and chloroplast genomes to the "first" assembly.
+        Add mitochondrial and chloroplast genomes to the first
+        ("Hap1" or "Primary") assembly and haplotigs to the "Haplotig"
+        assembly.
         """
         asm_yaml = self.assembly_yaml
         if not asm_yaml:

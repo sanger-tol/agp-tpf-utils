@@ -45,7 +45,7 @@ class Scaffold:
             tag=self.tag,
             haplotype=self.haplotype,
             rank=self.rank,
-            original_name=self.original_name,
+            original_name=self.__original_name,
             original_tags=self.original_tags,
             localised=self.localised,
             chr_name=self.chr_name,
@@ -55,7 +55,7 @@ class Scaffold:
     def __repr__(self):
         txt = io.StringIO()
         txt.write(f"{self.__class__.__name__}(\n    name='{self.name}',\n")
-        if orig := self.original_name:
+        if orig := self.__original_name:
             txt.write(f"    original_name='{orig}',\n")
         if orig_tags := self.original_tags:
             txt.write(f"    original_tags={sorted(orig_tags)!r},\n")
@@ -70,7 +70,7 @@ class Scaffold:
     def __str__(self):
         txt = io.StringIO()
         txt.write(f"{self.name}")
-        if (orig := self.original_name) and orig != self.name:
+        if (orig := self.__original_name) and orig != self.name:
             txt.write(f" ({orig})")
         if orig_tags := self.original_tags:
             txt.write(f" original_tags={sorted(orig_tags)!r}")
@@ -83,6 +83,14 @@ class Scaffold:
 
     def add_row(self, row: Fragment | Gap):
         self.rows.append(row)
+
+    @property
+    def original_name(self) -> str:
+        return self.__original_name or self.name
+
+    @original_name.setter
+    def original_name(self, name: str) -> None:
+        self.__original_name = name
 
     @property
     def length(self) -> int:
