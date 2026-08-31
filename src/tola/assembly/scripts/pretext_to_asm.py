@@ -7,6 +7,7 @@ from typing import IO, Any
 
 import click
 import yaml
+from zlib_ng import gzip_ng_threaded
 
 from tola.assembly.assembly import Assembly, AssemblyDict
 from tola.assembly.assembly_stats import AssemblyStats
@@ -105,7 +106,7 @@ def ul(txt):
     help="""Assembly before curation, usually a FASTA file.
       FASTA files will be indexed, creating a '.fai' and a '.agp' file
       alongside the assembly if they are missing or are older than the
-      FASTA.""",
+      FASTA.  Supports gzip compresed '.gz' files.""",
 )
 @click.option(
     "--pretext",
@@ -135,8 +136,9 @@ def ul(txt):
       for version 2 of the assembly of 'mVulVul1'. If <VERSION> is not
       specified, it defaults to '1'.
 
-      The output file type is determined from its extension. When the outuput is
-      FASTA ('.fa'), an AGP format file ('.fa.agp') is also written.
+      The output file type is determined from its extension. When the outuput
+      is FASTA ('.fa'), an AGP format file ('.fa.agp') is also written.  FASTA
+      output files can be gzip compressed ('.fa.gz').
 
       The names of output files created are printed to STDERR.
 
@@ -209,6 +211,9 @@ def ul(txt):
       structure expected at the Wellcome Sanger Institute, which is
       any ".yaml" file inside any "assembly/drafts" subdirectory off any
       parent directory of the "--assembly" input file.
+
+      This option will default FASTA output files to be gzip compressed even
+      when the '.gz' file extension is not used.
     """,
 )
 @click.option(
@@ -320,7 +325,9 @@ def cli(
 
     stats = build_asm.assembly_stats
     if output_file:
-        out_fmt, out_dir, out_root, asm_version, suffix = parse_output_file(output_file)
+        out_fmt, out_dir, out_root, asm_version, suffix = parse_output_file(
+            output_file, gz=auto_find_yaml
+        )
         write_info_yaml(output_file, stats, out_assemblies, clobber)
 
         # Rename assemblies for output files
@@ -458,9 +465,9 @@ def merge_assemblies(asm_list):
     return new
 
 
-def parse_output_file(file):
+def parse_output_file(file: Path, gz=False) -> tuple[str, Path, str, str, str]:
     out_fmt = format_from_file_extn(file)
-    if not out_fmt:
+    if out_fmt is None:
         reason = (
             "Missing extension"
             if file.suffix == ""
@@ -469,12 +476,20 @@ def parse_output_file(file):
         click.echo(f"{reason} on file name: '{file}'", err=True)
         sys.exit(1)
 
+    if file.suffix.lower() == ".gz":
+        gz = True
+        file = file.parent / file.stem
+
     sfx = f".{out_fmt.lower()}"
     if sfx.startswith(file.suffix.lower()):
         out_root = file.stem
         sfx = file.suffix
     else:
         out_root = file.name
+
+    # Only gzip FASTA, not any other output formats
+    if out_fmt == "FASTA" and gz:
+        sfx += ".gz"
 
     # Is there a version suffix?
     if m := re.search(r"\.(\d+)$", out_root):
@@ -591,8 +606,19 @@ def write_info_yaml(
 
 def get_output_filehandle(path: Path, clobber: bool, mode: str = "") -> IO[Any]:
     op = "Overwrote" if path.exists() else "Created"
+
+    # Must choose binary output mode if output is gzip compressed
+    gz = path.suffix == ".gz"
+    if gz:
+        mode = "b"
+    mode = "w" + mode if clobber else "x" + mode
+
     try:
-        out_fh = path.open("w" + mode if clobber else "x" + mode)
+        out_fh = (
+            gzip_ng_threaded.open(path, mode, compresslevel=6, threads=2)
+            if gz
+            else path.open(mode)
+        )
     except FileExistsError:
         log.error(f"Output file '{path}' already exists")
         sys.exit(1)

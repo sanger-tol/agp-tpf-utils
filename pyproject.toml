@@ -12,6 +12,7 @@ dependencies = [
     "pyyaml",
     'importlib-metadata; python_version>="3.11"',
     "indexed-gzip>=1.10.3",
+    "zlib-ng>=1.0.0",
 ]
 
 [dependency-groups]
