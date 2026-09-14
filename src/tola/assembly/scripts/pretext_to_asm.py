@@ -3,16 +3,17 @@ import os
 import re
 import sys
 from pathlib import Path
-from typing import IO, Any
+from shutil import which
 
 import click
 import yaml
-from zlib_ng import gzip_ng_threaded
 
 from tola.assembly.assembly import Assembly, AssemblyDict
 from tola.assembly.assembly_stats import AssemblyStats
 from tola.assembly.build_assembly import BuildAssembly
+from tola.assembly.file_utils import get_output_filehandle
 from tola.assembly.format import format_agp, format_tpf
+from tola.assembly.gfa_stats import BeforeAfterStats, GfaStatsError
 from tola.assembly.indexed_assembly import IndexedAssembly
 from tola.assembly.naming_utils import ChrNamerError, TaggingError
 from tola.assembly.parser import format_from_file_extn, parse_agp, parse_tpf
@@ -278,7 +279,9 @@ def cli(
             for msg in ayle.args:
                 log.error(msg)
             sys.exit("Error finding draft assembly YAML file")
-    info_yaml = AssemblyYaml(info_yaml_file) if info_yaml_file else None
+    draft_yaml = AssemblyYaml(info_yaml_file) if info_yaml_file else None
+    if draft_yaml:
+        check_for_executable("gfastats")
 
     if keep_map_order and not default_asm_name:
         default_asm_name = "map-order"
@@ -298,7 +301,7 @@ def cli(
         "stdout",
         autosome_prefix=autosome_prefix,
         max_contig_length=None if no_max_contig_length else max_contig_length,
-        assembly_yaml=info_yaml,
+        assembly_yaml=draft_yaml,
     )
     build_asm.remap_to_input_assembly(prtxt_asm, input_asm)
 
@@ -320,8 +323,8 @@ def cli(
 
     # Build colletion of FASTA indexes for writing assembly
     fai_coll = FastaCollection(fai) if fai else None
-    if fai_coll and info_yaml:
-        info_yaml.add_indexes_to_collection(fai_coll)
+    if fai_coll and draft_yaml:
+        draft_yaml.add_indexes_to_collection(fai_coll)
 
     stats = build_asm.assembly_stats
     if output_file:
@@ -335,9 +338,18 @@ def cli(
             out_assemblies, out_root, asm_version, default_asm_name
         )
 
-        write_assemblies(fai_coll, out_fmt, out_dir, suffix, out_assemblies, clobber)
+        asm_files = write_assemblies(
+            fai_coll, out_fmt, out_dir, suffix, out_assemblies, clobber
+        )
         write_chr_csv_files(out_dir, stats, out_assemblies, clobber)
         write_chr_report_csv(output_file, stats, out_assemblies, clobber)
+        if draft_yaml and fai_coll:
+            try:
+                write_assembly_stats(draft_yaml, asm_files, clobber)
+            except GfaStatsError as ge:
+                for msg in ge.args:
+                    log.warning(msg)
+                sys.exit("Error running gfastats")
     else:
         for asm in out_assemblies.values():
             write_assembly(fai_coll, asm, None, None, clobber)
@@ -366,7 +378,7 @@ def setup_logging(log_level, output_file, write_log, clobber):
         conf["filemode"] = "w" if clobber else "x"
 
     try:
-        logging.basicConfig(**conf)
+        logging.basicConfig(**conf)  # ty: ignore[no-matching-overload]
     except FileExistsError:
         click.echo(f"ERROR: log file '{logfile}' already exists", err=True)
         sys.exit(1)
@@ -379,6 +391,12 @@ def setup_logging(log_level, output_file, write_log, clobber):
         logging.getLogger().addHandler(err_hdlr)
 
     return logfile
+
+
+def check_for_executable(cmd: str):
+    if not which(cmd):
+        log.error(f"No such executable {str!r} in PATH")
+        sys.exit(1)
 
 
 def name_assemblies(
@@ -509,11 +527,14 @@ def write_assemblies(
     suffix: str,
     out_assemblies: AssemblyDict,
     clobber: bool,
-):
-    for asm in out_assemblies.values():
+) -> dict[str | None, Path]:
+    asm_files_written = {}
+    for asm_key, asm in out_assemblies.items():
         crtd = ".curated" if asm.curated else ""
         output_file = out_dir / f"{asm.name}{crtd}{suffix}"
         write_assembly(fai_coll, asm, output_file, out_fmt, clobber)
+        asm_files_written[asm_key] = output_file
+    return asm_files_written
 
 
 def write_assembly(
@@ -542,13 +563,27 @@ def write_assembly(
         stream.write_assembly(out_asm)
 
         # Save a .agp file alongside the .fa / .fasta
-        output_agp = output_file.with_suffix(".agp")
+        output_agp = output_file.with_suffix(".agp")  # ty: ignore[unresolved-attribute]
         agp_fh = get_output_filehandle(output_agp, clobber)
         format_agp(out_asm, agp_fh)
 
     elif out_fmt == "STR":
         out_fh.write("\n")
         out_fh.write(str(out_asm))
+
+
+def write_assembly_stats(
+    draft_yaml: AssemblyYaml,
+    asm_files: dict[str | None, Path],
+    clobber: bool,
+):
+    for name, asm_file in asm_files.items():
+        name = "primary" if name is None else name.lower()
+        draft_asm_file = draft_yaml.decontaminated_file_path(
+            draft_yaml.get_path(name), name
+        )
+        gfa = BeforeAfterStats(before=draft_asm_file, after=asm_file)
+        gfa.write_stats(clobber)
 
 
 def write_chr_report_csv(
@@ -602,28 +637,6 @@ def write_info_yaml(
     yaml_file = output_file.with_name(output_file.stem + ".info.yaml")
     with get_output_filehandle(yaml_file, clobber) as yaml_fh:
         yaml_fh.write(yaml.safe_dump(info, sort_keys=False))
-
-
-def get_output_filehandle(path: Path, clobber: bool, mode: str = "") -> IO[Any]:
-    op = "Overwrote" if path.exists() else "Created"
-
-    # Must choose binary output mode if output is gzip compressed
-    gz = path.suffix == ".gz"
-    if gz:
-        mode = "b"
-    mode = "w" + mode if clobber else "x" + mode
-
-    try:
-        out_fh = (
-            gzip_ng_threaded.open(path, mode, compresslevel=6, threads=2)
-            if gz
-            else path.open(mode)
-        )
-    except FileExistsError:
-        log.error(f"Output file '{path}' already exists")
-        sys.exit(1)
-    click.echo(f"{op:>11}: '{path}'", err=True)
-    return out_fh
 
 
 def parse_assembly_file(

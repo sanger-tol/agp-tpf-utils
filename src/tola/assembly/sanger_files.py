@@ -7,6 +7,7 @@ import re
 import sys
 from functools import cached_property
 from pathlib import Path
+from typing import Any
 
 import yaml
 
@@ -90,7 +91,19 @@ class AssemblyYaml:
         if not isinstance(yaml_dict, dict):
             msg = f"Expected a dict from '{yaml_file}' but got {yaml_dict!r}"
             raise AssemblyYamlError(msg)
-        self.__yaml: dict[str, str] = yaml_dict
+        self.__yaml: dict[str, Any] = yaml_dict
+
+    def get_path(self, key: str) -> Path:
+        val = self.__yaml.get(key)
+        if val is None:
+            msg = f"No such value {key!r}"
+            raise AssemblyYamlError(msg)
+        if not isinstance(val, str):
+            msg = f"Expecting string for {key!r} but got: {val!r}"
+            raise AssemblyYamlError(msg)
+
+        path = Path(val)
+        return path if path.is_absolute() else self.__yaml_dir.joinpath(path).resolve()
 
     def add_indexes_to_collection(self, coll: FastaCollection):
         for fai in self.__fasta_index_list:
