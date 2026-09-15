@@ -39,6 +39,7 @@ class BuildAssembly(Assembly):
         default_gap=None,
         bp_per_texel=None,
         autosome_prefix=None,
+        min_contig_length=1000,
         max_contig_length=2_000_000_000,
         assembly_yaml: AssemblyYaml | None = None,
     ):
@@ -50,6 +51,7 @@ class BuildAssembly(Assembly):
         self.assembly_stats: AssemblyStats = AssemblyStats()
         if autosome_prefix:
             self.autosome_prefix = autosome_prefix
+        self.min_contig_length = min_contig_length
         self.max_contig_length = max_contig_length
         self.assembly_yaml = assembly_yaml
 
@@ -300,6 +302,10 @@ class BuildAssembly(Assembly):
                 asm_key = hap
             else:
                 asm_key = None
+
+            if scffld.fragments_length < self.min_contig_length:
+                curated = False
+                asm_key = 'Short'
 
             if not (new_asm := assemblies.get(asm_key)):
                 new_asm = Assembly(self.name, curated=curated)

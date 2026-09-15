@@ -252,6 +252,16 @@ def ul(txt):
     default=False,
     help="Turns off splitting on --max-contig-length",
 )
+@click.option(
+    "--min-contig-length",
+    "min_contig_length",
+    type=int,
+    help="""
+        Minimum length for a single contig.  Contigs shorter that this are discarded.
+        """,
+    default=1000,
+    show_default=True,
+)
 def cli(
     assembly_file: Path,
     pretext_file: Path,
@@ -266,6 +276,7 @@ def cli(
     default_asm_name: str,
     max_contig_length: int,
     no_max_contig_length: bool,
+    min_contig_length: int,
 ):
     logfile = setup_logging(log_level, output_file, write_log, clobber)
 
@@ -300,6 +311,7 @@ def cli(
     build_asm = BuildAssembly(
         "stdout",
         autosome_prefix=autosome_prefix,
+        min_contig_length=min_contig_length,
         max_contig_length=None if no_max_contig_length else max_contig_length,
         assembly_yaml=draft_yaml,
     )
@@ -338,14 +350,14 @@ def cli(
             out_assemblies, out_root, asm_version, default_asm_name
         )
 
-        asm_files = write_assemblies(
+        curated_asm_files = write_assemblies(
             fai_coll, out_fmt, out_dir, suffix, out_assemblies, clobber
         )
         write_chr_csv_files(out_dir, stats, out_assemblies, clobber)
         write_chr_report_csv(output_file, stats, out_assemblies, clobber)
         if draft_yaml and fai_coll:
             try:
-                write_assembly_stats(draft_yaml, asm_files, clobber)
+                write_assembly_stats(draft_yaml, curated_asm_files, clobber)
             except GfaStatsError as ge:
                 for msg in ge.args:
                     log.warning(msg)
@@ -533,7 +545,8 @@ def write_assemblies(
         crtd = ".curated" if asm.curated else ""
         output_file = out_dir / f"{asm.name}{crtd}{suffix}"
         write_assembly(fai_coll, asm, output_file, out_fmt, clobber)
-        asm_files_written[asm_key] = output_file
+        if asm.curated:
+            asm_files_written[asm_key] = output_file
     return asm_files_written
 
 
