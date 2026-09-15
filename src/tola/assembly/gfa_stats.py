@@ -1,11 +1,11 @@
+import json
 import re
 import subprocess
-import sys
 from collections.abc import Iterable
 from functools import cached_property
 from io import StringIO
 from pathlib import Path
-from typing import Literal
+from typing import IO, Any, Literal
 
 from tola.assembly.file_utils import get_output_filehandle
 
@@ -45,6 +45,7 @@ class Stat:
     """
     An object representing a line from `gfastats` output.
     """
+
     __slots__ = (
         "gfa_name",
         "col_name",
@@ -121,13 +122,13 @@ class Stat:
             return f"{self.gfa_name}\t{self.value:{num_fmt}}"
 
     def __repr__(self):
-        out = StringIO()
-        out.write(f"{__class__.__name__}(\n")
+        return self.as_dict()
+
+    def as_dict(self) -> dict[str, int | float | list[int]]:
+        out = {}
         for attr in self.__slots__:
-            val = getattr(self, attr) if hasattr(self, attr) else None
-            out.write(f"      {attr}={val!r},\n")
-        out.write("    ),")
-        return out.getvalue()
+            out[attr] = getattr(self, attr) if hasattr(self, attr) else None
+        return out  # ty: ignore[invalid-return-type]
 
 
 class GfaStats:
@@ -136,19 +137,42 @@ class GfaStats:
         self.__stats: list[Stat] = []
 
     def __repr__(self):
-        return (
-            "GfaStats(\n"
-            f"  asm_file={self.__asm_file!r},\n"
-            "  stats=[\n" + "\n".join(f"    {stat!r}" for stat in self.stats()) + "\n])"
-        )
+        return json.dumps(self.as_dict(), indent=2)
+
+    def as_dict(self):
+        return {
+            "file": str(self.__asm_file),
+            "stats": [x.as_dict() for x in self.__stats],
+        }
+
+    def as_table(self):
+        """
+        Returns a list of rows with the file path of the genome assembly
+        file added to each row as `file_path`.
+        """
+        file_path = str(self.__asm_file)
+        out = []
+        for stat in self.__stats:
+            out.append(
+                {
+                    **stat.as_dict(),
+                    "file_path": file_path,
+                }
+            )
+        return out
+
+    def as_ndjson(self):
+        out = StringIO()
+        for row in self.as_table():
+            out.write(json.dumps(row, separators=(",", ":")) + "\n")
+        return out.getvalue()
 
     def run(self) -> "GfaStats":
         io = self.gfa_stats
         self.parse(io)
         return self
 
-    def parse(self, io: StringIO) -> None:
-        io.seek(0)
+    def parse(self, io: IO[Any]) -> None:
         for line in io:
             name, value = line.rstrip().split("\t")
             self.__stats.append(Stat(name, value))
@@ -176,19 +200,20 @@ class GfaStats:
 
     @cached_property
     def gfa_stats(self):
-        cmd = [
+        cmd: list[str] = [
             "gfastats",
             "--tabular",
             "--threads=2",
             "--locale=C",
             "--nstar-report",
-            self.__asm_file,
+            str(self.__asm_file),
         ]
         try:
             gfa = subprocess.run(cmd, check=True, capture_output=True, text=True)  # noqa: S603, S607
         except subprocess.CalledProcessError as cpe:
-            cmd_str = " ".join(str(x) for x in cmd)
-            msg = f"Error running: '{cmd_str}':\n  {cpe.stdout}"
+            file = f'"{cmd.pop(-1)}"'
+            cmd_str = " ".join(cmd)
+            msg = f"Error running: '{cmd_str} {file}':\n  {cpe.stdout}"
             raise GfaStatsError(msg) from None
 
         return StringIO(gfa.stdout)
