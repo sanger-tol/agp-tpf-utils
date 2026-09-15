@@ -64,6 +64,11 @@ class Stat:
         first, *rest = gfa_name.lower().split(" ")
         col_name = "_".join(rest)
 
+        # There are two gfastats columns "# gaps in scaffolds" and "# gaps"
+        # which are always the same for our FASTA files.  Since each sequence
+        # entry is a scaffold containing contigs separated by Ns, so contigs
+        # cannot contain gaps.
+
         match first:
             case "scaffold" | "contig" | "gap":
                 self.category = first
@@ -72,9 +77,14 @@ class Stat:
                 if self.measure == "aun":
                     py_type = float
             case "#":
-                self.category = rest[0].rstrip("s")
-                self.measure = "count"
-                self.col_name = rest[0]
+                if rest[0] == "soft-masked":
+                    # Counts the number of lower case bases
+                    self.category = "contig"
+                    self.measure = self.col_name = "soft_masked_bases"
+                else:
+                    self.category = rest[0].rstrip("s")
+                    self.measure = "count"
+                    self.col_name = col_name
             case "total":
                 self.category = rest[0]
                 self.measure = first
@@ -82,15 +92,15 @@ class Stat:
             case "average":
                 py_type = float
                 self.category = rest[0]
-                self.measure = "mean_length"
+                self.measure = "mean"
                 self.col_name = f"{col_name}_mean"
             case "largest":
                 self.category = rest[0]
-                self.measure = "longest_length"
+                self.measure = "longest"
                 self.col_name = f"{col_name}_longest"
             case "smallest":
                 self.category = rest[0]
-                self.measure = "shortest_length"
+                self.measure = "shortest"
                 self.col_name = f"{col_name}_shortest"
             case "base":
                 self.category = "contig"
@@ -136,16 +146,16 @@ class GfaStats:
         self.__asm_file = asm_file
         self.__stats: list[Stat] = []
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return json.dumps(self.as_dict(), indent=2)
 
-    def as_dict(self):
+    def as_dict(self) -> dict[str, Any]:
         return {
             "file": str(self.__asm_file),
             "stats": [x.as_dict() for x in self.__stats],
         }
 
-    def as_table(self):
+    def as_table(self) -> list[dict[str, Any]]:
         """
         Returns a list of rows with the file path of the genome assembly
         file added to each row as `file_path`.
@@ -161,7 +171,7 @@ class GfaStats:
             )
         return out
 
-    def as_ndjson(self):
+    def as_ndjson(self) -> str:
         out = StringIO()
         for row in self.as_table():
             out.write(json.dumps(row, separators=(",", ":")) + "\n")
@@ -172,10 +182,11 @@ class GfaStats:
         self.parse(io)
         return self
 
-    def parse(self, io: IO[Any]) -> None:
+    def parse(self, io: IO[Any]) -> "GfaStats":
         for line in io:
             name, value = line.rstrip().split("\t")
             self.__stats.append(Stat(name, value))
+        return self
 
     def stats(self) -> Iterable[Stat]:
         yield from self.__stats
@@ -199,7 +210,7 @@ class GfaStats:
         return out.getvalue()
 
     @cached_property
-    def gfa_stats(self):
+    def gfa_stats(self) -> StringIO:
         cmd: list[str] = [
             "gfastats",
             "--tabular",
@@ -251,15 +262,15 @@ class VgpStats:
     def __str__(self) -> str:
         return "\n".join(str(x) for x in self.__stats.values())
 
-    def load_before_stats(self, gfa: GfaStats):
+    def load_before_stats(self, gfa: GfaStats) -> None:
         for stat in gfa.stats():
             self.add_stat(stat, 0)
 
-    def load_after_stats(self, gfa: GfaStats):
+    def load_after_stats(self, gfa: GfaStats) -> None:
         for stat in gfa.stats():
             self.add_stat(stat, 1)
 
-    def add_stat(self, stat: Stat, i: Literal[0, 1]):
+    def add_stat(self, stat: Stat, i: Literal[0, 1]) -> None:
         if stat_set := self.__stats.get(stat.category):
             attr = stat.measure
             if re.search(r"^.\d+$", attr):
