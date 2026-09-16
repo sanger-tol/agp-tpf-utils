@@ -4,78 +4,78 @@ Junction: TypeAlias = tuple[str | int, str | int, str | int, str | int]
 
 
 class Fragment:
-    __slots__ = "_name", "_start", "_end", "_strand", "_tags", "_source"
+    __slots__ = "__name", "__start", "__end", "__strand", "__tags", "__source"
 
     def __init__(self, name, start, end, strand, tags=(), *, source: str | None = None):
-        self._name = str(name)
-        self._start = int(start)
-        self._end = int(end)
-        self._strand = int(strand)
-        self._tags = tags
-        self._source = source
+        self.__name = str(name)
+        self.__start = int(start)
+        self.__end = int(end)
+        self.__strand = int(strand)
+        self.__tags = tags
+        self.__source = source
 
-        if self.strand not in (0, 1, -1):
-            msg = f"strand '{self.strand}' should be one of: 0, 1, -1"
+        if self.__strand not in (0, 1, -1):
+            msg = f"strand '{self.__strand}' should be one of: 0, 1, -1"
             raise ValueError(msg)
 
-        if self.start > self.end:
-            msg = f"start '{self.start}' must be <= end '{self.end}'"
+        if self.__start > self.__end:
+            msg = f"start '{self.__start}' must be <= end '{self.__end}'"
             raise ValueError(msg)
 
     @property
     def name(self):
-        return self._name
+        return self.__name
 
     @property
     def start(self):
-        return self._start
+        return self.__start
 
     @property
     def end(self):
-        return self._end
+        return self.__end
 
     @property
     def strand(self):
-        return self._strand
+        return self.__strand
 
     @property
     def tags(self):
         """tuple of tags data, empty if there are none"""
-        return self._tags
+        return self.__tags
 
     @property
     def source(self):
-        return self._source
+        return self.__source
 
     @property
     def length(self):
-        return self._end - self._start + 1
+        return self.__end - self.__start + 1
 
     @property
     def key_tuple(self) -> tuple[str, int, int]:
-        return self._name, self._start, self._end
+        return self.__name, self.__start, self.__end
 
-    def junction_tuple(self, othr) -> Junction:
+    def junction_tuple(self, othr: 'Fragment') -> Junction:
         """
         Encodes the positions of two adjacent Fragments in a Scaffold, with
         reverse strand ends encoded by flipping the order of the name and
         coordinate.
         """
-        if self.strand == 1:
-            if othr.strand == 1:
-                #      fwd >>>              fwd >>>
-                return self.name, self.end, othr.name, othr.start
-            elif othr.strand == -1:
-                #      fwd >>>                          <<< rev
-                return self.name, self.end, othr.end, othr.name
-        elif self.strand == -1:
-            if othr.strand == 1:
-                #                    <<< rev  fwd >>>
-                return self.start, self.name, othr.name, othr.start
-            elif othr.strand == -1:
+        if self.__strand == 1:
+            if othr.__strand == 1:
+                #      fwd >>>                  fwd >>>
+                return self.__name, self.__end, othr.__name, othr.__start
+            elif othr.__strand == -1:
+                #      fwd >>>                                  <<< rev
+                return self.__name, self.__end, othr.__end, othr.__name
+        elif self.__strand == -1:
+            if othr.__strand == 1:
+                #                        <<< rev  fwd >>>
+                return self.__start, self.__name, othr.__name, othr.__start
+            elif othr.__strand == -1:
                 # For the rev-rev case, junction should match fwd-fwd
-                #      rev >>>              rev >>>
-                return othr.name, othr.end, self.name, self.start
+                #      rev >>>                  rev >>>
+                return othr.__name, othr.__end, self.__name, self.__start
 
         msg = f"strand == 0 not supported:\n  {self}\n  {othr}"
         raise ValueError(msg)
@@ -90,10 +90,17 @@ class Fragment:
             1: "+"
            -1: "-"
         """
-        return self.STRAND_STR[self.strand]
+        return self.STRAND_STR[self.__strand]
 
     def attr_values(self):
-        return tuple(self.__getattribute__(x) for x in self.__slots__)
+        return (
+            self.__name,
+            self.__start,
+            self.__end,
+            self.__strand,
+            self.__tags,
+            self.__source,
+        )
 
     def __eq__(self, othr):
         if self is othr:
@@ -103,48 +110,48 @@ class Fragment:
 
     def __str__(self):
         return (
-            f"{self.name}:{self.start}-{self.end}({self.strand_str})"
-            + ((" " + " ".join(self.tags)) if self.tags else "")
-            + (f" source={self.source!r}" if self.source else "")
+            f"{self.__name}:{self.__start}-{self.__end}({self.strand_str})"
+            + ((" " + " ".join(self.__tags)) if self.__tags else "")
+            + (f" source={self.__source!r}" if self.__source else "")
         )
 
     def __repr__(self):
         return (
-            f"{self.__class__.__name__}(name='{self.name}',"
-            f" start={self.start}, end={self.end}, strand={self.strand}"
-            + (f", tags={self.tags!r})" if self.tags else ")")
-            + (f" source={self.source!r}" if self.source else "")
+            f"{self.__class__.__name__}(name='{self.__name}',"
+            f" start={self.__start}, end={self.__end}, strand={self.__strand}"
+            + (f", tags={self.__tags!r})" if self.__tags else ")")
+            + (f" source={self.__source!r}" if self.__source else "")
         )
 
-    def overlaps(self, othr):
-        if self.name != othr.name:
+    def overlaps(self, othr: 'Fragment'):
+        if self.__name != othr.__name:
             return False
-        return bool(self.end >= othr.start and self.start <= othr.end)
+        return bool(self.__end >= othr.__start and self.__start <= othr.__end)
 
-    def overlap_length(self, othr):
-        if self.name != othr.name:
+    def overlap_length(self, othr: 'Fragment'):
+        if self.__name != othr.__name:
             return None
 
-        ovr_start = max(self.start, othr.start)
-        ovr_end = min(self.end, othr.end)
+        ovr_start = max(self.__start, othr.__start)
+        ovr_end = min(self.__end, othr.__end)
         if ovr_start > ovr_end:
             return None
         else:
             return ovr_end - ovr_start + 1
 
-    def abuts(self, othr):
-        if self.name != othr.name:
+    def abuts(self, othr: 'Fragment'):
+        if self.__name != othr.__name:
             return False
-        return bool(self.end + 1 == othr.start or othr.end + 1 == self.start)
+        return bool(self.__end + 1 == othr.__start or othr.__end + 1 == self.__start)
 
-    def gap_between(self, othr):
+    def gap_between(self, othr: 'Fragment'):
         """Returns `None` if no gap, zero if Fragments abut, and the length
         of the gap otherwise."""
-        if self.name != othr.name:
+        if self.__name != othr.__name:
             return None
 
-        gap_start = min(self.end, othr.end)
-        gap_end = max(self.start, othr.start)
+        gap_start = min(self.__end, othr.__end)
+        gap_end = max(self.__start, othr.__start)
         if gap_start < gap_end:
             return gap_end - gap_start - 1
         else:
@@ -152,18 +159,18 @@ class Fragment:
 
     def reverse(self):
         return self.__class__(
-            self.name,
-            self.start,
-            self.end,
-            -1 * self.strand,
-            self.tags,
+            self.__name,
+            self.__start,
+            self.__end,
+            -1 * self.__strand,
+            self.__tags,
         )
 
     def rename(self, new_name):
         return self.__class__(
             new_name,
-            self.start,
-            self.end,
-            self.strand,
-            self.tags,
+            self.__start,
+            self.__end,
+            self.__strand,
+            self.__tags,
         )
