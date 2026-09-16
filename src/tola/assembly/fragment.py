@@ -4,13 +4,27 @@ Junction: TypeAlias = tuple[str | int, str | int, str | int, str | int]
 
 
 class Fragment:
+    """
+    Represents a contiguous piece of DNA containing no "N" characters.  Often
+    called a "contig".  A `Fragment` is an immutable object.  Methods which
+    change any of its fields return a new `Fragment` object.
+    """
     __slots__ = "__name", "__start", "__end", "__strand", "__tags", "__source"
 
-    def __init__(self, name, start, end, strand, tags=(), *, source: str | None = None):
-        self.__name = str(name)
-        self.__start = int(start)
-        self.__end = int(end)
-        self.__strand = int(strand)
+    def __init__(
+        self,
+        name: str,
+        start: int,
+        end: int,
+        strand: int,
+        tags: tuple[str, ...] = (),
+        *,
+        source: str | None = None,
+    ):
+        self.__name = name
+        self.__start = start
+        self.__end = end
+        self.__strand = strand
         self.__tags = tags
         self.__source = source
 
@@ -55,7 +69,7 @@ class Fragment:
     def key_tuple(self) -> tuple[str, int, int]:
         return self.__name, self.__start, self.__end
 
-    def junction_tuple(self, othr: 'Fragment') -> Junction:
+    def junction_tuple(self, othr: "Fragment") -> Junction:
         """
         Encodes the positions of two adjacent Fragments in a Scaffold, with
         reverse strand ends encoded by flipping the order of the name and
@@ -123,12 +137,12 @@ class Fragment:
             + (f" source={self.__source!r}" if self.__source else "")
         )
 
-    def overlaps(self, othr: 'Fragment'):
+    def overlaps(self, othr: "Fragment"):
         if self.__name != othr.__name:
             return False
         return bool(self.__end >= othr.__start and self.__start <= othr.__end)
 
-    def overlap_length(self, othr: 'Fragment'):
+    def overlap_length(self, othr: "Fragment"):
         if self.__name != othr.__name:
             return None
 
@@ -139,12 +153,12 @@ class Fragment:
         else:
             return ovr_end - ovr_start + 1
 
-    def abuts(self, othr: 'Fragment'):
+    def abuts(self, othr: "Fragment"):
         if self.__name != othr.__name:
             return False
         return bool(self.__end + 1 == othr.__start or othr.__end + 1 == self.__start)
 
-    def gap_between(self, othr: 'Fragment'):
+    def gap_between(self, othr: "Fragment"):
         """Returns `None` if no gap, zero if Fragments abut, and the length
         of the gap otherwise."""
         if self.__name != othr.__name:

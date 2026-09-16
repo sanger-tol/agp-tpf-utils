@@ -16,7 +16,7 @@ def parse_agp(
 ) -> Assembly:
     asm = Assembly(name)
     scaffold = None
-    scaffold_name = ""
+    scaffold_name = None
     strand_dict = {"?": 0, "+": 1, "-": -1}
     for line in file:
         if re.match(r"\s*$", line):
@@ -43,18 +43,18 @@ def parse_agp(
             asm.add_scaffold(scaffold)
 
         if fields[4] in ("U", "N"):
-            scaffold.add_row(
+            scaffold.add_row(  # ty: ignore[unresolved-attribute]
                 Gap(
                     length=fields[5],
                     gap_type=fields[6],
                 ),
             )
         else:
-            scaffold.add_row(
+            scaffold.add_row(  # ty: ignore[unresolved-attribute]
                 Fragment(
                     name=fields[5],
-                    start=fields[6],
-                    end=fields[7],
+                    start=int(fields[6]),
+                    end=int(fields[7]),
                     strand=strand_dict[fields[8]],
                     # Tenth fields onwards added as tags metadata
                     tags=tuple(fields[9:]),
@@ -72,7 +72,7 @@ def parse_tpf(
 ) -> Assembly:
     asm = Assembly(name)
     scaffold = None
-    scaffold_name = ""
+    scaffold_name = None
     strand_dict = {"PLUS": 1, "MINUS": -1}
     gap_type_dict = {
         "TYPE-2": "scaffold",
@@ -113,11 +113,11 @@ def parse_tpf(
                 scaffold = Scaffold(scaffold_name)
                 asm.add_scaffold(scaffold)
             if m := re.match(r"(.+):(\d+)-(\d+)$", fields[1]):
-                scaffold.add_row(
+                scaffold.add_row(  # ty: ignore[unresolved-attribute]
                     Fragment(
                         name=m.group(1),
-                        start=m.group(2),
-                        end=m.group(3),
+                        start=int(m.group(2)),
+                        end=int(m.group(3)),
                         strand=strand_dict[fields[3]],
                         source=source,
                     ),

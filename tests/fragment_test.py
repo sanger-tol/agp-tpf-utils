@@ -9,20 +9,20 @@ def test_create():
 
 
 def test_bad_attributes():
-    with pytest.raises(ValueError):
-        f1 = Fragment("chr1", "x", 20_000, 1)
+    with pytest.raises(TypeError):
+        Fragment("chr1", "x", 20_000, 1)
+
+    with pytest.raises(TypeError):
+        Fragment("chr1", 1, "20000.2", 1)
 
     with pytest.raises(ValueError):
-        f2 = Fragment("chr1", 1, "20000.2", 1)
+        Fragment("chr1", 1, 20_000, "+")
 
     with pytest.raises(ValueError):
-        f3 = Fragment("chr1", 1, 20_000, "+")
+        Fragment("chr1", 1, 20_000, 2)
 
     with pytest.raises(ValueError):
-        f4 = Fragment("chr1", 1, 20_000, 2)
-
-    with pytest.raises(ValueError):
-        f5 = Fragment("chr1", 101, 100, 1)
+        Fragment("chr1", 101, 100, 1)
 
 
 def test_length():
@@ -35,7 +35,6 @@ def test_length():
 
 def test_equals():
     f1 = Fragment("chr1", 1, 20_000, 1)
-    f2 = Fragment("chr1", "1", "20000", 1)
     f3 = Fragment("chr1", 1, 20_000, 1, "Painted")
     f4 = Fragment(
         strand=1,
@@ -46,7 +45,6 @@ def test_equals():
     f5 = Fragment("chr2", 1, 20_000, 1)
 
     assert f1 == f1
-    assert f1 == f2
     assert f1 != f3
     assert f1 == f4
     assert f1 != f5

@@ -52,7 +52,7 @@ class Scaffold:
             circular=self.circular,
         )
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         txt = io.StringIO()
         txt.write(f"{self.__class__.__name__}(\n    name='{self.name}',\n")
         if orig := self.__original_name:
@@ -67,7 +67,7 @@ class Scaffold:
         txt.write("    ],\n)")
         return txt.getvalue()
 
-    def __str__(self):
+    def __str__(self) -> str:
         txt = io.StringIO()
         txt.write(f"{self.name}")
         if (orig := self.__original_name) and orig != self.name:
@@ -81,7 +81,7 @@ class Scaffold:
             txt.write(f"  {row.length:14_d}  {row}\n")
         return txt.getvalue()
 
-    def add_row(self, row: Fragment | Gap):
+    def add_row(self, row: Fragment | Gap) -> None:
         self.rows.append(row)
 
     @property
