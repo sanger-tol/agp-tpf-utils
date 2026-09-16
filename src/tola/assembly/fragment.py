@@ -1,3 +1,4 @@
+import re
 from typing import TypeAlias
 
 Junction: TypeAlias = tuple[str | int, str | int, str | int, str | int]
@@ -188,3 +189,11 @@ class Fragment:
             self.__strand,
             self.__tags,
         )
+
+    def haplotype_from_name(self) -> str | None:
+        if (m := re.search(r"^SUPER_\w+_(\w+)$", self.__name)) or (
+            m := re.search(r"^([^_]+)_.+_\d+$", self.__name)
+        ):
+            return m.group(1)
+        else:
+            return None

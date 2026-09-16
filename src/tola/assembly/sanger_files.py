@@ -66,8 +66,8 @@ def find_yaml(search_dir: Path, branch_dir: str | Path = "assembly/draft") -> Pa
         log.warning(
             "\n  ".join(
                 (
-                    "Found multiple YAML files. Chose",
-                    "'{yaml}'\nIgnored:",
+                    "Found multiple YAML files. Chose:",
+                    f"'{yaml}'\nIgnored:",
                     *[f"'{x}'" for x in yaml_files],
                 ),
             )

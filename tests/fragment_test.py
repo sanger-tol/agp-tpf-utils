@@ -127,3 +127,13 @@ def test_tuples():
     assert f1.junction_tuple(f2) == ("chr1", 20_000, 30_000, "chr2")
     assert f2.junction_tuple(f1) == (2, "chr2", "chr1", 1)
     assert f2.junction_tuple(f4) == ("chr4", 50_000, "chr2", 2)
+
+
+def test_haplotype_from_name():
+    f1 = Fragment("HAP1_SCAFFOLD_100", 1, 100, 1)
+    f2 = Fragment("SUPER_10_HAP2", 1, 100, 1)
+    f3 = Fragment("chr10", 1, 100, 1)
+
+    assert f1.haplotype_from_name() == "HAP1"
+    assert f2.haplotype_from_name() == "HAP2"
+    assert f3.haplotype_from_name() is None

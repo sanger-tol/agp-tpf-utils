@@ -181,11 +181,8 @@ class ScaffoldNamer:
         scaffold.original_tags = scaffold_tags
 
     def haplotype_from_first_row_name(self, scaffold):
-        first_name = scaffold.rows[0].name
-        if (m := re.search(r"^SUPER_\w+_(\w+)$", first_name)) or (
-            m := re.search(r"^([^_]+)_.+_\d+$", first_name)
-        ):
-            return self.get_set_haplotype(m.group(1))
+        if name := scaffold.rows[0].haplotype_from_name():
+            return self.get_set_haplotype(name)
         else:
             return None
 

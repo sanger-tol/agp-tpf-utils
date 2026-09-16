@@ -305,11 +305,9 @@ class BuildAssembly(Assembly):
 
             if scffld.fragments_length < self.min_contig_length:
                 curated = False
-                asm_key = 'Short'
+                asm_key = "Short"
 
-            if not (new_asm := assemblies.get(asm_key)):
-                new_asm = Assembly(self.name, curated=curated)
-                assemblies[asm_key] = new_asm
+            new_asm = self.get_or_create_assembly(assemblies, asm_key, curated)
 
             cut_scaffolds: list[Scaffold]
             if self.max_contig_length is not None:
@@ -341,6 +339,24 @@ class BuildAssembly(Assembly):
         self.assembly_stats.make_stats(assemblies)
 
         return scaffolds, assemblies
+
+    def get_or_create_assembly(
+        self,
+        assemblies: AssemblyDict,
+        name: str | None,
+        curated: bool,
+    ):
+        asm = assemblies.get(name)
+        if asm:
+            asm.curated = curated
+        else:
+            src_hap = (
+                self.scaffold_namer.primary_haplotype if name == "Primary" else name
+            )
+            asm = Assembly(self.name, curated=curated, source_haplotype=src_hap)
+            assemblies[name] = asm
+
+        return asm
 
     def cut_scaffold_if_too_long(self, scffld: Scaffold) -> list[Scaffold]:
         whole = scffld.length
@@ -495,16 +511,22 @@ class BuildAssembly(Assembly):
         first_asm = (
             assemblies.get("Primary")
             or assemblies.get(None)
-            or (sorted(assemblies, key=natural_key))[0]  # ty: ignore[no-matching-overload]
+            or assemblies.get((sorted(assemblies, key=natural_key))[0])  # ty: ignore[no-matching-overload]
         )
 
+        # Any scaffolds in the organelle assemblies are added regardless of
+        # their length
         if mito := asm_yaml.mitochondrial_assembly:
             first_asm.scaffolds.extend(mito.scaffolds)
         if pltd := asm_yaml.chloroplast_assembly:
             first_asm.scaffolds.extend(pltd.scaffolds)
         if haplotigs := asm_yaml.haplotigs_assembly:
-            hap_asm = assemblies.get("Haplotig")
-            if not hap_asm:
-                hap_asm = Assembly(self.name, curated=False)
-                assemblies["Haplotig"] = hap_asm
-            hap_asm.scaffolds.extend(haplotigs.scaffolds)
+            hap_asm = self.get_or_create_assembly(assemblies, "Haplotig", True)
+            for scffld in haplotigs.scaffolds:
+                # Send any scaffolds which are too short to the "Short" assembly
+                if scffld.fragments_length < self.min_contig_length:
+                    self.get_or_create_assembly(
+                        assemblies, "Short", False
+                    ).saffolds.append(scffld)
+                else:
+                    hap_asm.scaffolds.append(scffld)

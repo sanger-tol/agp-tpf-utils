@@ -9,12 +9,19 @@ from tola.assembly.scaffold import Scaffold
 
 class Assembly:
     def __init__(
-        self, name, header=None, scaffolds=None, bp_per_texel=None, curated=False
+        self,
+        name,
+        header=None,
+        scaffolds=None,
+        bp_per_texel=None,
+        curated=False,
+        source_haplotype=None,
     ):
         self.name: str = str(name)
         self.scaffolds: list[Scaffold] = scaffolds if scaffolds else []
         self.header: list[str] = header if header else []
         self.curated: bool = curated
+        self.source_haplotype: str | None = source_haplotype
         if bp_per_texel:
             self.bp_per_texel: float = bp_per_texel
 

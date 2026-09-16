@@ -346,7 +346,7 @@ def cli(
         write_info_yaml(output_file, stats, out_assemblies, clobber)
 
         # Rename assemblies for output files
-        out_assemblies: AssemblyDict = name_assemblies(
+        out_assemblies = name_assemblies(
             out_assemblies, out_root, asm_version, default_asm_name
         )
 
@@ -440,7 +440,7 @@ def name_assemblies(
             ret_asm[asm_key] = asm
         if other_asm:
             # Join the other haplotypes in the other assemblies for an
-            # 'all_haplotigs' file
+            # 'haplotigs' alternate assembly file
             htigs = merge_assemblies(other_asm)
             htigs.curated = True
             new_key = "haplotigs"
@@ -490,6 +490,8 @@ def name_assemblies(
 def merge_assemblies(asm_list):
     new = Assembly("merge")
     for asm in asm_list:
+        if not new.source_haplotype:
+            new.source_haplotype = asm.source_haplotype
         for scffld in asm.scaffolds:
             new.add_scaffold(scffld)
     return new
@@ -539,14 +541,14 @@ def write_assemblies(
     suffix: str,
     out_assemblies: AssemblyDict,
     clobber: bool,
-) -> dict[str | None, Path]:
+) -> dict[str | None, tuple[Assembly, Path]]:
     asm_files_written = {}
     for asm_key, asm in out_assemblies.items():
         crtd = ".curated" if asm.curated else ""
         output_file = out_dir / f"{asm.name}{crtd}{suffix}"
         write_assembly(fai_coll, asm, output_file, out_fmt, clobber)
         if asm.curated:
-            asm_files_written[asm_key] = output_file
+            asm_files_written[asm_key] = (asm, output_file)
     return asm_files_written
 
 
@@ -587,11 +589,17 @@ def write_assembly(
 
 def write_assembly_stats(
     draft_yaml: AssemblyYaml,
-    asm_files: dict[str | None, Path],
+    asm_files: dict[str | None, tuple[Assembly, Path]],
     clobber: bool,
 ):
-    for name, asm_file in asm_files.items():
-        name = "primary" if name is None else name.lower()
+    for name, asm_path in asm_files.items():
+        asm, asm_file = asm_path
+
+        if source_hap := asm.source_haplotype:
+            name = source_hap.lower()
+        else:
+            name = "primary" if name is None else name.lower()
+
         draft_asm_file = draft_yaml.decontaminated_file_path(
             draft_yaml.get_path(name), name
         )
