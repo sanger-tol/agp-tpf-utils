@@ -506,13 +506,22 @@ class BuildAssembly(Assembly):
         if not asm_yaml:
             return
 
+        # Reduce the assembly dict to only the
+        curated_asm = {n: asm for n, asm in assemblies.items() if asm.curated}
+
         # If we don't have a primary assembly, use the first
         # from "hap1", "hap2", etc... sorted naturally
         first_asm = (
-            assemblies.get("Primary")
-            or assemblies.get(None)
-            or assemblies.get((sorted(assemblies, key=natural_key))[0])  # ty: ignore[no-matching-overload]
+            curated_asm.get("Primary")
+            or curated_asm.get(None)
+            or curated_asm.get((sorted(curated_asm, key=natural_key))[0])  # ty: ignore[no-matching-overload]
         )
+        if not first_asm:
+            msg = (
+                "Could not choose the primary assembly"
+                f" from: {list(curated_asm)}"
+            )
+            raise ValueError(msg)
 
         # Any scaffolds in the organelle assemblies are added regardless of
         # their length

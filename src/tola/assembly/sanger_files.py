@@ -82,9 +82,14 @@ class AssemblyYamlError(Exception):
 
 class AssemblyYaml:
     def __init__(self, yaml_file: Path):
+        self.__file = yaml_file
         self.__yaml_dir = yaml_file.parent.absolute()
         self.__load_yaml(yaml_file)
         self.__fasta_index_list = []
+
+    @property
+    def file(self):
+        return self.__file
 
     def __load_yaml(self, yaml_file: Path) -> None:
         yaml_dict = yaml.safe_load(yaml_file.open())

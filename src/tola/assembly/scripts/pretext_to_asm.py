@@ -19,6 +19,7 @@ from tola.assembly.naming_utils import ChrNamerError, TaggingError
 from tola.assembly.parser import format_from_file_extn, parse_agp, parse_tpf
 from tola.assembly.sanger_files import (
     AssemblyYaml,
+    AssemblyYamlError,
     AssemblyYamlLocationError,
     find_yaml,
 )
@@ -362,6 +363,11 @@ def cli(
                 for msg in ge.args:
                     log.warning(msg)
                 sys.exit("Error running gfastats")
+            except AssemblyYamlError as ye:
+                for msg in ye.args:
+                    log.warning(msg)
+                sys.exit(f"Error using draft assembly YAML: '{draft_yaml.file}'")
+
     else:
         for asm in out_assemblies.values():
             write_assembly(fai_coll, asm, None, None, clobber)
@@ -599,6 +605,9 @@ def write_assembly_stats(
             name = source_hap.lower()
         else:
             name = "primary" if name is None else name.lower()
+
+        if name == "haplotig":
+            name = "haplotigs"
 
         draft_asm_file = draft_yaml.decontaminated_file_path(
             draft_yaml.get_path(name), name
