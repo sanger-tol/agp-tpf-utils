@@ -202,6 +202,9 @@ class AssemblyStats:
 
         return csv_str.getvalue() if csv_str.tell() > head_pos else None
 
+    def sum_chrs_report(self, asm: Assembly):
+        pass
+
     def log_assembly_chromosomes(self, asm_key: str | None, asm: Assembly):
         ranked_names_lengths = self.get_assembly_scaffold_lengths(asm_key, asm)
 

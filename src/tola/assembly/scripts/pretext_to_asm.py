@@ -6,14 +6,18 @@ from pathlib import Path
 from shutil import which
 
 import click
-import yaml
 
 from tola.assembly.assembly import Assembly, AssemblyDict
-from tola.assembly.assembly_stats import AssemblyStats
 from tola.assembly.build_assembly import BuildAssembly
-from tola.assembly.file_utils import get_output_filehandle
-from tola.assembly.format import format_agp, format_tpf
-from tola.assembly.gfa_stats import BeforeAfterStats, GfaStatsError
+from tola.assembly.file_writers import (
+    write_assemblies,
+    write_assembly,
+    write_assembly_stats,
+    write_chr_csv_files,
+    write_chr_report_csv,
+    write_info_yaml,
+)
+from tola.assembly.gfa_stats import GfaStatsError
 from tola.assembly.indexed_assembly import IndexedAssembly
 from tola.assembly.naming_utils import ChrNamerError, TaggingError
 from tola.assembly.parser import format_from_file_extn, parse_agp, parse_tpf
@@ -24,7 +28,7 @@ from tola.assembly.sanger_files import (
     find_yaml,
 )
 from tola.fasta.index import FastaIndex
-from tola.fasta.stream import FastaCollection, FastaStream
+from tola.fasta.stream import FastaCollection
 
 log = logging.getLogger(__name__)
 
@@ -345,9 +349,7 @@ def cli(
             output_file, gz=auto_find_yaml
         )
         out_template = out_dir / f"{out_root}.{asm_version}"
-        write_info_yaml(
-            out_template, stats, out_assemblies, clobber
-        )
+        write_info_yaml(out_template, stats, out_assemblies, clobber)
 
         # Rename assemblies for output files
         out_assemblies = name_assemblies(
@@ -541,139 +543,6 @@ def parse_output_file(file: Path, gz=False) -> tuple[str, Path, str, str, str, b
         version = "1"
 
     return out_fmt, file.parent, out_root, version, sfx, gz
-
-
-def write_assemblies(
-    fai_coll: FastaCollection | None,
-    out_fmt: str,
-    out_dir: Path,
-    suffix: str,
-    out_assemblies: AssemblyDict,
-    clobber: bool,
-) -> dict[str | None, tuple[Assembly, Path]]:
-    asm_files_written = {}
-    for asm_key, asm in out_assemblies.items():
-        output_file = out_dir / f"{asm.name}{suffix}"
-        write_assembly(fai_coll, asm, output_file, out_fmt, clobber)
-        if asm.curated:
-            asm_files_written[asm_key] = (asm, output_file)
-    return asm_files_written
-
-
-def write_assembly(
-    fai_coll: FastaCollection | None,
-    out_asm: Assembly,
-    output_file: Path | None,
-    out_fmt: str | None,
-    clobber: bool,
-):
-    if output_file:
-        mode = "b" if out_fmt == "FASTA" else ""
-        out_fh = get_output_filehandle(output_file, clobber, mode)
-    else:
-        out_fmt = "STR"
-        out_fh = sys.stdout
-
-    if out_fmt == "TPF":
-        format_tpf(out_asm, out_fh)
-    elif out_fmt == "AGP":
-        format_agp(out_asm, out_fh)
-    elif out_fmt == "FASTA":
-        if fai_coll is None:
-            log.error("Cannot write FASTA output file without FASTA input!")
-            sys.exit(1)
-        stream = FastaStream(out_fh, fai_coll)
-        stream.write_assembly(out_asm)
-
-        # Save a .agp file alongside the .fa / .fasta
-        output_agp = output_file.with_suffix(".agp")  # ty: ignore[unresolved-attribute]
-        agp_fh = get_output_filehandle(output_agp, clobber)
-        format_agp(out_asm, agp_fh)
-
-    elif out_fmt == "STR":
-        out_fh.write("\n")
-        out_fh.write(str(out_asm))
-
-
-def write_assembly_stats(
-    draft_yaml: AssemblyYaml,
-    asm_files: dict[str | None, tuple[Assembly, Path]],
-    clobber: bool,
-):
-    for name, asm_path in asm_files.items():
-        asm, asm_file = asm_path
-
-        if source_hap := asm.source_haplotype:
-            name = source_hap.lower()
-        else:
-            name = "primary" if name is None else name.lower()
-
-        if name == "haplotig":
-            name = "haplotigs"
-
-        draft_asm_file = draft_yaml.decontaminated_file_path(
-            draft_yaml.get_path(name), name
-        )
-        gfa = BeforeAfterStats(before=draft_asm_file, after=asm_file)
-        gfa.write_stats(clobber)
-
-
-def write_chr_report_csv(
-    out_template: Path,
-    stats: AssemblyStats,
-    out_assemblies: AssemblyDict,
-    clobber: bool,
-):
-    csv = stats.chromosomes_report_csv(out_assemblies)
-    if not csv:
-        return
-    csv_file = out_template.with_name(out_template.name + ".chr_report.csv")
-    with get_output_filehandle(csv_file, clobber) as csv_fh:
-        csv_fh.write(csv)
-
-
-def write_chr_csv_files(
-    out_dir: Path,
-    stats: AssemblyStats,
-    out_assemblies: AssemblyDict,
-    clobber: bool,
-    gz_flag: bool,
-):
-    gz = ".gz" if gz_flag else ""
-    for asm in out_assemblies.values():
-        if not asm.curated:
-            continue
-        if chr_names := stats.chromosome_name_csv(asm):
-            csv_file = out_dir / f"{asm.name}.chromosome.list.csv{gz}"
-            with get_output_filehandle(csv_file, clobber) as csv_fh:
-                if gz:
-                    csv_fh.write(chr_names.encode())
-                else:
-                    csv_fh.write(chr_names)
-
-
-def write_info_yaml(
-    out_template,
-    stats: AssemblyStats,
-    out_assemblies: AssemblyDict,
-    clobber,
-):
-    asm_stats = stats.per_assembly_stats
-    info = {"assemblies": asm_stats}
-    if len(asm_stats) > 1:
-        info["manual_breaks"] = stats.breaks
-        info["manual_joins"] = stats.joins
-
-    haplotig_count = 0
-    if h_asm := out_assemblies.get("Haplotig"):
-        haplotig_count = len(h_asm.scaffolds)
-    info["manual_haplotig_removals"] = haplotig_count
-    info["percent_assembly_in_chromosomes"] = stats.percent_assembly_in_chromosomes
-    info["interventions_per_gbp"] = stats.interventions_per_gbp
-
-    yaml_file = out_template.with_name(out_template.name + ".info.yaml")
-    with get_output_filehandle(yaml_file, clobber) as yaml_fh:
-        yaml_fh.write(yaml.safe_dump(info, sort_keys=False))
 
 
 def parse_assembly_file(

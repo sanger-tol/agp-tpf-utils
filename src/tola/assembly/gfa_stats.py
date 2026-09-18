@@ -7,38 +7,9 @@ from io import StringIO
 from pathlib import Path
 from typing import IO, Any, Literal
 
-from tola.assembly.file_utils import get_output_filehandle
-
 
 class GfaStatsError(Exception):
     """Error running `gfastats` process"""
-
-
-class BeforeAfterStats:
-    def __init__(self, before: Path, after: Path):
-        self.__before = before
-        self.__after = after
-
-        asm_root = re.sub(r"\.fa(\.gz)?$", "", after.name)
-        self.__gfa_out = after.parent / f"{asm_root}.gfastats"
-        self.__vgp_out = after.parent / f"{asm_root}.gather_vgp_stats"
-
-    def write_stats(self, clobber: bool = False):
-        before = GfaStats(self.__before).run()
-        after = GfaStats(self.__after).run()
-
-        gfa_io = get_output_filehandle(self.__gfa_out, clobber)
-        gfa_io.write(before.short_stats_string())
-        gfa_io.write("\n")
-        gfa_io.write(after.short_stats_string())
-        gfa_io.close()
-
-        vgp_stats = VgpStats()
-        vgp_stats.load_before_stats(before)
-        vgp_stats.load_after_stats(after)
-        vgp_io = get_output_filehandle(self.__vgp_out, clobber)
-        vgp_io.write(str(vgp_stats))
-        vgp_io.close()
 
 
 class Stat:
