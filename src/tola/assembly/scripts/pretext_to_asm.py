@@ -550,8 +550,7 @@ def write_assemblies(
 ) -> dict[str | None, tuple[Assembly, Path]]:
     asm_files_written = {}
     for asm_key, asm in out_assemblies.items():
-        crtd = ".curated" if asm.curated else ""
-        output_file = out_dir / f"{asm.name}{crtd}{suffix}"
+        output_file = out_dir / f"{asm.name}{suffix}"
         write_assembly(fai_coll, asm, output_file, out_fmt, clobber)
         if asm.curated:
             asm_files_written[asm_key] = (asm, output_file)
