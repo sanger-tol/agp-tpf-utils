@@ -645,7 +645,10 @@ def write_chr_csv_files(
         if chr_names := stats.chromosome_name_csv(asm):
             csv_file = out_dir / f"{asm.name}.chromosome.list.csv{gz}"
             with get_output_filehandle(csv_file, clobber) as csv_fh:
-                csv_fh.write(chr_names)
+                if gz:
+                    csv_fh.write(chr_names.encode())
+                else:
+                    csv_fh.write(chr_names)
 
 
 def write_info_yaml(
