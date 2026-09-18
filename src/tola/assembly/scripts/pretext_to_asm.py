@@ -344,8 +344,9 @@ def cli(
         out_fmt, out_dir, out_root, asm_version, suffix, gz_flag = parse_output_file(
             output_file, gz=auto_find_yaml
         )
+        out_template = out_dir / f"{out_root}.{asm_version}"
         write_info_yaml(
-            out_dir / f"{out_root}.{asm_version}", stats, out_assemblies, clobber
+            out_template, stats, out_assemblies, clobber
         )
 
         # Rename assemblies for output files
@@ -357,7 +358,7 @@ def cli(
             fai_coll, out_fmt, out_dir, suffix, out_assemblies, clobber
         )
         write_chr_csv_files(out_dir, stats, out_assemblies, clobber, gz_flag)
-        write_chr_report_csv(output_file, stats, out_assemblies, clobber)
+        write_chr_report_csv(out_template, stats, out_assemblies, clobber)
         if draft_yaml and fai_coll:
             try:
                 write_assembly_stats(draft_yaml, curated_asm_files, clobber)
@@ -618,7 +619,7 @@ def write_assembly_stats(
 
 
 def write_chr_report_csv(
-    output_file: Path,
+    out_template: Path,
     stats: AssemblyStats,
     out_assemblies: AssemblyDict,
     clobber: bool,
@@ -626,7 +627,7 @@ def write_chr_report_csv(
     csv = stats.chromosomes_report_csv(out_assemblies)
     if not csv:
         return
-    csv_file = output_file.with_suffix(".chr_report.csv")
+    csv_file = out_template.with_name(out_template.name + ".chr_report.csv")
     with get_output_filehandle(csv_file, clobber) as csv_fh:
         csv_fh.write(csv)
 
@@ -652,7 +653,7 @@ def write_chr_csv_files(
 
 
 def write_info_yaml(
-    output_file,
+    out_template,
     stats: AssemblyStats,
     out_assemblies: AssemblyDict,
     clobber,
@@ -670,7 +671,7 @@ def write_info_yaml(
     info["percent_assembly_in_chromosomes"] = stats.percent_assembly_in_chromosomes
     info["interventions_per_gbp"] = stats.interventions_per_gbp
 
-    yaml_file = output_file.with_name(output_file.name + ".info.yaml")
+    yaml_file = out_template.with_name(out_template.name + ".info.yaml")
     with get_output_filehandle(yaml_file, clobber) as yaml_fh:
         yaml_fh.write(yaml.safe_dump(info, sort_keys=False))
 
