@@ -17,6 +17,15 @@ def test_parse_output_file():
         "aaa",
         "2",
         ".fa",
+        False,
+    )
+    assert parse_output_file(Path("xx/aaa.2.fa.gz")) == (
+        "FASTA",
+        Path("xx"),
+        "aaa",
+        "2",
+        ".fa.gz",
+        True,
     )
     assert parse_output_file(Path("xx/aaa.fasta")) == (
         "FASTA",
@@ -24,6 +33,7 @@ def test_parse_output_file():
         "aaa",
         "1",
         ".fasta",
+        False,
     )
     assert parse_output_file(Path("xx/aaa.agp")) == (
         "AGP",
@@ -31,6 +41,7 @@ def test_parse_output_file():
         "aaa",
         "1",
         ".agp",
+        False,
     )
 
 

@@ -341,10 +341,12 @@ def cli(
 
     stats = build_asm.assembly_stats
     if output_file:
-        out_fmt, out_dir, out_root, asm_version, suffix = parse_output_file(
+        out_fmt, out_dir, out_root, asm_version, suffix, gz_flag = parse_output_file(
             output_file, gz=auto_find_yaml
         )
-        write_info_yaml(output_file, stats, out_assemblies, clobber)
+        write_info_yaml(
+            out_dir / f"{out_root}.{asm_version}", stats, out_assemblies, clobber
+        )
 
         # Rename assemblies for output files
         out_assemblies = name_assemblies(
@@ -354,7 +356,7 @@ def cli(
         curated_asm_files = write_assemblies(
             fai_coll, out_fmt, out_dir, suffix, out_assemblies, clobber
         )
-        write_chr_csv_files(out_dir, stats, out_assemblies, clobber)
+        write_chr_csv_files(out_dir, stats, out_assemblies, clobber, gz_flag)
         write_chr_report_csv(output_file, stats, out_assemblies, clobber)
         if draft_yaml and fai_coll:
             try:
@@ -503,7 +505,7 @@ def merge_assemblies(asm_list):
     return new
 
 
-def parse_output_file(file: Path, gz=False) -> tuple[str, Path, str, str, str]:
+def parse_output_file(file: Path, gz=False) -> tuple[str, Path, str, str, str, bool]:
     out_fmt = format_from_file_extn(file)
     if out_fmt is None:
         reason = (
@@ -537,7 +539,7 @@ def parse_output_file(file: Path, gz=False) -> tuple[str, Path, str, str, str]:
     else:
         version = "1"
 
-    return out_fmt, file.parent, out_root, version, sfx
+    return out_fmt, file.parent, out_root, version, sfx, gz
 
 
 def write_assemblies(
@@ -634,12 +636,14 @@ def write_chr_csv_files(
     stats: AssemblyStats,
     out_assemblies: AssemblyDict,
     clobber: bool,
+    gz_flag: bool,
 ):
+    gz = ".gz" if gz_flag else ""
     for asm in out_assemblies.values():
         if not asm.curated:
             continue
         if chr_names := stats.chromosome_name_csv(asm):
-            csv_file = out_dir / f"{asm.name}.chromosome.list.csv"
+            csv_file = out_dir / f"{asm.name}.chromosome.list.csv{gz}"
             with get_output_filehandle(csv_file, clobber) as csv_fh:
                 csv_fh.write(chr_names)
 
@@ -663,7 +667,7 @@ def write_info_yaml(
     info["percent_assembly_in_chromosomes"] = stats.percent_assembly_in_chromosomes
     info["interventions_per_gbp"] = stats.interventions_per_gbp
 
-    yaml_file = output_file.with_name(output_file.stem + ".info.yaml")
+    yaml_file = output_file.with_name(output_file.name + ".info.yaml")
     with get_output_filehandle(yaml_file, clobber) as yaml_fh:
         yaml_fh.write(yaml.safe_dump(info, sort_keys=False))
 
