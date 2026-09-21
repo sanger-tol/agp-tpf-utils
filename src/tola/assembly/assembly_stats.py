@@ -3,7 +3,9 @@ import io
 import logging
 from typing import TypeAlias
 
-from tola.assembly.assembly import Assembly, AssemblyDict
+from tola.assembly.assembly import Assembly
+from tola.assembly.assembly_set import AssemblySet
+from tola.assembly.scaffold import Scaffold
 
 log = logging.getLogger(__name__)
 
@@ -27,14 +29,14 @@ class AssemblyStats:
         self.per_assembly_stats = {}
         self.assembly_scaffold_lengths = {}
 
-    def make_stats(self, output_assemblies: AssemblyDict):
+    def make_stats(self, output_assemblies: AssemblySet):
         if not self.input_assembly:
             msg = "Missing input_assembly attribute"
             raise AssemblyStatsError(msg)
         self.__build_junction_stats(output_assemblies)
         self.__build_length_stats(output_assemblies)
 
-    def __build_junction_stats(self, output_assemblies: AssemblyDict):
+    def __build_junction_stats(self, output_assemblies: AssemblySet):
 
         # These stats are going to be wrong if re-curating assemblies with
         # Fragment names beginning with "SUPER_".
@@ -73,7 +75,7 @@ class AssemblyStats:
                     "manual_joins": len((junc_set - input_asm_set) & total_joins),
                 }
 
-    def __build_length_stats(self, output_assemblies: AssemblyDict):
+    def __build_length_stats(self, output_assemblies: AssemblySet):
         input_asm_length = self.input_assembly.fragments_length
 
         # Calculate the number of breaks and joins made per Gbp of the input assembly
@@ -105,7 +107,7 @@ class AssemblyStats:
         )
         log.info(f"Interventions per Gbp = {self.interventions_per_gbp}")
 
-    def ranked_scaffolds(self, asm: Assembly):
+    def ranked_scaffolds(self, asm: Assembly) -> dict[int, list[Scaffold]]:
         ranked_scaffolds = {}
         for scffld in asm.scaffolds:
             rank = scffld.rank
@@ -167,7 +169,7 @@ class AssemblyStats:
 
         return csv_str.getvalue() if csv_str.tell() else None
 
-    def chromosomes_report_csv(self, hap_asm: AssemblyDict):
+    def chromosomes_report_csv(self, hap_asm: AssemblySet):
         csv_str = io.StringIO()
         # Would prefer to use quoting=csv.QUOTE_STRINGS but it was introduced
         # only in Python 3.12
@@ -202,8 +204,76 @@ class AssemblyStats:
 
         return csv_str.getvalue() if csv_str.tell() > head_pos else None
 
-    def sum_chrs_report(self, asm: Assembly):
-        pass
+    def sum_chrs_report(self, asm_key: str | None, asm: Assembly) -> str | None:
+        """
+        Produces a report of the first / primary assembly like:
+        ```
+        found 29 autosomes and Z (plus 6 unlocalised)
+        Total length 585755516
+        Chr length 584128343
+        Chr assignment 99.72 %
+        ```
+
+        Returns `None` if there are no autosomes and no sex chromosomes
+        """
+        ranked_names_lengths = self.get_assembly_scaffold_lengths(asm_key, asm)
+        chr_lengths = ranked_names_lengths.get(1)
+
+        out = io.StringIO()
+        out.write("found")
+
+        # Build list of named chromosomes from sex and organelle chromosomes
+        i_scffld = self.ranked_scaffolds(asm)
+        named_chrs = []
+        for rank in (2, 3):
+            if scaffolds := i_scffld.get(rank):
+                for scffld in scaffolds:
+                    if scffld.localised:
+                        named_chrs.append(scffld.chr_name or scffld.name)
+
+        n_autosomes = len(chr_lengths) if chr_lengths else 0
+
+        # Format the first line of the report
+        out.write(f" {n_autosomes} {'autosomes' if i_scffld.get(2) else 'chromosomes'}")
+        if len(named_chrs) > 1:
+            out.write(" ")
+            out.write(", ".join(named_chrs[:-1]))
+        if named_chrs:
+            out.write(f" and {named_chrs[-1]}")
+
+        # Count unlocalised scaffolds in autosomes and sex chromosomes
+        unloc_count = 0
+        for rank in (1, 2):
+            if scaffolds := i_scffld.get(rank):
+                for scffld in scaffolds:
+                    if not scffld.localised:
+                        unloc_count += 1
+        if unloc_count:
+            out.write(f" (plus {unloc_count} unlocalised)")
+
+        # End of first line
+        out.write("\n")
+
+        total_len = 0
+        chr_len = 0
+        for rank, name_length in ranked_names_lengths.items():
+            if rank == 3:
+                # Organelles not counted in stats.  (Should they be?)
+                continue
+            sum_len = sum(name_length.values())
+            total_len += sum_len
+            if rank in (1, 2):
+                chr_len += sum_len
+
+        # Avoid divide by zero
+        assigned = chr_len / total_len if total_len else 0
+
+        # Final three lines of report
+        out.write(f"Total length {total_len}\n")
+        out.write(f"Chr length {chr_len}\n")
+        out.write(f"Chr assingment {assigned * 100:.2f} %\n")
+
+        return out.getvalue()
 
     def log_assembly_chromosomes(self, asm_key: str | None, asm: Assembly):
         ranked_names_lengths = self.get_assembly_scaffold_lengths(asm_key, asm)
@@ -268,9 +338,7 @@ class AssemblyStats:
                 for msg in msg_list:
                     log.warning(msg)
 
-    def check_consistent_autosome_count(
-        self, hap_asm: AssemblyDict
-    ) -> list[str] | None:
+    def check_consistent_autosome_count(self, hap_asm: AssemblySet) -> list[str] | None:
         chr_counts = {}
         for hap, asm in hap_asm.items():
             ranked_names_lengths = self.get_assembly_scaffold_lengths(hap, asm)
@@ -286,7 +354,7 @@ class AssemblyStats:
                 ]
         return None
 
-    def check_for_large_haplotigs(self, hap_asm: AssemblyDict) -> list[str] | None:
+    def check_for_large_haplotigs(self, hap_asm: AssemblySet) -> list[str] | None:
         htigs = hap_asm.get("Haplotig")
         if not htigs:
             return None

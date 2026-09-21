@@ -1,7 +1,8 @@
 import logging
 import math
 
-from tola.assembly.assembly import Assembly, AssemblyDict
+from tola.assembly.assembly import Assembly
+from tola.assembly.assembly_set import AssemblySet
 from tola.assembly.assembly_stats import AssemblyStats
 from tola.assembly.build_utils import FoundFragment, OverhangResolver
 from tola.assembly.fragment import Fragment
@@ -274,22 +275,22 @@ class BuildAssembly(Assembly):
                 new_scffld.haplotype = scaffold_namer.current_haplotype
                 self.add_scaffold(new_scffld)
 
-    def assembly_with_scaffolds_in_map_order(self) -> AssemblyDict:
+    def assembly_with_scaffolds_in_map_order(self) -> AssemblySet:
         scaffolds, _ = self.__build_name_and_sort_assemblies()
-        return {None: Assembly("Pretext", scaffolds=scaffolds)}
+        return AssemblySet({None: Assembly("Pretext", scaffolds=scaffolds)})
 
-    def assemblies_with_scaffolds_fused(self) -> AssemblyDict:
+    def assemblies_with_scaffolds_fused(self) -> AssemblySet:
         _, assemblies = self.__build_name_and_sort_assemblies()
         return assemblies
 
     def __build_name_and_sort_assemblies(
         self,
-    ) -> tuple[list[Scaffold], AssemblyDict]:
+    ) -> tuple[list[Scaffold], AssemblySet]:
         chr_namer = ChrNamer(chr_prefix=self.autosome_prefix)
 
         scaffolds = self.scaffolds_fused_by_name()
 
-        assemblies = {}
+        assemblies = AssemblySet()
         for scffld in scaffolds:
             curated = True
             hap = None
@@ -342,7 +343,7 @@ class BuildAssembly(Assembly):
 
     def get_or_create_assembly(
         self,
-        assemblies: AssemblyDict,
+        assemblies: AssemblySet,
         name: str | None,
         curated: bool,
     ):
@@ -496,7 +497,7 @@ class BuildAssembly(Assembly):
 
         return list(hap_name_scaffold.values())
 
-    def __add_draft_assembly_components(self, assemblies: AssemblyDict) -> None:
+    def __add_draft_assembly_components(self, assemblies: AssemblySet) -> None:
         """
         Add mitochondrial and chloroplast genomes to the first
         ("Hap1" or "Primary") assembly and haplotigs to the "Haplotig"
@@ -506,22 +507,8 @@ class BuildAssembly(Assembly):
         if not asm_yaml:
             return
 
-        # Reduce the assembly dict to only the
-        curated_asm = {n: asm for n, asm in assemblies.items() if asm.curated}
-
-        # If we don't have a primary assembly, use the first
-        # from "hap1", "hap2", etc... sorted naturally
-        first_asm = (
-            curated_asm.get("Primary")
-            or curated_asm.get(None)
-            or curated_asm.get((sorted(curated_asm, key=natural_key))[0])  # ty: ignore[no-matching-overload]
-        )
-        if not first_asm:
-            msg = (
-                "Could not choose the primary assembly"
-                f" from: {list(curated_asm)}"
-            )
-            raise ValueError(msg)
+        # Get the "primary" assembly of the set
+        _, first_asm = assemblies.main_assembly()
 
         # Any scaffolds in the organelle assemblies are added regardless of
         # their length

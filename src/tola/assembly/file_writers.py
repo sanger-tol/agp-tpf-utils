@@ -12,7 +12,8 @@ import click
 import yaml
 from zlib_ng import gzip_ng_threaded
 
-from tola.assembly.assembly import Assembly, AssemblyDict
+from tola.assembly.assembly import Assembly
+from tola.assembly.assembly_set import AssemblySet
 from tola.assembly.assembly_stats import AssemblyStats
 from tola.assembly.format import format_agp, format_tpf
 from tola.assembly.gfa_stats import GfaStats, VgpStats
@@ -54,7 +55,7 @@ def write_assemblies(
     out_fmt: str,
     out_dir: Path,
     suffix: str,
-    out_assemblies: AssemblyDict,
+    out_assemblies: AssemblySet,
     clobber: bool,
 ) -> dict[str | None, tuple[Assembly, Path]]:
     """
@@ -153,11 +154,10 @@ def write_assembly_stats(
         vgp_io.close()
 
 
-
 def write_chr_report_csv(
     out_template: Path,
     stats: AssemblyStats,
-    out_assemblies: AssemblyDict,
+    out_assemblies: AssemblySet,
     clobber: bool,
 ):
     """
@@ -177,7 +177,7 @@ def write_chr_report_csv(
 def write_chr_csv_files(
     out_dir: Path,
     stats: AssemblyStats,
-    out_assemblies: AssemblyDict,
+    out_assemblies: AssemblySet,
     clobber: bool,
     gz_flag: bool,
 ):
@@ -198,10 +198,26 @@ def write_chr_csv_files(
                     csv_fh.write(chr_names)
 
 
+def write_sum_chrs(
+    out_dir: Path,
+    stats: AssemblyStats,
+    out_assemblies: AssemblySet,
+    clobber: bool,
+):
+    """
+    Writes the `.sum_chrs` file for the main assembly in the set.
+    """
+    asm_key, asm = out_assemblies.main_assembly()
+    report = stats.sum_chrs_report(asm_key, asm)
+    sum_file = out_dir / f"{asm.name}.sum_chrs"
+    with get_output_filehandle(sum_file, clobber) as sum_fh:
+        sum_fh.write(report)
+
+
 def write_info_yaml(
     out_template,
     stats: AssemblyStats,
-    out_assemblies: AssemblyDict,
+    out_assemblies: AssemblySet,
     clobber,
 ):
     """
@@ -215,7 +231,8 @@ def write_info_yaml(
 
     haplotig_count = 0
     if h_asm := out_assemblies.get("Haplotig"):
-        haplotig_count = len(h_asm.scaffolds)
+        # Scaffolds read from the draft haplotigs file have rank == 0
+        haplotig_count = len([x for x in h_asm.scaffolds if x.rank == 4])
     info["manual_haplotig_removals"] = haplotig_count
     info["percent_assembly_in_chromosomes"] = stats.percent_assembly_in_chromosomes
     info["interventions_per_gbp"] = stats.interventions_per_gbp

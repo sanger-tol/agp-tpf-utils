@@ -1,4 +1,5 @@
 from tola.assembly.assembly import Assembly
+from tola.assembly.assembly_set import AssemblySet
 from tola.assembly.fragment import Fragment
 from tola.assembly.gap import Gap
 from tola.assembly.scaffold import Scaffold
@@ -213,6 +214,49 @@ def test_str_and_repr():
             ],
         )""",
     )
+
+
+def test_assembly_set():
+    asm_prim = Assembly("Primary", curated=True)
+    asm_none = Assembly("none", curated=True)
+    asm_hap1 = Assembly("hap1", curated=True)
+    asm_hap2 = Assembly("hap2", curated=True)
+    asm_htig = Assembly("Haplotig")
+
+    asm_set1 = AssemblySet(
+        {
+            None: asm_none,
+            "x": asm_hap1,
+            "y": asm_htig,
+        }
+    )
+    assert asm_set1.main_assembly() == (None, asm_none)
+
+    asm_set2 = AssemblySet(
+        {
+            "Haplotig": asm_htig,
+            None: asm_none,
+            "hap1": asm_hap1,
+            "hap2": asm_hap2,
+            "Primary": asm_prim,
+        }
+    )
+    assert asm_set2.main_assembly() == ("Primary", asm_prim)
+    assert asm_set2.curated() == {
+        None: asm_none,
+        "hap1": asm_hap1,
+        "hap2": asm_hap2,
+        "Primary": asm_prim,
+    }
+
+    asm_set3 = AssemblySet(
+        {
+            "hap10": Assembly("hap10"),
+            "hap2": asm_hap2,
+            "Haplotig": asm_htig,
+        }
+    )
+    assert asm_set3.main_assembly() == ("hap2", asm_hap2)
 
 
 if __name__ == "__main__":

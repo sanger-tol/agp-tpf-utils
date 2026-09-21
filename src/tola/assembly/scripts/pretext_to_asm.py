@@ -7,7 +7,8 @@ from shutil import which
 
 import click
 
-from tola.assembly.assembly import Assembly, AssemblyDict
+from tola.assembly.assembly import Assembly
+from tola.assembly.assembly_set import AssemblySet
 from tola.assembly.build_assembly import BuildAssembly
 from tola.assembly.file_writers import (
     write_assemblies,
@@ -16,6 +17,7 @@ from tola.assembly.file_writers import (
     write_chr_csv_files,
     write_chr_report_csv,
     write_info_yaml,
+    write_sum_chrs,
 )
 from tola.assembly.gfa_stats import GfaStatsError
 from tola.assembly.indexed_assembly import IndexedAssembly
@@ -364,6 +366,7 @@ def cli(
         if draft_yaml and fai_coll:
             try:
                 write_assembly_stats(draft_yaml, curated_asm_files, clobber)
+                write_sum_chrs(out_dir, stats, out_assemblies, clobber)
             except GfaStatsError as ge:
                 for msg in ge.args:
                     log.warning(msg)
@@ -423,14 +426,14 @@ def check_for_executable(cmd: str):
 
 
 def name_assemblies(
-    asm_dict: AssemblyDict,
+    asm_dict: AssemblySet,
     root: str,
     version: str,
     default_asm_name: str,
-) -> AssemblyDict:
+) -> AssemblySet:
     """Rename assemblies for their output files"""
 
-    ret_asm = {}
+    ret_asm = AssemblySet()
 
     # A combined Pretext map of two or more haplotypes where only one of them
     # has been curated. One of the painted chromosomes in the curated

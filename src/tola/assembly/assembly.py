@@ -154,6 +154,3 @@ class Assembly:
         for i in range(0, lgth):
             for j in range(i + 1, lgth):
                 compare_func(frags[i], frags[j])
-
-
-AssemblyDict: TypeAlias = dict[str | None, Assembly]

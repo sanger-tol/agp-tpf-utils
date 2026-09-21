@@ -131,9 +131,12 @@ class AssemblyYaml:
 
         ### Mark linear organelle genomes here? ###
 
+        multi_flag = len(asm.scaffolds) > 1
+
         # Give each scaffold a name and set its rank
         for i, scffld in enumerate(asm.scaffolds, start=1):
             scffld.name = f"scaffold_{prefix}_{i}"
+            scffld.chr_name = f"{prefix}-{i}" if multi_flag else prefix
             scffld.rank = rank
         return asm
 
