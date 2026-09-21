@@ -155,7 +155,7 @@ class AssemblyStats:
     def chromosome_name_csv(self, asm: Assembly) -> str | None:
         csv_str = io.StringIO()
         for scffld in asm.scaffolds:
-            if scffld.rank in (1, 2):
+            if scffld.rank in (1, 2, 3):
                 csv_str.write(
                     ",".join(
                         (

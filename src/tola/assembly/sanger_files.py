@@ -116,14 +116,19 @@ class AssemblyYaml:
 
     @cached_property
     def mitochondrial_assembly(self) -> Assembly | None:
-        return self.__get_asm_and_name_scaffolds("mito", "MT", rank=3)
+        return self.__get_asm_and_name_scaffolds("mito", "MT", rank=3, localised=True)
 
     @cached_property
     def chloroplast_assembly(self) -> Assembly | None:
-        return self.__get_asm_and_name_scaffolds("plastid", "Pltd", rank=3)
+        return self.__get_asm_and_name_scaffolds("plastid", "Pltd", rank=3, localised=True)
 
     def __get_asm_and_name_scaffolds(
-        self, yaml_key, prefix, *, rank: int = 4
+        self,
+        yaml_key,
+        prefix,
+        *,
+        rank: int = 4,
+        localised: bool = False,
     ) -> Assembly | None:
         asm = self.index_fasta(yaml_key)
         if not asm:
@@ -138,6 +143,7 @@ class AssemblyYaml:
             scffld.name = f"scaffold_{prefix}_{i}"
             scffld.chr_name = f"{prefix}-{i}" if multi_flag else prefix
             scffld.rank = rank
+            scffld.localised = localised
         return asm
 
     @cached_property
