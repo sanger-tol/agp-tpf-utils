@@ -304,7 +304,7 @@ def cli(
     if keep_map_order and not default_asm_name:
         default_asm_name = "map-order"
 
-    asm, fai = parse_assembly_file(assembly_file, "TPF")
+    asm, fai = parse_assembly_file(assembly_file, "FASTA")
     input_asm = IndexedAssembly.new_from_assembly(asm)
     prtxt_asm, _ = parse_assembly_file(pretext_file, "AGP")
 
