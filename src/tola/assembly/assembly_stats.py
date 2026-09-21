@@ -138,7 +138,7 @@ class AssemblyStats:
 
             ranked_names_lengths[rank] = name_length
 
-        return ranked_names_lengths
+        return ranked_names_lengths  # ty: ignore[invalid-return-type]
 
     def get_assembly_scaffold_lengths(
         self,
@@ -216,35 +216,33 @@ class AssemblyStats:
 
         Returns `None` if there are no autosomes and no sex chromosomes
         """
-        ranked_names_lengths = self.get_assembly_scaffold_lengths(asm_key, asm)
-        chr_lengths = ranked_names_lengths.get(1)
 
         out = io.StringIO()
         out.write("found")
 
         # Build list of named chromosomes from sex and organelle chromosomes
-        i_scffld = self.ranked_scaffolds(asm)
+        rank_scffld = self.ranked_scaffolds(asm)
         named_chrs = []
         for rank in (2, 3):
-            if scaffolds := i_scffld.get(rank):
+            if scaffolds := rank_scffld.get(rank):
                 for scffld in scaffolds:
                     if scffld.localised:
                         named_chrs.append(scffld.chr_name or scffld.name)
 
-        n_autosomes = len(chr_lengths) if chr_lengths else 0
+        n_autosomes = len(rank_scffld[1]) if 1 in rank_scffld else 0
 
         # Format the first line of the report
-        out.write(f" {n_autosomes} {'autosomes' if i_scffld.get(2) else 'chromosomes'}")
-        if len(named_chrs) > 1:
-            out.write(" ")
-            out.write(", ".join(named_chrs[:-1]))
+        out.write(f" {n_autosomes} {'autosomes' if 2 in rank_scffld else 'chromosomes'}")
         if named_chrs:
+            if len(named_chrs) > 1:
+                out.write(" ")
+                out.write(", ".join(named_chrs[:-1]))
             out.write(f" and {named_chrs[-1]}")
 
         # Count unlocalised scaffolds in autosomes and sex chromosomes
         unloc_count = 0
         for rank in (1, 2):
-            if scaffolds := i_scffld.get(rank):
+            if scaffolds := rank_scffld.get(rank):
                 for scffld in scaffolds:
                     if not scffld.localised:
                         unloc_count += 1
@@ -256,11 +254,11 @@ class AssemblyStats:
 
         total_len = 0
         chr_len = 0
-        for rank, name_length in ranked_names_lengths.items():
+        for rank, scaffolds in rank_scffld.items():
             if rank == 3:
                 # Organelles not counted in stats.  (Should they be?)
                 continue
-            sum_len = sum(name_length.values())
+            sum_len = sum([scffld.length for scffld in scaffolds])
             total_len += sum_len
             if rank in (1, 2):
                 chr_len += sum_len
