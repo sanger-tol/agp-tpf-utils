@@ -64,3 +64,15 @@ def test_reverse():
     s1r = s1.reverse()
     assert [x.strand for x in s1r.fragments()] == [-1, 1, -1]
     assert s1r.rows[2] is g1
+
+def test_clone_drop_end_gaps():
+    f1 = Fragment("scaffold_1", 1, 100, 1)
+    g1 = Gap(100, "Type-2")
+
+    s1 = Scaffold(name="end gap test1", rows=[g1, g1, f1, g1, f1, g1])
+    s1_cleaned = s1.clone_drop_end_gaps()
+    s_expected = Scaffold(name="end gap test1", rows=[f1, g1, f1])
+    assert s1_cleaned == s_expected
+
+    s2 = Scaffold(name="all gaps", rows=[g1, g1, g1])
+    assert s2.clone_drop_end_gaps() is None

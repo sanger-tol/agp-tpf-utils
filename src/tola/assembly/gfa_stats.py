@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 import re
 import subprocess
@@ -148,12 +150,12 @@ class GfaStats:
             out.write(json.dumps(row, separators=(",", ":")) + "\n")
         return out.getvalue()
 
-    def run(self) -> "GfaStats":
+    def run(self) -> GfaStats:
         io = self.gfa_stats
         self.parse(io)
         return self
 
-    def parse(self, io: IO[Any]) -> "GfaStats":
+    def parse(self, io: IO[Any]) -> GfaStats:
         for line in io:
             name, value = line.rstrip().split("\t")
             self.__stats.append(Stat(name, value))

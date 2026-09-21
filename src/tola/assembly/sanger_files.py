@@ -12,6 +12,7 @@ from typing import Any
 import yaml
 
 from tola.assembly.assembly import Assembly
+from tola.assembly.scaffold import Scaffold
 from tola.fasta.index import FastaIndex
 from tola.fasta.stream import FastaCollection
 
@@ -120,7 +121,9 @@ class AssemblyYaml:
 
     @cached_property
     def chloroplast_assembly(self) -> Assembly | None:
-        return self.__get_asm_and_name_scaffolds("plastid", "Pltd", rank=3, localised=True)
+        return self.__get_asm_and_name_scaffolds(
+            "plastid", "Pltd", rank=3, localised=True
+        )
 
     def __get_asm_and_name_scaffolds(
         self,
@@ -139,11 +142,15 @@ class AssemblyYaml:
         multi_flag = len(asm.scaffolds) > 1
 
         # Give each scaffold a name and set its rank
+        filtered_scaffolds = []
         for i, scffld in enumerate(asm.scaffolds, start=1):
             scffld.name = f"scaffold_{prefix}_{i}"
-            scffld.chr_name = f"{prefix}-{i}" if multi_flag else prefix
+            if rank == 3:
+                scffld.chr_name = f"{prefix}-{i}" if multi_flag else prefix
             scffld.rank = rank
             scffld.localised = localised
+            filtered_scaffolds.append(scffld)
+        asm.scaffolds = filtered_scaffolds
         return asm
 
     @cached_property
@@ -166,11 +173,27 @@ class AssemblyYaml:
             msg = f"No such FASTA file for {name!r}: '{decon_path}'"
             raise AssemblyYamlError(msg)
 
+        return self.index_and_clean(decon_path, name)
+
+    def index_and_clean(self, path: Path, source_name: str) -> Assembly | None:
         # Index the FASTA with a source namespace
-        fai = FastaIndex(decon_path, source=name)
+        fai = FastaIndex(path, source=source_name)
         fai.run_indexing()  # Only run indexing.  Don't write files
-        self.__fasta_index_list.append(fai)
-        return fai.assembly
+
+        asm = fai.assembly
+        cleaned = []
+        for scffld in asm.scaffolds:
+            if clean := scffld.clone_drop_end_gaps():
+                cleaned.append(clean)
+        asm.scaffolds = cleaned
+
+        # Dropping any `Gap` rows from the scaffold ends could have emptied
+        # the assembly.
+        if asm:
+            self.__fasta_index_list.append(fai)
+            return asm
+        else:
+            return None
 
     def decontaminated_file_path(self, file_path: Path, name: str) -> Path:
         """

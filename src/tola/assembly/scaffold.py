@@ -1,6 +1,7 @@
+from __future__ import annotations
+
 import io
 from collections.abc import Generator
-from typing import Self
 
 from tola.assembly.fragment import Fragment, Junction
 from tola.assembly.gap import Gap
@@ -9,33 +10,33 @@ from tola.assembly.gap import Gap
 class Scaffold:
     def __init__(
         self,
-        name,
+        name: str,
         rows: list[Fragment | Gap] | None = None,
         *,
-        tag=None,
-        haplotype=None,
-        rank=0,
-        original_name=None,
+        tag: str | None = None,
+        haplotype: str | None = None,
+        rank: int = 0,
+        original_name: str | None = None,
         original_tags: set[str] | None = None,
         localised: bool = False,
         chr_name: str | None = None,
         circular: bool = False,
     ):
-        self.name = str(name)
+        self.name = name
         if rows:
             self.rows = [*rows]
         else:
-            self.rows: list[Fragment | Gap] = []
-        self.tag: str | None = tag
-        self.haplotype: str | None = haplotype
+            self.rows = []
+        self.tag = tag
+        self.haplotype = haplotype
         self.rank: int = rank
-        self.original_name: str | None = original_name
-        self.original_tags: set[str] | None = original_tags
+        self.original_name = original_name
+        self.original_tags = original_tags
         self.localised = localised
         self.chr_name = chr_name
         self.circular = circular
 
-    def clone_empty(self) -> 'Scaffold':
+    def clone_empty(self) -> Scaffold:
         """
         Clones a `Scaffold` or derived class, returning a base `Scaffold` with
         all of its attributes apart from `rows`.
@@ -51,6 +52,20 @@ class Scaffold:
             chr_name=self.chr_name,
             circular=self.circular,
         )
+
+    def clone_drop_end_gaps(self) -> Scaffold | None:
+        """
+        Clones a `Scaffold`, removing any terminal `Gap` rows.
+        """
+        new = self.clone_empty()
+        rows = new.rows = [*self.rows]
+        for end in 0, -1:
+            while rows and isinstance(rows[end], Gap):
+                rows.pop(end)
+        return new if rows else None
+
+    def __eq__(self, othr) -> bool:
+        return self.__dict__ == othr.__dict__
 
     def __repr__(self) -> str:
         txt = io.StringIO()
@@ -89,7 +104,7 @@ class Scaffold:
         return self.__original_name or self.name
 
     @original_name.setter
-    def original_name(self, name: str) -> None:
+    def original_name(self, name: str | None) -> None:
         self.__original_name = name
 
     @property
@@ -138,7 +153,7 @@ class Scaffold:
                 tag_set.add(t)
         return tag_set
 
-    def reverse(self) -> Self:
+    def reverse(self) -> Scaffold:
         new = self.__class__(
             self.name,
             tag=self.tag,
