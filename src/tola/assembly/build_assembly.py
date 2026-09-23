@@ -387,8 +387,9 @@ class BuildAssembly(Assembly):
         cut_parts.append(to_cut)
 
         # Add suffix "_1", "_2" etc... to cut scaffolds
-        for i, part in enumerate(cut_parts):
-            part.name = f"{part.name}_{i + 1}"
+        for i, part in enumerate(cut_parts, start=1):
+            part.name = f"{part.name}_{i}"
+            part.cut_part = i
 
         # Format report of cuts made
         whole_str = f"{whole:,d}"

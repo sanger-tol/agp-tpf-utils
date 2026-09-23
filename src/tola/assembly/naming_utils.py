@@ -228,22 +228,24 @@ class ChrGroup:
     """
 
     def __init__(self, haplotypes):
-        self.data = data = {}
+        self.data: dict[str, dict[str, list[Scaffold]]] = {}
         for hap in haplotypes:
-            data[hap] = {}
+            self.data[hap] = {}
 
     def __repr__(self):
         data_summary = {hap: list(self.data[hap].keys()) for hap in self.data}
         return f"{self.__class__.__name__}(\n  data={data_summary})\n"
 
-    def haplotype_dict(self, hap_name):
-        return self.data.get(hap_name)
+    def haplotype_dict(self, hap_name) -> dict[str, list[Scaffold]]:
+        return self.data.get(hap_name)  # ty: ignore[invalid-return-type]
 
     def add_scaffold_to_haplotype(self, hap_name, scaffold):
         log.debug(f"Adding scaffold to '{hap_name}':\n{scaffold}")
-        self.data.get(hap_name).setdefault(scaffold.original_name, []).append(scaffold)
+        self.data.get(hap_name).setdefault(scaffold.original_name, []).append(scaffold)  # ty: ignore[unresolved-attribute]
 
-    def original_tags_of_haplotype_scaffold(self, hap_name, scffld_name):
+    def original_tags_of_haplotype_scaffold(
+        self, hap_name, scffld_name
+    ) -> set[str] | tuple[()]:
         return self.haplotype_dict(hap_name)[scffld_name][0].original_tags or ()
 
     def length_of_first_haplotype(self):
@@ -256,7 +258,7 @@ class ChrGroup:
         return length
 
     @staticmethod
-    def multi_chr_list(chr_name, multi_count):
+    def multi_chr_list(chr_name, multi_count) -> list[str]:
         """
         Adds the suffix "A", "B", "C" etc... to the supplied chromosome name
         for when there are multiple chromosomes in a group.
@@ -277,11 +279,13 @@ class ChrGroup:
         Replace the original Pretext scaffold name with the supplied
         `chr_prefix` and `chr_n` for each haplotype within the group.
 
-        e.g.
-              "Scaffold_10"         > "SUPER_9A"
-              "Scaffold_10_unloc_1" > "SUPER_9A_unloc_1"
-              "Scaffold_10_unloc_2" > "SUPER_9A_unloc_2"
-              "Scaffold_11"         > "SUPER_9B"
+        *e.g.*
+        ```
+         "Scaffold_10"         > "SUPER_9A"
+         "Scaffold_10_unloc_1" > "SUPER_9A_unloc_1"
+         "Scaffold_10_unloc_2" > "SUPER_9A_unloc_2"
+         "Scaffold_11"         > "SUPER_9B"
+        ```
         """
         for hap_name, hap_set in self.data.items():
             hap_suffix = (
@@ -322,7 +326,7 @@ class ChrNamer:
         self.haplotypes_seen = {}
         self.groups: list[ChrGroup] | None = None
 
-    def add_scaffold(self, haplotype, scffld):
+    def add_scaffold(self, haplotype, scffld) -> None:
         # A dict is used to store the haplotypes seen since order is
         # significant and sets do not preserve order.
         # haplotype = str(hap)
@@ -330,7 +334,7 @@ class ChrNamer:
         self.scaffolds.append((haplotype, scffld))
         log.debug(f"Added to {haplotype = } scaffold = {scffld.name}")
 
-    def new_group(self):
+    def new_group(self) -> ChrGroup:
         grp = ChrGroup(self.haplotypes_seen)
         self.groups.append(grp)
         return grp
@@ -359,8 +363,8 @@ class ChrNamer:
         self.build_groups()
         self.groups.sort(key=lambda x: x.length_of_first_haplotype(), reverse=True)
         chr_prefix = self.chr_prefix
-        for i, grp in enumerate(self.groups):
-            grp.name_chromosome(chr_prefix, i + 1)
+        for i, grp in enumerate(self.groups, start=1):
+            grp.name_chromosome(chr_prefix, i)
 
     def check_for_painted_scaffolds_missing_haplotype_tag(self):
         if len(self.haplotypes_seen) > 1 and None in self.haplotypes_seen:
@@ -405,9 +409,10 @@ class ChrNamer:
                         group = self.new_group()
                 elif orig != last_orig:
                     # There will be mulitple scaffolds in a row from with the
-                    # same original_name when there are Unlocs.
-                    # When there's only one haplotype, we make a new ChrGroup
-                    # for each original_name, i.e. Pretext scaffold name.
+                    # same original_name when there are cut scaffolds or
+                    # Unlocs.  When there's only one haplotype, we make a new
+                    # ChrGroup for each original_name, i.e. Pretext scaffold
+                    # name.
                     group = self.new_group()
 
             # Append to the list under Haplotype > Pretext Scaffold in the

@@ -21,6 +21,7 @@ class Scaffold:
         localised: bool = False,
         chr_name: str | None = None,
         circular: bool = False,
+        cut_part: int | None = None,
     ):
         self.name = name
         if rows:
@@ -35,6 +36,7 @@ class Scaffold:
         self.localised = localised
         self.chr_name = chr_name
         self.circular = circular
+        self.cut_part = cut_part
 
     def clone_empty(self) -> Scaffold:
         """
@@ -51,6 +53,7 @@ class Scaffold:
             localised=self.localised,
             chr_name=self.chr_name,
             circular=self.circular,
+            cut_part=self.cut_part,
         )
 
     def clone_drop_end_gaps(self) -> Scaffold | None:

@@ -154,18 +154,36 @@ class AssemblyStats:
 
     def chromosome_name_csv(self, asm: Assembly) -> str | None:
         csv_str = io.StringIO()
+        # Scaffolds which were longer than the maximum contig length (2 Gbp by
+        # default) will have `cut_part` set.
+        prev_chr = None
+        cut_part = None
         for scffld in asm.scaffolds:
             if scffld.rank in (1, 2, 3):
+                if scffld.chr_name == prev_chr:
+                    # Don't reset `cut_part` for Unloc scaffolds (which will
+                    # not have `Scaffold.cut_part` set), so that they are given the
+                    # chromosome name of the previous part chromosome.
+                    if scffld.cut_part is not None:
+                        cut_part = scffld.cut_part
+                else:
+                    cut_part = scffld.cut_part
+
                 csv_str.write(
                     ",".join(
                         (
                             scffld.name,
-                            scffld.chr_name,
+                            (
+                                f"{scffld.chr_name}_{cut_part}"
+                                if cut_part
+                                else scffld.chr_name
+                            ),
                             "yes" if scffld.localised else "no",
                         )
                     )  # ty: ignore[no-matching-overload]
                 )
                 csv_str.write("\n")
+                prev_chr = scffld.chr_name
 
         return csv_str.getvalue() if csv_str.tell() else None
 
@@ -213,8 +231,6 @@ class AssemblyStats:
         Chr length 584128343
         Chr assignment 99.72 %
         ```
-
-        Returns `None` if there are no autosomes and no sex chromosomes
         """
 
         out = io.StringIO()
@@ -232,7 +248,9 @@ class AssemblyStats:
         n_autosomes = len(rank_scffld[1]) if 1 in rank_scffld else 0
 
         # Format the first line of the report
-        out.write(f" {n_autosomes} {'autosomes' if 2 in rank_scffld else 'chromosomes'}")
+        out.write(
+            f" {n_autosomes} {'autosomes' if 2 in rank_scffld else 'chromosomes'}"
+        )
         if named_chrs:
             if len(named_chrs) > 1:
                 out.write(" ")
