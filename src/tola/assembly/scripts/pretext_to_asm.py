@@ -264,7 +264,8 @@ def ul(txt):
     "min_contig_length",
     type=int,
     help="""
-        Minimum length for a single contig.  Contigs shorter that this are discarded.
+        Minimum length for a single contig.  Contigs shorter that this are
+        removed from the assembly and saved in a 'shorts' file.
         """,
     default=1000,
     show_default=True,
