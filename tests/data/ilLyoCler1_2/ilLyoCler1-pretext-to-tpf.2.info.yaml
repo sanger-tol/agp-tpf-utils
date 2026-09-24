@@ -1,7 +1,12 @@
 assemblies:
+  HAP1:
+    manual_breaks: 124
+    manual_joins: 235
   HAP2:
-    manual_breaks: 5
-    manual_joins: 5
+    manual_breaks: 7
+    manual_joins: 0
+manual_breaks: 131
+manual_joins: 235
 manual_haplotig_removals: 10
 percent_assembly_in_chromosomes: 43.9
-interventions_per_gbp: 730.517
+interventions_per_gbp: 720.672

@@ -479,14 +479,24 @@ class BuildAssembly(Assembly):
 
     def scaffolds_fused_by_name(self) -> list[Scaffold]:
         gap = self.default_gap
-        hap_name_scaffold: dict[tuple[str | None, str], Scaffold] = {}
+        hap_name_scaffold: dict[tuple[str | None, str, str], Scaffold] = {}
         for scffld in self.scaffolds:
             if not scffld.rows:
                 # discard_overhanging_fragments() may have removed the only
                 # row from an OverlapResult
                 continue
 
-            idx = scffld.haplotype, scffld.name
+            # Index on both `name` and `original_name`, since the latter is
+            # the name of the PrtextView scaffold, and this ensures that
+            # multiple pieces excised out of a scaffold aren't joined
+            # together because they have the same `name` from the input
+            # assembly scaffold.
+            #
+            # Cannot use `tuple[scffld.haplotype, scffld.original_name]` only
+            # as the index, or Unlocs would be merged back into their
+            # chromosome scaffolds.
+            idx = scffld.haplotype, scffld.name, scffld.original_name
+
             build_scffld = hap_name_scaffold.get(idx)
             if not build_scffld:
                 hap_name_scaffold[idx] = build_scffld = scffld.clone_empty()
@@ -496,7 +506,28 @@ class BuildAssembly(Assembly):
             else:
                 build_scffld.append_scaffold(scffld)
 
+        self.__add_suffixes_to_excised_scaffolds(hap_name_scaffold)
+
         return list(hap_name_scaffold.values())
+
+    def __add_suffixes_to_excised_scaffolds(
+        self,
+        hap_name_scaffold: dict[tuple[str | None, str, str], Scaffold],
+    ) -> None:
+        """
+        Rename scaffold fragments which have been removed from "Painted"
+        scaffolds so that they are unique in the FASTA file.  The
+        suffixes "_x1", "_x2" *etc…* are appended to each piece.
+        """
+        name_scffld: dict[tuple[str | None, str], list[Scaffold]] = {}
+        for idx, scffld in hap_name_scaffold.items():
+            hap, name, _ = idx
+            name_scffld.setdefault((hap, name), []).append(scffld)
+        for scaffolds in name_scffld.values():
+            if len(scaffolds) == 1:
+                continue
+            for i, scffld in enumerate(scaffolds, start=1):
+                scffld.name = f"{scffld.name}_x{i}"
 
     def __add_draft_assembly_components(self, assemblies: AssemblySet) -> None:
         """

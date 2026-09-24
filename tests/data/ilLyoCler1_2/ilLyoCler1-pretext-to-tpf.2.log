@@ -178,7 +178,7 @@ ilLyoCler1-pretext-to-tpf.2.primary
     n = 1
          12,870,137  SUPER_Z
   Unplaced:
-    n = 1696
+    n = 1698
             316,742  HAP1_SCAFFOLD_39
                 ...  ...
               1,000  HAP1_SCAFFOLD_1838
@@ -194,12 +194,12 @@ ilLyoCler1-pretext-to-tpf.2.haplotigs
 
 ilLyoCler1-pretext-to-tpf.2.haplotigs
         250,658,955  bp sequence (minus gaps)
-    n = 5033
+    n = 5040
           4,961,150  HAP2_SCAFFOLD_1
                 ...  ...
               1,000  HAP2_SCAFFOLD_5041
         250,658,955  bp total
 
-Curation made 30 cuts in contigs, 129 breaks at gaps and 242 joins
+Curation made 30 cuts in contigs, 131 breaks at gaps and 235 joins
 Assembly placed in chromosomes = 43.9%
-Interventions per Gbp = 730.517
+Interventions per Gbp = 720.672

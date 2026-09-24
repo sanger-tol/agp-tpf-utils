@@ -47,10 +47,10 @@ class AssemblyStats:
 
         output_junction_sets = {}
         output_set = set()
-        for name, asm in output_assemblies.items():
+        for asm in output_assemblies.values():
             junc_set = asm.fragment_junction_set()
             output_set |= junc_set
-            output_junction_sets[name] = junc_set
+            output_junction_sets[asm.source_haplotype] = junc_set
 
         # Breaks are junctions in the input that are not in the output
         total_breaks = input_set - output_set

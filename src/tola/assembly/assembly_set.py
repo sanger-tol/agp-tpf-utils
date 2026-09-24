@@ -2,7 +2,7 @@
 Stores a set of assemblies for an organism.
 """
 
-from collections.abc import MutableMapping
+from collections.abc import ItemsView, KeysView, MutableMapping, ValuesView
 
 from tola.assembly.assembly import Assembly
 from tola.assembly.naming_utils import natural_key
@@ -33,13 +33,13 @@ class AssemblySet(MutableMapping):
     def __iter__(self):
         yield from self.__asm_dict
 
-    def items(self):
+    def items(self) -> ItemsView[str | None, Assembly]:
         return self.__asm_dict.items()
 
-    def keys(self):
+    def keys(self) -> KeysView[str | None]:
         return self.__asm_dict.keys()
 
-    def values(self):
+    def values(self) -> ValuesView[Assembly]:
         return self.__asm_dict.values()
 
     def curated(self) -> dict[str | None, Assembly]:
