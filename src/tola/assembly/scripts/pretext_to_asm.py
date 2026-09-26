@@ -47,12 +47,23 @@ def ul(txt):
     return click.style(txt, underline=True)
 
 
-@click.command(
-    help=f"""
-      Uses fragments in the assembly (AGP) produced by PretextView to find
-      matching fragments in the assembly which was fed into Pretext and
-      output an assembly made from the input assembly fragments.
+class PretextToAsm(click.Command):
+    def get_help(self, ctx):
+        """
+        Page help message using the system PAGER
+        """
+        click.echo_via_pager(super().get_help(ctx))
 
+
+@click.command(
+    cls=PretextToAsm,
+    context_settings={"help_option_names": ["-h", "--help"]},
+    help="""
+      Uses fragments in the assembly (AGP) produced by PretextView to find
+      matching fragments in the assembly which was fed into Pretext, and
+      outputs an assembly made from the input assembly fragments.
+    """,
+    epilog=f"""
       {ul("Named Chromsomes")}
 
         Upper case letters followed by zero or more digits are assumed to be
@@ -69,7 +80,7 @@ def ul(txt):
       Any un-tagged scaffolds will then be treated as if they were tagged
       with {it("Contaminant")}. (Any contaminants occurring before the first
       {it("Target")} tag in the PretextView AGP must still be individually
-      tagged with{it("Contaminant")}.)
+      tagged with {it("Contaminant")}.)
 
         {bd("FalseDuplicate")} for tagging duplicated regions in multi-haplotype
       Pretext maps which should be removed, not moved to another haplotype.
@@ -214,6 +225,7 @@ def ul(txt):
     default=False,
     show_default=True,
     envvar="SANGER_AUTO_FIND_YAML",
+    show_envvar=True,
     help="""
       Find the YAML draft assembly information file using the directory
       structure expected at the Wellcome Sanger Institute, which is
@@ -270,6 +282,7 @@ def ul(txt):
     default=1000,
     show_default=True,
 )
+@click.version_option(package_name="tola-agp-tpf-utils")
 def cli(
     assembly_file: Path,
     pretext_file: Path,
