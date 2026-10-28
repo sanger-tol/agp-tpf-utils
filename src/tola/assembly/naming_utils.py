@@ -167,7 +167,7 @@ class ScaffoldNamer:
 
     def haplotype_from_first_row_name(self, scaffold):
         first_name = scaffold.rows[0].name
-        if (m := re.search(r"^SUPER_[^_]+_([^_]+)", first_name)) or (
+        if (m := re.search(r"^(?:SUPER|H)_[^_]+_([^_]+)", first_name)) or (
             m := re.search(r"^([^_]+)_.+_\d+$", first_name)
         ):
             return self.get_set_haplotype(m.group(1))
