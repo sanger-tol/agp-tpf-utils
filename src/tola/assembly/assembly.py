@@ -148,5 +148,11 @@ class Assembly:
             for j in range(i + 1, lgth):
                 compare_func(frags[i], frags[j])
 
+    def fragment_name_counts(self) -> dict[str, int]:
+        fnc = {}
+        for scffld in self.scaffolds:
+            for frag in scffld.fragments():
+                fnc[frag.name] = fnc.get(frag.name, 0) + 1
+        return fnc
 
 AssemblyDict: TypeAlias = dict[str | None, Assembly]
