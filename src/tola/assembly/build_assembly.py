@@ -94,23 +94,28 @@ class BuildAssembly(Assembly):
         log.info(f"Pretext resolution = {self.bp_per_texel:,.0f} bp per texel\n")
         scaffold_namer = self.scaffold_namer
         err_length = self.error_length
+        name_counts = prtxt_asm.fragment_name_counts()
         for prtxt_scffld in prtxt_asm.scaffolds:
             prtxt_scffld_tags = prtxt_scffld.fragment_tags()
             scaffold_namer.make_scaffold_name(prtxt_scffld, prtxt_scffld_tags)
             for prtxt_frag in prtxt_scffld.fragments():
-                if found := input_asm.find_overlaps(prtxt_frag):
-                    scaffold_namer.label_scaffold(
-                        scaffold=found,
-                        fragment=prtxt_frag,
-                        scaffold_tags=prtxt_scffld_tags,
-                        original_name=prtxt_scffld.name,
-                    )
+                if name_counts[prtxt_frag.name] == 1:
+                    found = input_asm.whole_fragment_overlap(prtxt_frag)
+                elif found := input_asm.find_overlaps(prtxt_frag):
                     found.trim_large_overhangs(err_length)
-                    if found.rows:
-                        self.add_scaffold(found)
-                        self.store_fragments_found(found)
                 else:
                     log.warning(f"No overlaps found for: {prtxt_frag}")
+                    continue
+
+                scaffold_namer.label_scaffold(
+                    scaffold=found,
+                    fragment=prtxt_frag,
+                    scaffold_tags=prtxt_scffld_tags,
+                    original_name=prtxt_scffld.name,
+                )
+                if found.rows:
+                    self.add_scaffold(found)
+                    self.store_fragments_found(found)
 
     def discard_overhanging_fragments(self) -> None:
         multi = self.fragments_found_more_than_once

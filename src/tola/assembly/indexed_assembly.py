@@ -99,6 +99,19 @@ class IndexedAssembly(Assembly):
             rows=overlaps,
         )
 
+    def whole_fragment_overlap(self, bait: Fragment) -> OverlapResult:
+        """
+        Returns the whole fragment matched by name only as an `OverlapResult`
+        """
+        scffld = self.scaffold_by_name(bait.name)
+
+        return OverlapResult(
+            bait=bait,
+            start=1,
+            end=scffld.length,
+            rows=[*scffld.rows],
+        )
+
     def __get_overlap_fragment_indices(
         self, idx: list[int], start: int, end: int
     ) -> tuple[int, int] | None:
