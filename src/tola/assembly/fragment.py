@@ -191,7 +191,7 @@ class Fragment:
         )
 
     def haplotype_from_name(self) -> str | None:
-        if (m := re.search(r"^SUPER_\w+_(\w+)$", self.__name)) or (
+        if (m := re.search(r"^SUPER_[^_]+_([^_]+)", self.__name)) or (
             m := re.search(r"^([^_]+)_.+_\d+$", self.__name)
         ):
             return m.group(1)
