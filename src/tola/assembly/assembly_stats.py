@@ -84,14 +84,14 @@ class AssemblyStats:
         )
 
         # Calculate the percentage of the assembly that was placed in chromosomes
-        tier_1_and_2_length = 0
+        rank_1_and_2_length = 0
         for hap, asm in output_assemblies.items():
             ranked_scffld_lengths = self.get_assembly_scaffold_lengths(hap, asm)
             for rank in (1, 2):
                 if scffld_lengths := ranked_scffld_lengths.get(rank):
-                    tier_1_and_2_length += sum(scffld_lengths.values())
+                    rank_1_and_2_length += sum(scffld_lengths.values())
         self.percent_assembly_in_chromosomes = round(
-            100 * (tier_1_and_2_length / input_asm_length), 1
+            100 * (rank_1_and_2_length / input_asm_length), 1
         )
 
     def log_curation_stats(self):
