@@ -18,7 +18,7 @@ class Scaffold:
         rank: int = 0,
         original_name: str | None = None,
         original_tags: set[str] | None = None,
-        localised: bool = False,
+        location: str | None = None,
         chr_name: str | None = None,
         circular: bool = False,
         cut_part: int | None = None,
@@ -33,7 +33,7 @@ class Scaffold:
         self.rank: int = rank
         self.original_name = original_name
         self.original_tags = original_tags
-        self.localised = localised
+        self.location = location
         self.chr_name = chr_name
         self.circular = circular
         self.cut_part = cut_part
@@ -50,7 +50,7 @@ class Scaffold:
             rank=self.rank,
             original_name=self.__original_name,
             original_tags=self.original_tags,
-            localised=self.localised,
+            location=self.location,
             chr_name=self.chr_name,
             circular=self.circular,
             cut_part=self.cut_part,
@@ -101,6 +101,10 @@ class Scaffold:
 
     def add_row(self, row: Fragment | Gap) -> None:
         self.rows.append(row)
+
+    @property
+    def localised(self) -> bool:
+        return self.location is not None
 
     @property
     def original_name(self) -> str:

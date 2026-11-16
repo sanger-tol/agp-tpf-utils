@@ -198,6 +198,37 @@ def write_chr_csv_files(
                     csv_fh.write(chr_names)
 
 
+def write_chr_tsv_files(
+    out_dir: Path,
+    stats: AssemblyStats,
+    out_assemblies: AssemblySet,
+    clobber: bool,
+    gz_flag: bool,
+):
+    """
+    Writes (optionally gzip-compressed) TSV files, required
+    for our submissions to the ENA.  These TSV files do not contain a header!
+    """
+    gz = ".gz" if gz_flag else ""
+    for asm in out_assemblies.values():
+        if not asm.curated:
+            continue
+
+        loc_tsv, unloc_tsv = stats.loc_unloc_chromosome_name_tsv(asm)
+        for tsv, list_name in (
+            (loc_tsv, "chromosome_list"),
+            (unloc_tsv, "unlocalised_list"),
+        ):
+            if not tsv:
+                continue
+            tsv_file = out_dir / f"{asm.name}.{list_name}.tsv{gz}"
+            with get_output_filehandle(tsv_file, clobber) as tsv_fh:
+                if gz:
+                    tsv_fh.write(tsv.encode())
+                else:
+                    tsv_fh.write(tsv)
+
+
 def write_sum_chrs(
     out_dir: Path,
     stats: AssemblyStats,

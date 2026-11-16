@@ -16,6 +16,7 @@ from tola.assembly.file_writers import (
     write_assembly_stats,
     write_chr_csv_files,
     write_chr_report_csv,
+    write_chr_tsv_files,
     write_info_yaml,
     write_sum_chrs,
 )
@@ -375,10 +376,10 @@ def cli(
         curated_asm_files = write_assemblies(
             fai_coll, out_fmt, out_dir, suffix, out_assemblies, clobber
         )
-        write_chr_csv_files(out_dir, stats, out_assemblies, clobber, gz_flag)
         write_chr_report_csv(out_template, stats, out_assemblies, clobber)
         if draft_yaml and fai_coll:
             try:
+                write_chr_tsv_files(out_dir, stats, out_assemblies, clobber, gz_flag)
                 write_assembly_stats(draft_yaml, curated_asm_files, clobber)
                 write_sum_chrs(out_dir, stats, out_assemblies, clobber)
             except GfaStatsError as ge:
@@ -389,6 +390,8 @@ def cli(
                 for msg in ye.args:
                     log.warning(msg)
                 sys.exit(f"Error using draft assembly YAML: '{draft_yaml.file}'")
+        else:
+            write_chr_csv_files(out_dir, stats, out_assemblies, clobber, gz_flag)
 
     else:
         for asm in out_assemblies.values():

@@ -17,6 +17,21 @@ class AssemblyStatsError(Exception):
     """Error from AssemblyStats"""
 
 
+class TSVstring:
+    def __init__(self):
+        self.__str = io.StringIO()
+
+    def write_line(self, *columns) -> None:
+        self.__str.write("\t".join(columns))
+        self.__str.write("\n")
+
+    def str_or_none(self) -> str | None:
+        """
+        Returns `None` if the buffer is empty, else its contents.
+        """
+        return self.__str.getvalue() if self.__str.tell() else None
+
+
 class AssemblyStats:
     def __init__(self, autosome_prefix: str = "SUPER_"):
         self.autosome_prefix = autosome_prefix
@@ -186,6 +201,54 @@ class AssemblyStats:
                 prev_chr = scffld.chr_name
 
         return csv_str.getvalue() if csv_str.tell() else None
+
+    def loc_unloc_chromosome_name_tsv(
+        self, asm: Assembly
+    ) -> tuple[str | None, str | None]:
+        """
+        Returs the contents of the TSV files for localised and unlocalised
+        scaffolds in a tuple of strings.  Either string may be `None` when
+        there are no rows in the TSV.
+        """
+
+        # Scaffolds which were longer than the maximum contig length (2 Gbp by
+        # default) will have `cut_part` set.
+        prev_chr = None
+        cut_part = None
+
+        def maybe_cut_name(s: Scaffold) -> str:
+            return f"{s.chr_name}_{cut_part}" if cut_part else s.chr_name  # ty: ignore[invalid-explicit-return]
+
+        loc_str = TSVstring()
+        unloc_str = TSVstring()
+        for scffld in asm.scaffolds:
+            if scffld.rank in (1, 2, 3):
+                if scffld.chr_name == prev_chr:
+                    # Don't reset `cut_part` for Unloc scaffolds (which will
+                    # not have `Scaffold.cut_part` set), so that they are given the
+                    # chromosome name of the previous (last) part chromosome.
+                    if scffld.cut_part is not None:
+                        cut_part = scffld.cut_part
+                else:
+                    cut_part = scffld.cut_part
+
+                if scffld.localised:
+                    loc_str.write_line(
+                        scffld.name,
+                        maybe_cut_name(scffld),
+                        ("Circular-Chromosome" if scffld.circular else "Chromosome"),
+                        scffld.location,
+                    )
+                else:
+                    unloc_str.write_line(
+                        scffld.name,
+                        maybe_cut_name(scffld),
+                    )
+
+                prev_chr = scffld.chr_name
+
+        return loc_str.str_or_none(), unloc_str.str_or_none()
+
 
     def chromosomes_report_csv(self, hap_asm: AssemblySet):
         csv_str = io.StringIO()

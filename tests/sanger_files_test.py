@@ -61,6 +61,8 @@ def test_get_mito_assembly(latest_yaml):
 
     scffld = mito.scaffolds[0]
     assert scffld.name == "scaffold_MT_1"
+    assert scffld.location == "Mitochondrion"
+    assert scffld.circular
     assert len(scffld.rows) == 1
 
     frag = scffld.rows[0]

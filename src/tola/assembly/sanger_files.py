@@ -7,7 +7,7 @@ import re
 import sys
 from functools import cached_property
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 import yaml
 
@@ -117,13 +117,23 @@ class AssemblyYaml:
 
     @cached_property
     def mitochondrial_assembly(self) -> Assembly | None:
-        return self.__get_asm_and_name_scaffolds("mito", "MT", rank=3, localised=True)
+        return self.__get_asm_and_name_scaffolds(
+            "mito", "MT", rank=3, location="Mitochondrion"
+        )
 
     @cached_property
     def chloroplast_assembly(self) -> Assembly | None:
         return self.__get_asm_and_name_scaffolds(
-            "plastid", "Pltd", rank=3, localised=True
+            "plastid", "Pltd", rank=3, location="Chloroplast"
         )
+
+    @cached_property
+    def organelle_topology(self) -> dict[str, Literal["Circular", "Linear"]]:
+        """
+        The "organelle_topology" value, if present, will be a dict with
+        scaffold names as keys.
+        """
+        return self.__yaml.get("organelle_topology", {})
 
     def __get_asm_and_name_scaffolds(
         self,
@@ -131,24 +141,24 @@ class AssemblyYaml:
         prefix,
         *,
         rank: int = 4,
-        localised: bool = False,
+        location: str | None = None,
     ) -> Assembly | None:
         asm = self.index_fasta(yaml_key)
         if not asm:
             return None
 
-        ### Mark linear organelle genomes here? ###
-
+        topo_info = self.organelle_topology
         multi_flag = len(asm.scaffolds) > 1
 
         # Give each scaffold a name and set its rank
         filtered_scaffolds = []
         for i, scffld in enumerate(asm.scaffolds, start=1):
+            scffld.circular = topo_info.get(scffld.name) != "Linear"
             scffld.name = f"scaffold_{prefix}_{i}"
             if rank == 3:
                 scffld.chr_name = f"{prefix}-{i}" if multi_flag else prefix
             scffld.rank = rank
-            scffld.localised = localised
+            scffld.location = location
             filtered_scaffolds.append(scffld)
         asm.scaffolds = filtered_scaffolds
         return asm
