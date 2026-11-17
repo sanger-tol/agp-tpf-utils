@@ -171,7 +171,7 @@ class ScaffoldNamer:
             name = self.unloc_name()
             self.unloc_scaffolds[-1].append(scaffold)
         elif "Painted" in scaffold_tags:
-            scaffold.location = "Macronuclear"
+            scaffold.location = "Nucleus"
             scaffold.chr_name = name
 
         scaffold.name = name

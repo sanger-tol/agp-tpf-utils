@@ -232,23 +232,23 @@ class AssemblyStats:
                 else:
                     cut_part = scffld.cut_part
 
+                chr_name = maybe_cut_name(scffld)
                 if scffld.localised:
-                    loc_str.write_line(
-                        scffld.name,
-                        maybe_cut_name(scffld),
-                        ("Circular-Chromosome" if scffld.circular else "Chromosome"),
-                        scffld.location,
+                    chr_type = (
+                        "Circular-Chromosome" if scffld.circular else "Chromosome"
                     )
+                    if scffld.location == "Nucleus":
+                        loc_str.write_line(scffld.name, chr_name, chr_type)
+                    else:
+                        loc_str.write_line(
+                            scffld.name, chr_name, chr_type, scffld.location
+                        )
                 else:
-                    unloc_str.write_line(
-                        scffld.name,
-                        maybe_cut_name(scffld),
-                    )
+                    unloc_str.write_line(scffld.name, chr_type)
 
                 prev_chr = scffld.chr_name
 
         return loc_str.str_or_none(), unloc_str.str_or_none()
-
 
     def chromosomes_report_csv(self, hap_asm: AssemblySet):
         csv_str = io.StringIO()
