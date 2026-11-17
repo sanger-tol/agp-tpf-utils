@@ -207,8 +207,8 @@ class AssemblyStats:
     ) -> tuple[str | None, str | None]:
         """
         Returs the contents of the TSV files for localised and unlocalised
-        scaffolds in a tuple of strings.  Either string may be `None` when
-        there are no rows in the TSV.
+        scaffolds in a tuple of strings.  `None` is returned instead of a
+        `str` for either TSV when it has zero lines.
         """
 
         # Scaffolds which were longer than the maximum contig length (2 Gbp by
